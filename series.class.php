@@ -3,11 +3,12 @@ class mbsb_series {
 
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
-		if (empty($post) || $post->post_type != 'mbsb_series')
-			return new WP_Error('NO_SERIES_WITH_THAT_ID');
 		$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name');
 		foreach ($properties as $k => $v)
-			$this->$v = $post->$k;
+			if (empty($post) || $post->post_type != 'mbsb_series')
+				$this->$v = null;
+			else
+				$this->$v = $post->$k;
 	}
 
 }

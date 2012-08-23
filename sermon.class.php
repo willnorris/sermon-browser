@@ -13,22 +13,13 @@ class mbsb_sermon {
 		$this->time = date ('H:i', $this->timestamp);
 		$this->preacher_id = get_post_meta ($this->id, 'preacher', true);
 		$preacher = new mbsb_preacher ($this->preacher_id);
-		if (is_wp_error($preacher))
-			$this->preacher_name = null;
-		else
-			$this->preacher_name = $preacher->name;
+		$this->preacher_name = $preacher->name;
 		$this->service_id = get_post_meta ($this->id, 'service', true);
 		$service = new mbsb_service ($this->service_id);
-		if (is_wp_error($service))
-			$this->service_name = null;
-		else
-			$this->service_name = $service->name;
+		$this->service_name = $service->name;
 		$this->series_id = get_post_meta ($this->id, 'series', true);
 		$series = new mbsb_series ($this->series_id);
-		if (is_wp_error($series))
-			$this->series_name = null;
-		else
-			$this->series_name = $series->name;
+		$this->series_name = $series->name;
 		$this->override_time = $this->get_misc_meta ('override_time');
 	}
 	
