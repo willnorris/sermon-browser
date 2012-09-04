@@ -373,6 +373,7 @@ function mbsb_save_post ($post_id, $post) {
 		$sermon->update_series ($_POST['mbsb_series']);
 		$sermon->update_service ($_POST['mbsb_service']);
 		$sermon->update_override_time (isset ($_POST['mbsb_override_time']));
+		$sermon->update_passages ($_POST['mbsb_passages']);
 	}
 }
 
