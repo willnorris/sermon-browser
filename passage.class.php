@@ -1,20 +1,46 @@
 <?php
+/**
+* Class that stores and parses Bible passages
+* 
+* @package passage
+*/
 class mbsb_passage {
 	
 	private $formatted, $processed;
 	
+	/**
+	* Adds the raw data into the object and parses it
+	* 
+	* @param string $raw
+	* @return mbsb_passage
+	*/
 	function __construct ($raw) {
 		$this->parse_passages($raw);
 	}
 	
+	/**
+	* Returns the parsed passages formatted for easy reading
+	* 
+	* @return string
+	*/
 	public function get_formatted() {
 		return $this->formatted;
 	}
 	
+	/**
+	* Returns the parsed passages as an array, for further processing
+	* 
+	* @return array
+	*/
 	public function get_processed() {
 		return $this->processed;
 	}
 	
+	/** 
+	* Returns true if the passages could not be parsed, false otherwise
+	* 
+	* @return boolean
+	*/
 	public function is_error() {
 		if (is_wp_error($this->formatted))
 			return $this->formatted;
@@ -98,7 +124,7 @@ class mbsb_passage {
 	    	$this->processed = $this->formatted = new WP_Error(1, __('No Bible references could be parsed', MBSB));
 	}
 	
-	  /**
+	/**
 	* Parses a single Bible reference
 	* 
 	* @param string $passage
@@ -161,6 +187,13 @@ class mbsb_passage {
 		}
 	}
 	
+	/**
+	* Returns an array of valid Bible book names with alternative abbreviated forms and an index
+	* 
+	* Can be persistently cached by caching plugins.
+	* 
+	* @return array
+	*/
 	private function bible_books() {
 		$mbsb_bible_books = wp_cache_get ('mbsb_bible_books', get_bloginfo('language'));
 		if (!$mbsb_bible_books){
@@ -178,8 +211,11 @@ class mbsb_passage {
 	}
 
 	/**
-	* This function returns a variable that consumes approximately 100kb of memory. Use sparingly!
+	* Returns a multi-dimensional array containing the number of verses in each chapter of the Bible.
 	* 
+	* The variable consumes approximately 100kb of memory. Use sparingly!
+	* 
+	* @return array
 	*/
 	private function verses_per_chapter () {
 		$a = wp_cache_get ('mbsb_verses_per_chapter');
@@ -287,8 +323,3 @@ class mbsb_passage {
 	}
 }
 ?>
-
-
-
-
-

@@ -30,8 +30,14 @@ add_action ('plugins_loaded', 'mbsb_plugins_loaded');
 add_action ('init', 'mbsb_init');
 add_action ('admin_init', 'mbsb_admin_init');
 
+//Make sure classes autoload
 spl_autoload_register('mbsb_autoload_classes');
 
+/**
+* Autoloads the classes when required
+* 
+* @param string $class_name
+*/
 function mbsb_autoload_classes ($class_name) {
 	if (substr($class_name, 0, 5) == 'mbsb_')
 		require (substr($class_name, 5).'.class.php');
@@ -45,15 +51,21 @@ function mbsb_activate () {
 	$wp_rewrite->flush_rules();
 }
 
+/**
+* Runs on the 'plugins_loaded' action
+* 
+* Currently this function makes sure the time and date are saved when editing a sermon
+*/
 function mbsb_plugins_loaded() {
 	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
 		mbsb_make_sure_date_time_is_saved();
 }
 
 /**
-* Main initialisation function
+* Runs on the init action.
 * 
-* Sets up most WordPress hooks and filters. Runs on the init action.
+* Registers custom post types.
+* Sets up most WordPress hooks and filters. 
 */
 function mbsb_init () {
 	mbsb_register_custom_post_types();
@@ -67,6 +79,13 @@ function mbsb_init () {
 	}
 }
 
+/**
+* Runs on the admin_init action.
+* 
+* Registers admin styles.
+* Sets up most admin hooks and filters.
+*  
+*/
 function mbsb_admin_init () {
 	$date = @filemtime(mbsb_plugin_dir_path('css/admin-style.php'));
 	wp_register_style ('mbsb_admin_style', plugins_url('css/admin-style.php', __FILE__), $date);
@@ -76,22 +95,45 @@ function mbsb_admin_init () {
 	add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
 }
 
+/**
+* Runs on the admin_print_styles action.
+* 
+* Enqueues the mbsb_admin_style stylesheet 
+*/
 function mbsb_admin_print_styles () {
 	wp_enqueue_style ('mbsb_admin_style');	
 }
 
+/**
+* Runs on the load-edit.php action (i.e. when the edit posts page is loaded)
+* 
+* Makes sure the necessary filters are added when editing custom post types, to ensure columns are added and are sortable.
+*/
 function mbsb_onload_edit_page () {
 	if (isset($_GET['post_type']) && substr($_GET['post_type'],0,5) == 'mbsb_') {
 		$mbsb_post_type = substr($_GET['post_type'], 5);
 		if (function_exists ("mbsb_add_{$mbsb_post_type}_columns")) {
 			add_filter ("manage_mbsb_{$mbsb_post_type}_posts_columns", "mbsb_add_{$mbsb_post_type}_columns");
-			if (function_exists ("mbsb_make_{$mbsb_post_type}_columns_sortable") && function_exists ("mbsb_modify_{$mbsb_post_type}_sort"))
+			if (function_exists ("mbsb_make_{$mbsb_post_type}_columns_sortable"))
 				add_filter ("manage_edit-mbsb_{$mbsb_post_type}_sortable_columns", "mbsb_make_{$mbsb_post_type}_columns_sortable");
-				add_filter ('request', "mbsb_modify_{$mbsb_post_type}_sort");
+				
+		}
+		if (isset($_GET['orderby'])) {
+			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
+			add_filter ('posts_orderby', 'mbsb_edit_posts_sort');
+			add_filter ('posts_fields', 'mbsb_edit_posts_fields');
 		}
 	}
 }
 
+/**
+* Filters manage_mbsb_sermons_posts_columns (i.e. the names of additional columns when sermons are displayed in admin)
+* 
+* Adds the new columns required.
+* 
+* @param array $columns
+* @return array
+*/
 function mbsb_add_sermons_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
@@ -108,6 +150,14 @@ function mbsb_add_sermons_columns($columns) {
 	return $new_columns;
 }
 
+/**
+* Filters manage_edit-mbsb_sermons_sortable_columns (i.e. the list of sortable columns when sermons are displayed in admin)
+* 
+* Indicates which columns are sortable.
+* 
+* @param array $columns
+* @return array
+*/
 function mbsb_make_sermons_columns_sortable ($columns) {
 	$columns ['passages'] = 'passages';
 	$columns ['preacher'] = 'preacher';
@@ -118,11 +168,81 @@ function mbsb_make_sermons_columns_sortable ($columns) {
 	return $columns;
 }
 
-function mbsb_modify_sermons_sort ($vars) {
-	//http://justintadlock.com/archives/2011/06/27/custom-columns-for-custom-post-types
-	return $vars;
+/**
+* Filters posts_join_paged when custom post types are displayed in admin and a sort order is specified.
+* 
+* Adds SQL to WP_Query to ensure the correct metadata is added to the query.
+* 
+* @param string $join
+* @return string
+*/
+function mbsb_edit_posts_join ($join) {
+	global $wpdb;
+	if (isset($_GET['orderby']) && isset($_GET['post_type'])) {
+		if ($_GET['post_type'] == 'mbsb_sermons') {
+			if ($_GET['orderby'] == 'preacher')
+				return "{$join} INNER JOIN {$wpdb->prefix}postmeta ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = {$wpdb->prefix}postmeta.meta_value AND preachers.post_type = 'mbsb_preachers')";
+			elseif ($_GET['orderby'] == 'service')
+				return "{$join} INNER JOIN {$wpdb->prefix}postmeta ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = {$wpdb->prefix}postmeta.meta_value AND services.post_type = 'mbsb_services')";
+			elseif ($_GET['orderby'] == 'series')
+				return "{$join} INNER JOIN {$wpdb->prefix}postmeta ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = {$wpdb->prefix}postmeta.meta_value AND series.post_type = 'mbsb_series')";
+		}
+	}
+	return $join;
 }
 
+/**
+* Filters posts_orderby when custom post types are displayed in admin and a sort order is specified.
+* 
+* Adds SQL to WP_Query to ensure the correct 'ORDER BY' data is added to the query.
+* 
+* @param string $orderby
+* @return string
+*/
+function mbsb_edit_posts_sort($orderby) {
+	global $wpdb;
+	if (isset($_GET['orderby']) && isset($_GET['post_type'])) {
+		if ($_GET['post_type'] == 'mbsb_sermons') {
+			if ($_GET['orderby'] == 'preacher')
+				return "preachers.post_title ".$wpdb->escape($_GET["order"]);
+			elseif ($_GET['orderby'] == 'service')
+				return "services.post_title ".$wpdb->escape($_GET["order"]);
+			elseif ($_GET['orderby'] == 'series')
+				return "series.post_title ".$wpdb->escape($_GET["order"]);
+			elseif ($_GET['orderby'] == 'passages')
+				return "passage_sort ".$wpdb->escape($_GET["order"]);
+		}
+	}
+	return $orderby;
+}
+
+/**
+* Filters posts_fields when custom post types are displayed in admin and a sort order is specified.
+* 
+* Adds SQL to WP_Query to ensure that all fields needed for sorting are available.
+* 
+* @param string $where
+* @return string
+*/
+function mbsb_edit_posts_fields ($where) {
+	global $wpdb;
+	if (isset($_GET['orderby']) && isset($_GET['post_type'])) {
+		if ($_GET['post_type'] == 'mbsb_sermons') {
+			if ($_GET['orderby'] == 'passages')
+				return $where.", (SELECT meta_value FROM {$wpdb->prefix}postmeta AS pm WHERE wp_posts.ID=pm.post_id AND pm.meta_key='passage_start' ORDER BY RIGHT(pm.meta_value, 4) LIMIT 1) AS passage_sort";
+		}
+	}
+	return $where;
+}
+
+/**
+* Runs on the manage_posts_custom_column action
+* 
+* Outputs the data for each cell of the custom columns when displaying a list of custom posts in admin
+* 
+* @param string $column - the name of the column
+* @param integer $post_id - the post_id of that cell
+*/
 function mbsb_output_custom_columns($column, $post_id) {
 	$post_type = get_post_type ($post_id);
 	if ($post_type == 'mbsb_sermons') {
@@ -136,7 +256,7 @@ function mbsb_output_custom_columns($column, $post_id) {
 		elseif ($column == 'series')
 			echo esc_html($sermon->series_name);
 		elseif ($column == 'passages')
-			echo esc_html($sermon->passages->get_formatted());
+			echo esc_html($sermon->get_formatted_passages());
 		else
 			echo $column;
 	}
@@ -217,11 +337,16 @@ function mbsb_generate_taxonomy_label ($plural, $singular) {
 	return array('name' => $plural, 'singular_name' => $singular, 'search_items' => sprintf(__('Search %s', MBSB), $plural), 'popular_items' => sprintf(__('Popular %s', MBSB), $plural), 'all_items' => sprintf(__('All %s', MBSB), $plural), 'parent_item' => sprintf(__('Parent %s', MBSB), $singular), 'edit_item' => sprintf(__('Edit %s', MBSB), $singular), 'update_item' => sprintf(__('Update %s', MBSB), $singular), 'add_new_item' => sprintf(__('Add New %s', MBSB), $singular), 'new_item_name' => sprintf(__('New %s Name', MBSB), $singular), 'separate_items_with_commas' => sprintf(__('Separate %s with commas', MBSB), $plural), 'add_or_remove_items' => sprintf(__('Add or remove %s', MBSB), $plural), 'choose_from_most_used' => sprintf(__('Choose from the most used %s', MBSB), $plural));
 }
 
+/**
+* Adds the metaboxes needed when editing/creating a sermon.
+* 
+* Also removes unwanted metaboxes and adds required styles and javascripts.
+*/
 function mbsb_sermons_meta_boxes () {
 	add_meta_box ('mbsb_sermon_save', __('Save', MBSB), 'mbsb_sermon_save_meta_box', 'mbsb_sermons', 'side', 'high');
 	add_meta_box ('mbsb_sermon_media', __('Media', MBSB), 'mbsb_sermon_media_meta_box', 'mbsb_sermons', 'normal', 'high');
 	add_meta_box ('mbsb_sermon_details', __('Details', MBSB), 'mbsb_sermon_details_meta_box', 'mbsb_sermons', 'normal', 'high');
-	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_editor_box', 'mbsb_sermons', 'normal', 'default');
+	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermons', 'normal', 'default');
 	remove_meta_box ('submitdiv', 'mbsb_sermons', 'side');
 	add_filter ('screen_options_show_screen', create_function ('', 'return false;'));
 	wp_enqueue_script('jquery-ui-datepicker');
@@ -229,6 +354,9 @@ function mbsb_sermons_meta_boxes () {
 	add_action ('admin_footer', 'mbsb_add_date_picker_code');
 }
 
+/**
+* Outputs the main sermons details metabox when editing/creating a sermon
+*/
 function mbsb_sermon_details_meta_box() {
 	global $post;
 	//Todo: Pre-populate fields with defaults
@@ -239,11 +367,14 @@ function mbsb_sermon_details_meta_box() {
 	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series_id).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('services', $sermon->service_id).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.$sermon->time.'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->passages->get_formatted().'"/></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->get_formatted_passages().'"/></td></tr>';
 	echo '</table>';
 	echo '<input type="hidden" name="hidden_aa" id="hidden_aa" value="'.date ('Y', $sermon->timestamp).'"/><input type="hidden" name="hidden_mm" id="hidden_mm" value="'.date ('m', $sermon->timestamp).'"/><input type="hidden" name="hidden_jj" id="hidden_jj" value="'.date ('d', $sermon->timestamp).'"/><input type="hidden" name="hidden_hh" id="hidden_hh" value="'.date ('H', $sermon->timestamp).'"/><input type="hidden" name="hidden_mn" id="hidden_mb" value="'.date ('i', $sermon->timestamp).'"/>';
 }
 
+/**
+* Outputs the media metabox when editing/creating a sermon
+*/
 function mbsb_sermon_media_meta_box() {
 	global $post;
 	wp_nonce_field (__FUNCTION__, 'media_nonce', true);
@@ -252,14 +383,32 @@ function mbsb_sermon_media_meta_box() {
 	echo '</table>';
 }
 
+/**
+* Adds jQuery datepicker code.
+* 
+* Designed to be called via the admin_footer action.
+* 
+*/
 function mbsb_add_date_picker_code() {
 	echo  "<script type=\"text/javascript\">jQuery(document).ready(function(){jQuery('.add-date-picker').datepicker({dateFormat : 'yy-mm-dd'});});</script>";
 }
 
-function mbsb_editor_box ($post) {
+/**
+* Specifies the settings for the editor (description) box when creating/editing sermons
+* 
+* @param mixed $post
+*/
+function mbsb_sermon_editor_box ($post) {
 	wp_editor ($post->post_content, 'content', array ('media_buttons' => false, 'textarea_rows' => 5));
 }
 
+/**
+* Returns the HTML for a dropdown list of titles of a specified custom post type
+* 
+* @param string $custom_post_type - the custom post type required
+* @param string $selected - the post_id of the custom post that should be pre-selected
+* @return string - the resulting HTML
+*/
 function mbsb_return_select_list ($custom_post_type, $selected = '') {
 	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}"));
 	if (is_array($posts)) {
@@ -277,8 +426,10 @@ function mbsb_return_select_list ($custom_post_type, $selected = '') {
 }
 
 /**
-* Code adapted from meta-boxes.php
+* Outputs the save/publish metabox
 * 
+* Code adapted from meta-boxes.php
+* @todo - check this code with WordPress 3.3
 */
 function mbsb_sermon_save_meta_box() {
 	global $post;
@@ -364,10 +515,24 @@ function mbsb_add_admin_menu() {
 	add_submenu_page('sermon-browser', __('Pray for Japan', MBSB), __('Pray for Japan', MBSB), 'publish_posts', 'sermon-browser/japan.php', 'sb_japan');
 }
 
+/** 
+* Returns the path to the plugin, or to a specified file or folder within it
+* 
+* @param string $relative_path - a file or folder within the plugin
+* @return string
+*/
 function mbsb_plugin_dir_path ($relative_path = '') {
 	return plugin_dir_path(__FILE__).$relative_path;
 }
 
+/**
+* Saves metadata when a custom post type is saved.
+* 
+* Called by the save_post action.
+* 
+* @param integer $post_id
+* @param object $post
+*/
 function mbsb_save_post ($post_id, $post) {
 	if (!empty($_POST) && isset($_POST['action']) && $_POST['action'] == 'editpost' && $_POST['post_type'] == 'mbsb_sermons' && !(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) && check_admin_referer ('mbsb_sermon_details_meta_box', 'details_nonce')) {
 		$sermon = new mbsb_sermon ($post_id);
@@ -379,6 +544,11 @@ function mbsb_save_post ($post_id, $post) {
 	}
 }
 
+/**
+* Makes sure the date and time are saved when editing a custom post
+* 
+* Works by adding expected $_POST data from custom data.
+*/
 function mbsb_make_sure_date_time_is_saved () {
 	$_POST['aa'] = substr ($_POST['mbsb_date'], 0, 4);
 	$_POST['mm'] = substr ($_POST['mbsb_date'], 5, 2);
