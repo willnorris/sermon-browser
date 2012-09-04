@@ -20,11 +20,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details: <http://www.gnu.org/licenses/>
 */
 
-require ('sermon.class.php');
-require ('preacher.class.php');
-require ('series.class.php');
-require ('service.class.php');
-
 define ('MBSB', 'MBSB');
 
 //Register hooks
@@ -34,6 +29,13 @@ register_activation_hook(__FILE__, 'mbsb_activate');
 add_action ('plugins_loaded', 'mbsb_plugins_loaded');
 add_action ('init', 'mbsb_init');
 add_action ('admin_init', 'mbsb_admin_init');
+
+spl_autoload_register('mbsb_autoload_classes');
+
+function mbsb_autoload_classes ($class_name) {
+	if (substr($class_name, 0, 5) == 'mbsb_')
+		require (substr($class_name, 5).'.class.php');
+}
 
 /**
 * Runs when the plugin is activated
@@ -235,7 +237,7 @@ function mbsb_sermon_details_meta_box() {
 	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series_id).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('services', $sermon->service_id).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.$sermon->time.'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" /></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->passages->get_formatted().'"/></td></tr>';
 	echo '</table>';
 	echo '<input type="hidden" name="hidden_aa" id="hidden_aa" value="'.date ('Y', $sermon->timestamp).'"/><input type="hidden" name="hidden_mm" id="hidden_mm" value="'.date ('m', $sermon->timestamp).'"/><input type="hidden" name="hidden_jj" id="hidden_jj" value="'.date ('d', $sermon->timestamp).'"/><input type="hidden" name="hidden_hh" id="hidden_hh" value="'.date ('H', $sermon->timestamp).'"/><input type="hidden" name="hidden_mn" id="hidden_mb" value="'.date ('i', $sermon->timestamp).'"/>';
 }
