@@ -135,6 +135,8 @@ function mbsb_output_custom_columns($column, $post_id) {
 			echo esc_html($sermon->service_name);
 		elseif ($column == 'series')
 			echo esc_html($sermon->series_name);
+		elseif ($column == 'passages')
+			echo esc_html($sermon->passages->get_formatted());
 		else
 			echo $column;
 	}
