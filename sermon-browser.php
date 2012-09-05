@@ -93,6 +93,70 @@ function mbsb_admin_init () {
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
+	add_action ('admin_head-post.php', 'mbsb_add_javascript_to_post_page');
+	add_action ('admin_head-post-new.php', 'mbsb_add_javascript_to_post_page');
+	add_filter ('get_media_item_args', 'mbsb_force_insert_post_on_media_popup');
+	add_filter ('media_upload_tabs', 'mbsb_filter_media_upload_tabs');
+}
+
+/**
+* Adds the necessary javascript to the edit/add custom post page
+* 
+* Called by the admin_head-post.php and admin_head-post-new.php actions.
+* Currently handles the media uploading on the sermon page.
+*/
+function mbsb_add_javascript_to_post_page() {
+	global $post;
+	if (isset($post->post_type) && $post->post_type == 'mbsb_sermons') {
+		echo "<script type=\"text/javascript\">\r\n//<![CDATA[\r\n";
+		echo "jQuery(document).ready(function($) {\r\n";
+		echo "\tvar orig_send_to_editor = window.send_to_editor;\r\n";
+		echo "\t$('#attach_media_button').click(function() {\r\n";
+		echo "\t\twindow.send_to_editor = function(html) {\r\n";
+        echo "\t\t\tvar attachment_url = $('img',html).attr('src');\r\n";
+        echo "\t\t\tif($(attachment_url).length == 0) {\r\n";
+        echo "\t\t\t\tattachment_url = $(html).attr('href');\r\n";
+        echo "\t\t\t};\r\n";
+        echo "\t\t\t$('#mbsb_media_1_attachment').val(attachment_url);\r\n";
+        echo "\t\t\ttb_remove();\r\n";
+    	echo "\t\t\twindow.send_to_editor = orig_send_to_editor;\r\n";
+    	echo "\t\t};\r\n";
+	    echo "\t\ttb_show('".__('Attach a file to this sermon', MBSB)."', 'media-upload.php?referer=mbsb_sermons&post_id={$post->ID}&tab=library&TB_iframe=true', false);\r\n";  
+	    echo "\t\treturn false;\r\n";
+		echo "\t});\r\n";
+		echo "});\r\n";
+		echo "//]]>\r\n</script>\r\n";
+	}
+}
+
+/**
+* Ensures the media upload box always includes the 'insert into post' button
+* 
+* Filters 'get_media_item_args'
+* @link http://fullrefresh.com/2012/03/09/wp-custom-post-types-ui-and-insert-into-post/
+* 
+* @param array $args
+* @return array
+*/
+function mbsb_force_insert_post_on_media_popup ($args) {
+	if (isset ($_GET['post_id']) && get_post_type ($_GET['post_id']) == 'mbsb_sermons')
+		$args ['send'] = true;
+	return $args;
+}
+
+/**
+* Optionally removes all by one tab from the media uploader
+* 
+* Triggered by adding a 'tab=xxxx' parameter when calling the media uploader
+* 
+* @param array $tabs
+* @return array
+*/
+function mbsb_filter_media_upload_tabs ($tabs) {
+	if (isset($_GET['tab']))
+		return array ($_GET['tab'] => $tabs[$_GET['tab']]);
+	else
+		return $tabs;
 }
 
 /**
@@ -330,7 +394,7 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
-					'supports' => array ('title', 'thumbnail', 'comments'), // We will add 'editor' support later, so it can be positioned correctly
+					'supports' => array ('title', 'comments'), // We will add 'editor' support later, so it can be positioned correctly
 					'taxonomies' => array ('post_tag'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_sermons_meta_boxes',
@@ -405,9 +469,9 @@ function mbsb_sermons_meta_boxes () {
 	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermons', 'normal', 'default');
 	remove_meta_box ('submitdiv', 'mbsb_sermons', 'side');
 	add_filter ('screen_options_show_screen', create_function ('', 'return false;'));
-	wp_enqueue_script('jquery-ui-datepicker');
+	wp_enqueue_script ('jquery-ui-datepicker');
 	wp_enqueue_style('mbsb_jquery_ui');
-	add_action ('admin_footer', 'mbsb_add_date_picker_code');
+	add_action ('admin_footer', 'mbsb_add_edit_sermons_javascript');
 }
 
 /**
@@ -435,18 +499,20 @@ function mbsb_sermon_media_meta_box() {
 	global $post;
 	wp_nonce_field (__FUNCTION__, 'media_nonce', true);
 	echo '<table class="sermon_media">';
-	echo '<tr><th scope="row"><label for="mbsb_media_1_type">'.__('Media Type', MBSB).':</label></th><td><select id="mbsb_media_1_type" name="mbsb_media_1_type"><option value="file">Uploaded file</option><option value="embed">Embedded HTML</option><option value="url">External URL</option></select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_media_1_type">'.__('Media Type', MBSB).':</label></th><td><select id="mbsb_media_1_type" name="mbsb_media_1_type"><option value="file">'.__('Upload or insert from Media Library', MBSB).'</option><option value="embed">Embedded HTML</option><option value="url">External URL</option></select></td><td><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="attach_media_button" name="attach_media_button"></td></tr>';
+	echo '<input type="hidden" value="" id="mbsb_media_1_attachment" name="mbsb_media_1_attachment">';
 	echo '</table>';
 }
 
 /**
-* Adds jQuery datepicker code.
+* Adds required jvascript for the edit sermons page.
 * 
 * Designed to be called via the admin_footer action.
 * 
 */
-function mbsb_add_date_picker_code() {
-	echo  "<script type=\"text/javascript\">jQuery(document).ready(function(){jQuery('.add-date-picker').datepicker({dateFormat : 'yy-mm-dd'});});</script>";
+function mbsb_add_edit_sermons_javascript() {
+	echo "<script type=\"text/javascript\">jQuery(document).ready(function(){jQuery('.add-date-picker').datepicker({dateFormat : 'yy-mm-dd'});});</script>\r\n";
+	echo "<script type=\"text/javascript\">var override = document.getElementById('mbsb_override_time'); override.change( function () {if override.val() > 0 { var mbsb_time = document.getElementById('mbsb_time'); mbsb_time.Disabled = true; mbsb_time.style.backgroundColor='grey';} else {document.getElementById('mbsb_time').disabled = false;}})";
 }
 
 /**
