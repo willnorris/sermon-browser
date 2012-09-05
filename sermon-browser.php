@@ -116,22 +116,14 @@ function mbsb_onload_edit_page () {
 			add_filter ("manage_mbsb_{$mbsb_post_type}_posts_columns", "mbsb_add_{$mbsb_post_type}_columns");
 			if (function_exists ("mbsb_make_{$mbsb_post_type}_columns_sortable"))
 				add_filter ("manage_edit-mbsb_{$mbsb_post_type}_sortable_columns", "mbsb_make_{$mbsb_post_type}_columns_sortable");
-				
 		}
-		if (isset($_GET['orderby'])) {
-			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
-			add_filter ('posts_orderby', 'mbsb_edit_posts_sort');
-			add_filter ('posts_fields', 'mbsb_edit_posts_fields');
-		}
-		if (isset($_GET['preacher']) || isset($_GET['service']) || isset($_GET['series'])) {
-			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
-			add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
-		}
-		if (isset($_GET['book'])) {
-			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
-			add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
-			add_filter ('posts_groupby', 'mbsb_edit_posts_groupby');
-		}
+		add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
+		add_filter ('posts_orderby', 'mbsb_edit_posts_sort');
+		add_filter ('posts_fields', 'mbsb_edit_posts_fields');
+		add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
+		add_filter ('posts_groupby', 'mbsb_edit_posts_groupby');
+		if (isset($_GET['s']))
+			add_filter ('posts_search', 'mbsb_edit_posts_search');
 	}
 }
 
@@ -187,17 +179,15 @@ function mbsb_make_sermons_columns_sortable ($columns) {
 */
 function mbsb_edit_posts_join ($join) {
 	global $wpdb;
-	if (isset($_GET['post_type'])) {
-		if ($_GET['post_type'] == 'mbsb_sermons') {
-			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'preacher') || isset($_GET['preacher']))
-				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preachers')";
-			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'service') || isset($_GET['service']))
-				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_services')";
-			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'series') || isset($_GET['series']))
-				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
-			if (isset($_GET['book']))
-				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
-		}
+	if ($_GET['post_type'] == 'mbsb_sermons') {
+		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'preacher') || isset($_GET['preacher']) || isset($_GET['s']))
+			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preachers')";
+		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'service') || isset($_GET['service']) || isset($_GET['s']))
+			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_services')";
+		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'series') || isset($_GET['series']) || isset($_GET['s']))
+			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
+		if (isset($_GET['book']))
+			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
 	}
 	return $join;
 }
@@ -212,7 +202,7 @@ function mbsb_edit_posts_join ($join) {
 */
 function mbsb_edit_posts_sort($orderby) {
 	global $wpdb;
-	if (isset($_GET['orderby']) && isset($_GET['post_type'])) {
+	if (isset($_GET['orderby'])) {
 		if ($_GET['post_type'] == 'mbsb_sermons') {
 			if ($_GET['orderby'] == 'preacher')
 				return "preachers.post_title ".$wpdb->escape($_GET["order"]);
@@ -237,11 +227,9 @@ function mbsb_edit_posts_sort($orderby) {
 */
 function mbsb_edit_posts_fields ($select) {
 	global $wpdb;
-	if (isset($_GET['post_type'])) {
-		if ($_GET['post_type'] == 'mbsb_sermons') {
-			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'passages'))
-				$select .= ", (SELECT meta_value FROM {$wpdb->prefix}postmeta AS pm WHERE wp_posts.ID=pm.post_id AND pm.meta_key='passage_start' ORDER BY RIGHT(pm.meta_value, 4) LIMIT 1) AS passage_sort";
-		}
+	if ($_GET['post_type'] == 'mbsb_sermons') {
+		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'passages'))
+			$select .= ", (SELECT meta_value FROM {$wpdb->prefix}postmeta AS pm WHERE wp_posts.ID=pm.post_id AND pm.meta_key='passage_start' ORDER BY RIGHT(pm.meta_value, 4) LIMIT 1) AS passage_sort";
 	}
 	return $select;
 }
@@ -258,13 +246,13 @@ function mbsb_edit_posts_where($where) {
 	global $wpdb;
 	if ($_GET['post_type'] == 'mbsb_sermons') {
 		if (isset($_GET['preacher']))
-			$where .= "AND preachers.ID=".$wpdb->escape($_GET["preacher"]);
+			$where .= " AND preachers.ID=".$wpdb->escape($_GET["preacher"]);
 		if (isset($_GET['series']))
-			$where .= "AND series.ID=".$wpdb->escape($_GET["series"]);
+			$where .= " AND series.ID=".$wpdb->escape($_GET["series"]);
 		if (isset($_GET['service']))
-			$where .= "AND services.ID=".$wpdb->escape($_GET["service"]);
+			$where .= " AND services.ID=".$wpdb->escape($_GET["service"]);
 		if (isset($_GET['book']))
-			$where .= "AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".$wpdb->escape($_GET["book"]);
+			$where .= " AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".$wpdb->escape($_GET["book"]);
 	}
 	return $where;
 }
@@ -284,6 +272,31 @@ function mbsb_edit_posts_groupby($groupby) {
 			$groupby .= "{$wpdb->prefix}posts.ID";
 	}
 	return $groupby;
+}
+
+/**
+* Filters post_search (the search criteria) to add additional fields for searching custom post types in admin.
+* 
+* It's a bit of a hack. A patch has been submitted to make this more reliable.
+* @link http://core.trac.wordpress.org/ticket/21803
+* 
+* @param string $search
+* @return string
+*/
+function mbsb_edit_posts_search ($search) {
+	global $wpdb;
+	if (isset($_GET['s'])) {
+		if ($_GET['post_type'] == 'mbsb_sermons')
+			$new_search_fields = array ('preachers.post_title', 'services.post_title', 'series.post_title');
+		if (isset($new_search_fields)) {
+			$search = rtrim ($search, ' )').')';
+			$term = '%'.$wpdb->escape($_GET['s']).'%';
+			foreach ($new_search_fields as &$s)
+				$s = "({$s} LIKE '{$term}')";
+			$search .= " OR ".implode( ' OR ', $new_search_fields  ).")) ";
+		}
+	}
+	return $search;
 }
 
 /**
