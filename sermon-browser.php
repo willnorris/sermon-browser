@@ -107,7 +107,7 @@ function mbsb_admin_print_styles () {
 /**
 * Runs on the load-edit.php action (i.e. when the edit posts page is loaded)
 * 
-* Makes sure the necessary filters are added when editing custom post types, to ensure columns are added and are sortable.
+* Makes sure the necessary filters are added when editing custom post types, to ensure columns are added and can be filtered and sorted.
 */
 function mbsb_onload_edit_page () {
 	if (isset($_GET['post_type']) && substr($_GET['post_type'],0,5) == 'mbsb_') {
@@ -122,6 +122,15 @@ function mbsb_onload_edit_page () {
 			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
 			add_filter ('posts_orderby', 'mbsb_edit_posts_sort');
 			add_filter ('posts_fields', 'mbsb_edit_posts_fields');
+		}
+		if (isset($_GET['preacher']) || isset($_GET['service']) || isset($_GET['series'])) {
+			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
+			add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
+		}
+		if (isset($_GET['book'])) {
+			add_filter ('posts_join_paged', 'mbsb_edit_posts_join');
+			add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
+			add_filter ('posts_groupby', 'mbsb_edit_posts_groupby');
 		}
 	}
 }
@@ -178,14 +187,16 @@ function mbsb_make_sermons_columns_sortable ($columns) {
 */
 function mbsb_edit_posts_join ($join) {
 	global $wpdb;
-	if (isset($_GET['orderby']) && isset($_GET['post_type'])) {
+	if (isset($_GET['post_type'])) {
 		if ($_GET['post_type'] == 'mbsb_sermons') {
-			if ($_GET['orderby'] == 'preacher')
-				return "{$join} INNER JOIN {$wpdb->prefix}postmeta ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = {$wpdb->prefix}postmeta.meta_value AND preachers.post_type = 'mbsb_preachers')";
-			elseif ($_GET['orderby'] == 'service')
-				return "{$join} INNER JOIN {$wpdb->prefix}postmeta ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = {$wpdb->prefix}postmeta.meta_value AND services.post_type = 'mbsb_services')";
-			elseif ($_GET['orderby'] == 'series')
-				return "{$join} INNER JOIN {$wpdb->prefix}postmeta ON ({$wpdb->prefix}posts.ID = {$wpdb->prefix}postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = {$wpdb->prefix}postmeta.meta_value AND series.post_type = 'mbsb_series')";
+			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'preacher') || isset($_GET['preacher']))
+				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preachers')";
+			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'service') || isset($_GET['service']))
+				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_services')";
+			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'series') || isset($_GET['series']))
+				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
+			if (isset($_GET['book']))
+				$join .= " INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
 		}
 	}
 	return $join;
@@ -221,18 +232,58 @@ function mbsb_edit_posts_sort($orderby) {
 * 
 * Adds SQL to WP_Query to ensure that all fields needed for sorting are available.
 * 
+* @param string $select
+* @return string
+*/
+function mbsb_edit_posts_fields ($select) {
+	global $wpdb;
+	if (isset($_GET['post_type'])) {
+		if ($_GET['post_type'] == 'mbsb_sermons') {
+			if ((isset($_GET['orderby']) && $_GET['orderby'] == 'passages'))
+				$select .= ", (SELECT meta_value FROM {$wpdb->prefix}postmeta AS pm WHERE wp_posts.ID=pm.post_id AND pm.meta_key='passage_start' ORDER BY RIGHT(pm.meta_value, 4) LIMIT 1) AS passage_sort";
+		}
+	}
+	return $select;
+}
+
+/**
+* Filters posts_where_paged when custom post types are displayed in admin and a filter is specified.
+* 
+* Adds SQL to WP_Query to ensure the correct 'WHERE' data is added to the query.
+* 
 * @param string $where
 * @return string
 */
-function mbsb_edit_posts_fields ($where) {
+function mbsb_edit_posts_where($where) {
 	global $wpdb;
-	if (isset($_GET['orderby']) && isset($_GET['post_type'])) {
-		if ($_GET['post_type'] == 'mbsb_sermons') {
-			if ($_GET['orderby'] == 'passages')
-				return $where.", (SELECT meta_value FROM {$wpdb->prefix}postmeta AS pm WHERE wp_posts.ID=pm.post_id AND pm.meta_key='passage_start' ORDER BY RIGHT(pm.meta_value, 4) LIMIT 1) AS passage_sort";
-		}
+	if ($_GET['post_type'] == 'mbsb_sermons') {
+		if (isset($_GET['preacher']))
+			$where .= "AND preachers.ID=".$wpdb->escape($_GET["preacher"]);
+		if (isset($_GET['series']))
+			$where .= "AND series.ID=".$wpdb->escape($_GET["series"]);
+		if (isset($_GET['service']))
+			$where .= "AND services.ID=".$wpdb->escape($_GET["service"]);
+		if (isset($_GET['book']))
+			$where .= "AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".$wpdb->escape($_GET["book"]);
 	}
 	return $where;
+}
+
+/**
+* Filters posts_groupby when custom post types are displayed in admin and certain filters are specified.
+* 
+* Adds SQL to WP_Query to ensure the correct 'GROUP BY' data is added to the query.
+* 
+* @param string $groupby
+* @return string
+*/
+function mbsb_edit_posts_groupby($groupby) {
+	global $wpdb;
+	if ($_GET['post_type'] == 'mbsb_sermons') {
+		if (isset($_GET['book']))
+			$groupby .= "{$wpdb->prefix}posts.ID";
+	}
+	return $groupby;
 }
 
 /**
