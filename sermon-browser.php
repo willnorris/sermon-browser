@@ -249,16 +249,8 @@ function mbsb_output_custom_columns($column, $post_id) {
 		$sermon = new mbsb_sermon($post_id);
 		if ($column == 'sermon_date')
 			echo date(get_option('date_format'), $sermon->timestamp);
-		elseif ($column == 'preacher')
-			echo esc_html($sermon->preacher_name);
-		elseif ($column == 'service')
-			echo esc_html($sermon->service_name);
-		elseif ($column == 'series')
-			echo esc_html($sermon->series_name);
-		elseif ($column == 'passages')
-			echo esc_html($sermon->get_formatted_passages());
 		else
-			echo $column;
+			echo str_replace(', ', '<br/>', $sermon->admin_filter_link ($post_type, $column));
 	}
 }
 

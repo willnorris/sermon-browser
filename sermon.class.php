@@ -36,13 +36,20 @@ class mbsb_sermon {
 	}
 	
 	/**
-	* Returns a formatted string of the passages used for this sermon
+	* Returns a formatted string of the passages used for this sermon, ready for HTML output
+	* 
+	* Various HTML additions can specified via the $link_type paramenter. Accepted values of link_type are:
+	* 	'admin_link'
 	* 
 	* @return string
 	*/
-	public function get_formatted_passages() {
+	public function get_formatted_passages($link_type = '') {
 		if (is_object($this->passages) and is_a($this->passages, 'mbsb_passage'))
-			return $this->passages->get_formatted();
+			if ($link_type == '')
+				return $this->passages->get_formatted();
+			elseif ($link_type = 'admin_link') {
+				return $this->passages->get_admin_link();
+			}
 		else
 			return '';
 	}
@@ -128,6 +135,21 @@ class mbsb_sermon {
 			$this->passages = $new_passages;
 			return true;
 		}
+	}
+	
+	public function admin_filter_link ($post_type, $type) {
+		if (substr($post_type, 0, 5) != 'mbsb_')
+			$post_type = 'mbsb_'.$post_type;
+		if ($type == 'preacher')
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->preacher_id}").'">'.esc_html($this->preacher_name).'</a>';
+		elseif ($type == 'service')
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->service_id}").'">'.esc_html($this->service_name).'</a>';
+		elseif ($type == 'series')
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->series_id}").'">'.esc_html($this->series_name).'</a>';
+		elseif ($type == 'passages')
+			return $this->get_formatted_passages('admin_link');
+		else
+			return 'Unknown type';
 	}
 	
 	/**

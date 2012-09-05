@@ -36,6 +36,15 @@ class mbsb_passage {
 		return $this->processed;
 	}
 	
+	/**
+	* Returns a HTML formatted list of passages, with the booknames wrapped in links that filter the sermons on the admin sermons page
+	* 
+	* @return string
+	*/
+	public function get_admin_link() {
+		return str_replace(array ('(--', '--)', '(==)'), array('<a href="'.admin_url('edit.php?post_type=mbsb_sermons&book='), '">', '</a>'), esc_html($this->link_template));
+	}
+	
 	/** 
 	* Returns true if the passages could not be parsed, false otherwise
 	* 
@@ -109,18 +118,22 @@ class mbsb_passage {
 						elseif ($parsed_end['book'] < $parsed_start['book'] || ($parsed_end['book'] == $parsed_start['book'] && $parsed_end['chapter'] < $parsed_start['chapter']) || (($parsed_end['book'] == $parsed_start['book'] && $parsed_end['chapter'] == $parsed_start['chapter'] && $parsed_end['verse'] < $parsed_start['verse'])))
 							$this->processed[$count] = array('raw' => $passage, 'error' => new WP_Error(3, __('The end is before the start', MBSB)));
 						else
-							$this->processed[$count] = array('raw' => $passage, 'formatted' => $this->friendly_reference($parsed_start, $parsed_end), 'start' => $parsed_start, 'end' => $parsed_end, 'error' => false); //Return parsed result.
+							$this->processed[$count] = array('raw' => $passage, 'link_template' => $this->friendly_reference($parsed_start, $parsed_end, true), 'formatted' => $this->friendly_reference($parsed_start, $parsed_end), 'start' => $parsed_start, 'end' => $parsed_end, 'error' => false); //Return parsed result.
 					}
 					$count++;
 				}
 			}
-		$friendly = array();
-	    foreach ($this->processed as $p)
+		$friendly = $link_template = array();
+	    foreach ($this->processed as $p) {
 	    	if (isset($p['formatted']))
 				$friendly[] = $p['formatted'];
-	    if (isset($friendly[0]))
+	    	if (isset($p['link_template']))
+				$link_template[] = $p['link_template'];
+		}
+	    if (isset($friendly[0]) && isset($link_template[0])) {
 	    	$this->formatted = implode (', ', $friendly);
-	    else
+	    	$this->link_template = implode (', ', $link_template);
+		} else
 	    	$this->processed = $this->formatted = new WP_Error(1, __('No Bible references could be parsed', MBSB));
 	}
 	
@@ -296,15 +309,16 @@ class mbsb_passage {
 	* 
 	* @param array $start - an associative array containing the verse the reference range begins with. Acceptable keys are 'book' (required), 'chapter' and 'verse'
 	* @param array $end - as $start, but relting to the verse the reference range ends with.
-	* @param bool $add_link - if true, wraps the output of the book name in a HTML link to the search page for that book
+	* @param bool $add_link_template - if true, wraps the output of the book name in a template which can later be used to insert HTML links
 	* @return string - the human friendly reference
 	*/
-	function friendly_reference ($start, $end, $add_link = FALSE) {
+	function friendly_reference ($start, $end, $add_link_template = FALSE) {
 		$bible_books = $this->bible_books();
 		$start_book = $bible_books['mbsb_index'][$start['book']];
 		$end_book = $bible_books['mbsb_index'][$end['book']];
-		if ($add_link) {
-			//To-do
+		if ($add_link_template) {
+			$start_book = "(--{$start['book']}--){$start_book}(==)";
+			$end_book = "(--{$end['book']}--){$end_book}(==)";
 		}
 		if ($start_book == $end_book) {
 			if ($start['chapter'] == $end['chapter']) {
