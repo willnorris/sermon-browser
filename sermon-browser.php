@@ -111,9 +111,9 @@ function mbsb_ajax_attachment_insert() {
 	$attachment = $attachment[0];
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	if ($result = $sermon->add_attachment ($attachment->ID))
-		echo mbsb_add_media_row ($attachment);
+		echo mbsb_add_media_row ($attachment, true);
 	elseif ($result === NULL)
-		echo '<div class="message">'.__('That file is already attached to that sermon.', MBSB).'</div>';
+		echo '<tr><td colspan="2"><div class="message">'.__('That file is already attached to that sermon.', MBSB).'</div></td></tr>';
 	else
 		_e('There was an error attaching that file to the sermon.', MBSB);
 	die();
@@ -519,7 +519,7 @@ function mbsb_sermon_media_meta_box() {
 	wp_nonce_field (__FUNCTION__, 'media_nonce', true);
 	echo '<table class="sermon_media">';
 	echo '<tr><th scope="row"><label for="mbsb_new_media_type">'.__('Add media', MBSB).':</label></th><td><select id="mbsb_new_media_type" name="mbsb_new_media_type">';
-	$types = array ('none' => '', 'upload' => __('Upload a new file', MBSB), 'insert' => __('Insert from the Media Gallery', MBSB), 'url' => __('Enter an external URL', MBSB), 'embed' => __('Enter an embed code'));
+	$types = array ('none' => '', 'upload' => __('Upload a new file', MBSB), 'insert' => __('Insert from the Media Library', MBSB), 'url' => __('Enter an external URL', MBSB), 'embed' => __('Enter an embed code'));
 	foreach ($types as $type => $label)
 		echo "<option ".($type == 'none' ? 'selected="selected" ' : '')."value=\"{$type}\">{$label}&nbsp;</option>";
 	echo '</select></td><td>';
@@ -729,7 +729,7 @@ function mbsb_make_sure_date_time_is_saved () {
 * @return string
 */
 function mbsb_do_custom_translations ($translated_text, $text, $domain) {
-	if (strpos(wp_get_referer(), 'referer=mbsb_sermons') && $text == 'Insert into Post')
+	if ((strpos(wp_get_referer(), 'referer=mbsb_sermons') || (isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermons'))&& $text == 'Insert into Post')
 		$translated_text = __("Attach to sermon", MBSB);
 	return $translated_text;
 }
@@ -738,13 +738,15 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 * Returns the row ready to be inserted in a table displaying a list of media items
 * 
 * @param mixed $attachment - the post_id of the attachment, or the entire post object
+* @param boolean $hide - hides the row using CSS classes
 * @return string
 */
-function mbsb_add_media_row ($attachment) {
+function mbsb_add_media_row ($attachment, $hide=false) {
 	if (!is_object($attachment))
 		$attachment = get_post ($attachment);
-	$output  = '<tr><th colspan="2"><strong>'.esc_html($attachment->post_title).'</strong></th></tr>';
-	$output .= '<tr><td width="46">'.wp_get_attachment_image ($attachment->ID, array(46,60), true).'</td>';
+	$insert = $hide ? '  class="media_row_hide"' : '';
+	$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($attachment->post_title).'</strong></th></tr>';
+	$output .= '<tr'.$insert.'><td width="46">'.wp_get_attachment_image ($attachment->ID, array(46,60), true).'</td>';
 	$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
 	$output .= '<tr><th scope="row">'.__('Filetype', MBSB).':</th><td>'.esc_html($attachment->post_mime_type).'</td></tr>';
 	$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table></td></tr>';

@@ -29,7 +29,9 @@ function mbsb_handle_upload_insert_click() {
 			post_id: <?php echo $_GET['post_id']; ?>
 		};
 		$.post(ajaxurl, data, function(response) {
+			$('#mbsb_attached_files_no_media').hide();
 			$('#mbsb_media_table_header').after(response);
+			$('.media_row_hide').show(1200);
 		});
 		tb_remove();
 		window.send_to_editor = orig_send_to_editor;
@@ -43,12 +45,12 @@ jQuery(document).ready(function($) {
 	});
 	$('#mbsb_upload_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
-		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=386&tab=type&TB_iframe=true', false);
+		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=<?php echo $_GET['post_id']; ?>&tab=type&TB_iframe=true', false);
 		return false;
 	});
 	$('#mbsb_insert_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
-		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=386&tab=library&TB_iframe=true', false);
+		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=<?php echo $_GET['post_id']; ?>&tab=library&TB_iframe=true', false);
 		return false;
 	});
 });

@@ -25,6 +25,9 @@ table#mbsb_attached_files {
 	width:auto;
 	margin-top: 5px;
 }
+table#mbsb_attached_files .media_row_hide {
+	display:none;
+}
 table#mbsb_attached_files th {
 	border-bottom: none;
 }
