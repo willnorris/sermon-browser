@@ -46,6 +46,8 @@ function mbsb_handle_url_embed (type) {
 		post_id: <?php echo $_GET['post_id']; ?>
 	};
 	$.post(ajaxurl, data, function(response) {
+		$('#mbsb_attach_url_button').val('<?php _e ('Attach', MBSB)?>');
+		$('#mbsb_attach_url_button').removeAttr('disabled');
 		$('#mbsb_attached_files_no_media').hide();
 		$('#mbsb_media_table_header').after(response);
 		$('.media_row_hide').show(1200);
@@ -68,6 +70,8 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 	$('#mbsb_attach_url_button').click(function() {
+		$('#mbsb_attach_url_button').val('<?php _e ('Please wait', MBSB)?>');
+		$('#mbsb_attach_url_button').attr('disabled', 'disabled');
 		mbsb_handle_url_embed ('url');
 		return false;
 	});
