@@ -59,6 +59,8 @@ function mbsb_activate () {
 function mbsb_plugins_loaded() {
 	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
 		mbsb_make_sure_date_time_is_saved();
+	if (isset ($_GET['mbsb_script']))
+		require ('scripts.php');
 }
 
 /**
@@ -93,39 +95,33 @@ function mbsb_admin_init () {
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
-	add_action ('admin_head-post.php', 'mbsb_add_javascript_to_post_page');
-	add_action ('admin_head-post-new.php', 'mbsb_add_javascript_to_post_page');
-	add_filter ('get_media_item_args', 'mbsb_force_insert_post_on_media_popup');
-	add_filter ('media_upload_tabs', 'mbsb_filter_media_upload_tabs');
+	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
+	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
+	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
 }
 
 /**
-* Adds the necessary javascript to the edit/add custom post page
+* Runs on the load-media-upload.php and load-async-upload.php actions
 * 
-* Called by the admin_head-post.php and admin_head-post-new.php actions.
+* Adds additional filters required by the media uploader.
+*/
+function mbsb_media_upload_actions() {
+	add_filter ('get_media_item_args', 'mbsb_force_insert_post_on_media_popup');
+	add_filter ('media_upload_tabs', 'mbsb_filter_media_upload_tabs');
+	add_filter ('gettext', 'mbsb_do_custom_translations', 1, 3);
+}
+
+/**
+* Adds the necessary javascript and styles to admin pages
+* 
+* Called by the admin_enqueue_scripts action.
 * Currently handles the media uploading on the sermon page.
 */
-function mbsb_add_javascript_to_post_page() {
-	global $post;
-	if (isset($post->post_type) && $post->post_type == 'mbsb_sermons') {
-		echo "<script type=\"text/javascript\">\r\n//<![CDATA[\r\n";
-		echo "jQuery(document).ready(function($) {\r\n";
-		echo "\tvar orig_send_to_editor = window.send_to_editor;\r\n";
-		echo "\t$('#attach_media_button').click(function() {\r\n";
-		echo "\t\twindow.send_to_editor = function(html) {\r\n";
-        echo "\t\t\tvar attachment_url = $('img',html).attr('src');\r\n";
-        echo "\t\t\tif($(attachment_url).length == 0) {\r\n";
-        echo "\t\t\t\tattachment_url = $(html).attr('href');\r\n";
-        echo "\t\t\t};\r\n";
-        echo "\t\t\t$('#mbsb_media_1_attachment').val(attachment_url);\r\n";
-        echo "\t\t\ttb_remove();\r\n";
-    	echo "\t\t\twindow.send_to_editor = orig_send_to_editor;\r\n";
-    	echo "\t\t};\r\n";
-	    echo "\t\ttb_show('".__('Attach a file to this sermon', MBSB)."', 'media-upload.php?referer=mbsb_sermons&post_id={$post->ID}&tab=library&TB_iframe=true', false);\r\n";  
-	    echo "\t\treturn false;\r\n";
-		echo "\t});\r\n";
-		echo "});\r\n";
-		echo "//]]>\r\n</script>\r\n";
+function mbsb_add_javascript_and_styles_to_admin_pages() {
+	$screen = get_current_screen();
+	if ($screen->base == 'post' && $screen->id == 'mbsb_sermons') {
+		wp_enqueue_style ('thickbox');
+		wp_enqueue_script('mbsb_script_sermon_upload', home_url('?mbsb_script&amp;name=sermon_upload'), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('scripts.php')));
 	}
 }
 
@@ -489,7 +485,6 @@ function mbsb_sermon_details_meta_box() {
 	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.$sermon->time.'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->get_formatted_passages().'"/></td></tr>';
 	echo '</table>';
-	echo '<input type="hidden" name="hidden_aa" id="hidden_aa" value="'.date ('Y', $sermon->timestamp).'"/><input type="hidden" name="hidden_mm" id="hidden_mm" value="'.date ('m', $sermon->timestamp).'"/><input type="hidden" name="hidden_jj" id="hidden_jj" value="'.date ('d', $sermon->timestamp).'"/><input type="hidden" name="hidden_hh" id="hidden_hh" value="'.date ('H', $sermon->timestamp).'"/><input type="hidden" name="hidden_mn" id="hidden_mb" value="'.date ('i', $sermon->timestamp).'"/>';
 }
 
 /**
@@ -499,8 +494,17 @@ function mbsb_sermon_media_meta_box() {
 	global $post;
 	wp_nonce_field (__FUNCTION__, 'media_nonce', true);
 	echo '<table class="sermon_media">';
-	echo '<tr><th scope="row"><label for="mbsb_media_1_type">'.__('Media Type', MBSB).':</label></th><td><select id="mbsb_media_1_type" name="mbsb_media_1_type"><option value="file">'.__('Upload or insert from Media Library', MBSB).'</option><option value="embed">Embedded HTML</option><option value="url">External URL</option></select></td><td><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="attach_media_button" name="attach_media_button"></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_new_media_type">'.__('Attach media', MBSB).':</label></th><td><select id="mbsb_new_media_type" name="mbsb_new_media_type">';
+	$types = array ('none' => '', 'upload' => __('Upload a new file', MBSB), 'insert' => __('Insert from the Media Gallery', MBSB), 'url' => __('Enter an external URL', MBSB), 'embed' => __('Enter an embed code'));
+	foreach ($types as $type => $label)
+		echo "<option ".($type == 'none' ? 'selected="selected" ' : '')."value=\"{$type}\">{$label}&nbsp;</option>";
+	echo '</select></td><td>';
+	echo '<div id="upload-select"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>';
+	echo '<div id="insert-select"><input type="button" value="'.__('Insert file', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>';
+	echo '<div id="url-select"><input type="text" name="mbsb_external_url" id="mbsb_external_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url" name="mbsb_attach_url"></div>';
+	echo '<div id="embed-select"><input type="text" name="mbsb_embed" id="mbsb_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed" name="mbsb_attach_embed"></div>';
 	echo '<input type="hidden" value="" id="mbsb_media_1_attachment" name="mbsb_media_1_attachment">';
+	echo '</td></tr>';
 	echo '</table>';
 }
 
@@ -678,5 +682,21 @@ function mbsb_make_sure_date_time_is_saved () {
 	$_POST['hh'] = substr ($_POST['mbsb_time'], 0, strpos($_POST['mbsb_time'], ':'));
 	$_POST['mn'] = substr ($_POST['mbsb_time'], strpos($_POST['mbsb_time'], ':')+1);
 	$_POST['ss'] = 0;
+}
+
+/**
+* Provides a way of changing arbitary text without buffering.
+* 
+* Called by the gettext filter.
+* 
+* @param string $translated_text
+* @param string $text
+* @param string $domain
+* @return string
+*/
+function mbsb_do_custom_translations ($translated_text, $text, $domain) {
+	if (isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermons' && $text == 'Insert into Post')
+		$translated_text = __("Attach to sermon", MBSB);
+	return $translated_text;
 }
 ?>
