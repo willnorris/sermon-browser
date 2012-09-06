@@ -37,6 +37,20 @@ function mbsb_handle_upload_insert_click() {
 		window.send_to_editor = orig_send_to_editor;
 	};
 }
+function mbsb_handle_url_embed (type) {
+	var data = {
+		action: 'mbsb_attach_url_embed',
+		type: type,
+		attachment: $('#mbsb_input_'+type).val(),
+		_wpnonce: '<?php echo wp_create_nonce("mbsb_handle_url_embed_{$_GET['post_id']}") ?>',
+		post_id: <?php echo $_GET['post_id']; ?>
+	};
+	$.post(ajaxurl, data, function(response) {
+		$('#mbsb_attached_files_no_media').hide();
+		$('#mbsb_media_table_header').after(response);
+		$('.media_row_hide').show(1200);
+	});
+}
 jQuery(document).ready(function($) {
 	$('#mbsb_new_media_type').val('none');
 	$('#mbsb_new_media_type').change(function() {
@@ -51,6 +65,14 @@ jQuery(document).ready(function($) {
 	$('#mbsb_insert_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
 		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=<?php echo $_GET['post_id']; ?>&tab=library&TB_iframe=true', false);
+		return false;
+	});
+	$('#mbsb_attach_url_button').click(function() {
+		mbsb_handle_url_embed ('url');
+		return false;
+	});
+	$('#mbsb_attach_embed_button').click(function() {
+		mbsb_handle_url_embed ('embed');
 		return false;
 	});
 });

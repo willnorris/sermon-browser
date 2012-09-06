@@ -74,6 +74,17 @@ class mbsb_sermon {
 			return false;
 	}
 	
+	public function get_urls ($most_recent_first = false) {
+		$attachments = get_post_meta ($this->id, 'url_attachments');
+		if ($attachments) {
+			if ($most_recent_first)
+				return array_reverse($attachments);
+			else
+				return $attachments;
+		} else
+			return false;
+	}
+	
 	/**
 	* Adds an attachment to a sermon
 	* 
@@ -86,6 +97,28 @@ class mbsb_sermon {
 			if ($em == $attachment_id)
 				return null;
 		return add_post_meta ($this->id, 'media_attachments', $attachment_id);
+	}
+	
+	/**
+	* Adds a URL attachment to a sermon
+	*  
+	* @param string $url
+	* @return mixed False for failure. Null if the URL is not valid. The attachment data on success. 
+	*/
+	public function add_url ($url) {
+		$headers = wp_remote_head ($url, array ('redirection' => 5));
+		if ($headers['response']['code'] != 200)
+			return null;
+		else {
+			$content_type = isset($headers['headers']['content-type']) ? $headers['headers']['content-type'] : '';
+			if (($a = strpos($content_type, ';')) !== FALSE)
+				$content_type = substr($content_type, 0, $a);
+			$data = array ('url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
+			if (add_post_meta ($this->id, 'url_attachments', $data))
+				return $data;
+			else
+				return false;
+		}
 	}
 	
 	/**

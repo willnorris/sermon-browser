@@ -99,12 +99,13 @@ function mbsb_admin_init () {
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
+	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
 }
 
 function mbsb_ajax_attachment_insert() {
 	global $wpdb;
 	if (!check_ajax_referer ("mbsb_attachment_insert_{$_POST['post_id']}"))
-		die ('Hack!');
+		die ('Suspicious behaviour blocked');
 	add_filter ('posts_where_paged', 'mbsb_add_guid_to_where');
 	$attachment = get_posts (array ('numberposts' => 1, 'post_type' => 'attachment', 'post_status' => null, 'suppress_filters' => false));
 	remove_filter ('posts_where_paged', 'mbsb_add_guid_to_where');
@@ -121,6 +122,20 @@ function mbsb_ajax_attachment_insert() {
 
 function mbsb_add_guid_to_where ($where) {
 	return "{$where} AND guid='{$_POST['url']}'";
+}
+
+function mbsb_ajax_attach_url_embed() {
+	global $wpdb;
+	if (!check_ajax_referer ("mbsb_handle_url_embed_{$_POST['post_id']}"))
+		die ('Suspicious behaviour blocked');
+	$sermon = new mbsb_sermon($_POST['post_id']);
+	if ($_POST['type'] == 'embed') {
+		$sermon->add_embed ($_POST['attachment']);
+	} elseif ($_POST['type'] == 'url') {
+		$result = $sermon->add_url ($_POST['attachment']);
+		echo mbsb_add_url_row ($result);
+	}
+	die();
 }
 
 /**
@@ -525,19 +540,27 @@ function mbsb_sermon_media_meta_box() {
 	echo '</select></td><td>';
 	echo '<div id="upload-select" style="display:none"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>';
 	echo '<div id="insert-select" style="display:none"><input type="button" value="'.__('Insert item', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>';
-	echo '<div id="url-select" style="display:none"><input type="text" name="mbsb_external_url" id="mbsb_external_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url" name="mbsb_attach_url"></div>';
-	echo '<div id="embed-select" style="display:none"><input type="text" name="mbsb_embed" id="mbsb_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed" name="mbsb_attach_embed"></div>';
-	echo '<input type="hidden" value="" id="mbsb_media_1_attachment" name="mbsb_media_1_attachment">';
+	echo '<div id="url-select" style="display:none"><input type="text" name="mbsb_input_url" id="mbsb_input_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url_button" name="mbsb_attach_url_button"></div>';
+	echo '<div id="embed-select" style="display:none"><input type="text" name="mbsb_input_embed" id="mbsb_input_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed_button" name="mbsb_attach_embed_button"></div>';
 	echo '</td></tr>';
 	echo '</table>';
 	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
 	echo '<tr id="mbsb_media_table_header"><th colspan="2" scope="col">'.__('Attached media', MBSB).'</th></tr>';
 	$sermon = new mbsb_sermon($post->ID);
-	$attachments = $sermon->get_attachments(true);
-	if ($attachments)
+	$has_media = false;
+	$attachments = $sermon->get_attachments();
+	if ($attachments) {
+		$has_media = true;
 		foreach ($attachments as $attachment)
 			echo mbsb_add_media_row ($attachment);
-	else
+	}
+	$urls = $sermon->get_urls();
+	if ($urls) {
+		$has_media = true;
+		foreach ($urls as $url)
+			echo mbsb_add_url_row ($url);
+	}
+	if (!$has_media)
 		echo '<tr id = "mbsb_attached_files_no_media"><td colspan="2">'.__('No media is currently attached to this sermon', MBSB).'</td></tr>';
 	echo '</table>';
 }
@@ -735,7 +758,7 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 }
 
 /**
-* Returns the row ready to be inserted in a table displaying a list of media items
+* Returns a row, ready to be inserted in a table displaying a list of media items
 * 
 * @param mixed $attachment - the post_id of the attachment, or the entire post object
 * @param boolean $hide - hides the row using CSS classes
@@ -744,12 +767,43 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 function mbsb_add_media_row ($attachment, $hide=false) {
 	if (!is_object($attachment))
 		$attachment = get_post ($attachment);
+	$filename = get_attached_file ($attachment->ID);
 	$insert = $hide ? '  class="media_row_hide"' : '';
 	$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($attachment->post_title).'</strong></th></tr>';
 	$output .= '<tr'.$insert.'><td width="46">'.wp_get_attachment_image ($attachment->ID, array(46,60), true).'</td>';
 	$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
-	$output .= '<tr><th scope="row">'.__('Filetype', MBSB).':</th><td>'.esc_html($attachment->post_mime_type).'</td></tr>';
+	$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
 	$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table></td></tr>';
 	return $output;
+}
+
+function mbsb_add_url_row ($url_array, $hide=false) {
+	$insert = $hide ? '  class="media_row_hide"' : '';
+	$address = substr($url_array['url'], strpos($url_array['url'], '//')+2);
+	$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($url_array['url']);
+	if (strlen($short_address) > strlen($address)) {
+		$short_address = $address;
+		$insert2 = '';
+	} else
+		$insert2 = ' title="'.esc_html($url_array['url']).'"';
+	$title = substr($url_array['url'], strrpos($url_array['url'], '/')+1);
+	$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($title).'</strong></th></tr>';
+	$output .= '<tr'.$insert.'><td width="46"><img class="attachment-46x60" width="46" height="60" alt="'.esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($url_array['mime_type']).'"></td>';
+	$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span'.$insert2.'>'.esc_html($short_address).'</span></td></tr>';
+	if ($url_array['size'] && $url_array['mime_type'] != 'text/html')
+		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
+	$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table></td></tr>';
+	return $output;
+}
+
+function mbsb_format_bytes ($bytes) {
+	if ($bytes < 1100)
+		return number_format($bytes, 0).' '.__('bytes', MBSB);
+	elseif ($bytes < 1024000)
+		return number_format($bytes/1024, 1).' '.__('kB', MBSB);
+	elseif ($bytes < 1024000000)
+		return number_format($bytes/1000000, 2).' '.__('MB', MBSB);
+	elseif ($bytes < 1024000000000)
+		return number_format($bytes/1000000000, 2).' '.__('GB', MBSB);
 }
 ?>
