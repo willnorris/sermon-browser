@@ -18,7 +18,36 @@ div.postbox th[scope=row] {
 #mbsb_sermon_details select, #mbsb_sermon_details input[type=text] {
 	width:100%;
 }
-
 #mbsb_sermon_details input#mbsb_time {
 	width:auto;
+}
+table#mbsb_attached_files {
+	width:auto;
+	margin-top: 5px;
+}
+table#mbsb_attached_files th {
+	border-bottom: none;
+}
+table#mbsb_attached_files tr#mbsb_media_table_header th {
+	background-color: #F1F1F1;
+	border-bottom: 1px solid #DFDFDF;
+}
+table#mbsb_attached_files td {
+	border-top: none;
+}
+table.mbsb_media_detail th {
+	font-size:12px;
+	font-family:sans-serif;
+	font-weight: bold;
+}
+table.mbsb_media_detail th, table.mbsb_media_detail td {
+	border: none;
+	padding: 2px 7px;
+}
+table#mbsb_attached_files div.message {
+	margin: 2px;
+	padding: 8px;
+	background-color: #FFFFE0;
+	border: 1px solid #E6DB55;
+	width: 100%;
 }

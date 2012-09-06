@@ -55,6 +55,40 @@ class mbsb_sermon {
 	}
 	
 	/**
+	* Returns an array of media attachments (i.e. post objects) of the current sermon
+	* 
+	* @param bool $most_recent_first
+	* @return mixed - false on failure, array on success
+	*/
+	public function get_attachments($most_recent_first = false) {
+		$attachment_ids = get_post_meta ($this->id, 'media_attachments');
+		if ($attachment_ids) {
+			$attachments = array();
+			foreach ($attachment_ids as $id)
+				$attachments[] = get_post ($id);
+			if ($most_recent_first)
+				return array_reverse($attachments);
+			else
+				return $attachments;
+		} else
+			return false;
+	}
+	
+	/**
+	* Adds an attachment to a sermon
+	* 
+	* @param integer $attachment_id - the post ID of the attachment
+	* @return mixed False for failure. Null if the file is already attached. True for success. 
+	*/
+	public function add_attachment ($attachment_id) {
+		$existing_meta = get_post_meta ($this->id, 'media_attachments');
+		foreach ($existing_meta as $em)
+			if ($em == $attachment_id)
+				return null;
+		return add_post_meta ($this->id, 'media_attachments', $attachment_id);
+	}
+	
+	/**
 	* Updates the time override metadata for this sermon
 	* 
 	* @param boolean $override

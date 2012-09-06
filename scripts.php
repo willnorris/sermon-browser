@@ -9,42 +9,45 @@ if (!isset($_GET['name']))
 	wp_die ('Script name not specified');
 if ($_GET['name'] == 'sermon_upload') {
 ?>
-function hide_all() {
+function mbsb_hide_all() {
 	$('#upload-select').hide();
 	$('#insert-select').hide();
 	$('#url-select').hide();
 	$('#embed-select').hide();
 }
-jQuery(document).ready(function($) {
+function mbsb_handle_upload_insert_click() {
 	var orig_send_to_editor = window.send_to_editor;
-	hide_all();
+	window.send_to_editor = function(html) {
+		var attachment_url = $('img',html).attr('src');
+		if($(attachment_url).length == 0) {
+			attachment_url = $(html).attr('href');
+		};
+		var data = {
+			action: 'mbsb_attachment_insert',
+			url: attachment_url,
+			_wpnonce: '<?php echo wp_create_nonce("mbsb_attachment_insert_{$_GET['post_id']}") ?>',
+			post_id: <?php echo $_GET['post_id']; ?>
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#mbsb_media_table_header').after(response);
+		});
+		tb_remove();
+		window.send_to_editor = orig_send_to_editor;
+	};
+}
+jQuery(document).ready(function($) {
+	$('#mbsb_new_media_type').val('none');
 	$('#mbsb_new_media_type').change(function() {
-		hide_all();
+		mbsb_hide_all();
 		$('#'+$(this).val()+'-select').show();
 	});
 	$('#mbsb_upload_media_button').click(function() {
-		window.send_to_editor = function(html) {
-			var attachment_url = $('img',html).attr('src');
-			if($(attachment_url).length == 0) {
-				attachment_url = $(html).attr('href');
-			};
-			$('#mbsb_media_1_attachment').val(attachment_url);
-			tb_remove();
-			window.send_to_editor = orig_send_to_editor;
-		};
+		mbsb_handle_upload_insert_click();
 		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=386&tab=type&TB_iframe=true', false);
 		return false;
 	});
 	$('#mbsb_insert_media_button').click(function() {
-		window.send_to_editor = function(html) {
-			var attachment_url = $('img',html).attr('src');
-			if($(attachment_url).length == 0) {
-				attachment_url = $(html).attr('href');
-			};
-			$('#mbsb_media_1_attachment').val(attachment_url);
-			tb_remove();
-			window.send_to_editor = orig_send_to_editor;
-		};
+		mbsb_handle_upload_insert_click();
 		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=386&tab=library&TB_iframe=true', false);
 		return false;
 	});

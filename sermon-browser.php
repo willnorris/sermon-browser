@@ -54,7 +54,7 @@ function mbsb_activate () {
 /**
 * Runs on the 'plugins_loaded' action
 * 
-* Currently this function makes sure the time and date are saved when editing a sermon
+* Contains functions that for performance or other reasons need to be run as soon as possible.
 */
 function mbsb_plugins_loaded() {
 	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
@@ -98,6 +98,29 @@ function mbsb_admin_init () {
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
+	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
+}
+
+function mbsb_ajax_attachment_insert() {
+	global $wpdb;
+	if (!check_ajax_referer ("mbsb_attachment_insert_{$_POST['post_id']}"))
+		die ('Hack!');
+	add_filter ('posts_where_paged', 'mbsb_add_guid_to_where');
+	$attachment = get_posts (array ('numberposts' => 1, 'post_type' => 'attachment', 'post_status' => null, 'suppress_filters' => false));
+	remove_filter ('posts_where_paged', 'mbsb_add_guid_to_where');
+	$attachment = $attachment[0];
+	$sermon = new mbsb_sermon($_POST['post_id']);
+	if ($result = $sermon->add_attachment ($attachment->ID))
+		echo mbsb_add_media_row ($attachment);
+	elseif ($result === NULL)
+		echo '<div class="message">'.__('That file is already attached to that sermon.', MBSB).'</div>';
+	else
+		_e('There was an error attaching that file to the sermon.', MBSB);
+	die();
+}
+
+function mbsb_add_guid_to_where ($where) {
+	return "{$where} AND guid='{$_POST['url']}'";
 }
 
 /**
@@ -118,10 +141,11 @@ function mbsb_media_upload_actions() {
 * Currently handles the media uploading on the sermon page.
 */
 function mbsb_add_javascript_and_styles_to_admin_pages() {
+	global $post;
 	$screen = get_current_screen();
 	if ($screen->base == 'post' && $screen->id == 'mbsb_sermons') {
 		wp_enqueue_style ('thickbox');
-		wp_enqueue_script('mbsb_script_sermon_upload', home_url('?mbsb_script&amp;name=sermon_upload'), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('scripts.php')));
+		wp_enqueue_script('mbsb_script_sermon_upload', home_url("?mbsb_script&amp;name=sermon_upload&amp;post_id={$post->ID}"), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('scripts.php')));
 	}
 }
 
@@ -494,17 +518,27 @@ function mbsb_sermon_media_meta_box() {
 	global $post;
 	wp_nonce_field (__FUNCTION__, 'media_nonce', true);
 	echo '<table class="sermon_media">';
-	echo '<tr><th scope="row"><label for="mbsb_new_media_type">'.__('Attach media', MBSB).':</label></th><td><select id="mbsb_new_media_type" name="mbsb_new_media_type">';
+	echo '<tr><th scope="row"><label for="mbsb_new_media_type">'.__('Add media', MBSB).':</label></th><td><select id="mbsb_new_media_type" name="mbsb_new_media_type">';
 	$types = array ('none' => '', 'upload' => __('Upload a new file', MBSB), 'insert' => __('Insert from the Media Gallery', MBSB), 'url' => __('Enter an external URL', MBSB), 'embed' => __('Enter an embed code'));
 	foreach ($types as $type => $label)
 		echo "<option ".($type == 'none' ? 'selected="selected" ' : '')."value=\"{$type}\">{$label}&nbsp;</option>";
 	echo '</select></td><td>';
-	echo '<div id="upload-select"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>';
-	echo '<div id="insert-select"><input type="button" value="'.__('Insert file', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>';
-	echo '<div id="url-select"><input type="text" name="mbsb_external_url" id="mbsb_external_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url" name="mbsb_attach_url"></div>';
-	echo '<div id="embed-select"><input type="text" name="mbsb_embed" id="mbsb_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed" name="mbsb_attach_embed"></div>';
+	echo '<div id="upload-select" style="display:none"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>';
+	echo '<div id="insert-select" style="display:none"><input type="button" value="'.__('Insert item', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>';
+	echo '<div id="url-select" style="display:none"><input type="text" name="mbsb_external_url" id="mbsb_external_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url" name="mbsb_attach_url"></div>';
+	echo '<div id="embed-select" style="display:none"><input type="text" name="mbsb_embed" id="mbsb_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed" name="mbsb_attach_embed"></div>';
 	echo '<input type="hidden" value="" id="mbsb_media_1_attachment" name="mbsb_media_1_attachment">';
 	echo '</td></tr>';
+	echo '</table>';
+	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
+	echo '<tr id="mbsb_media_table_header"><th colspan="2" scope="col">'.__('Attached media', MBSB).'</th></tr>';
+	$sermon = new mbsb_sermon($post->ID);
+	$attachments = $sermon->get_attachments(true);
+	if ($attachments)
+		foreach ($attachments as $attachment)
+			echo mbsb_add_media_row ($attachment);
+	else
+		echo '<tr id = "mbsb_attached_files_no_media"><td colspan="2">'.__('No media is currently attached to this sermon', MBSB).'</td></tr>';
 	echo '</table>';
 }
 
@@ -695,8 +729,25 @@ function mbsb_make_sure_date_time_is_saved () {
 * @return string
 */
 function mbsb_do_custom_translations ($translated_text, $text, $domain) {
-	if (isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermons' && $text == 'Insert into Post')
+	if (strpos(wp_get_referer(), 'referer=mbsb_sermons') && $text == 'Insert into Post')
 		$translated_text = __("Attach to sermon", MBSB);
 	return $translated_text;
+}
+
+/**
+* Returns the row ready to be inserted in a table displaying a list of media items
+* 
+* @param mixed $attachment - the post_id of the attachment, or the entire post object
+* @return string
+*/
+function mbsb_add_media_row ($attachment) {
+	if (!is_object($attachment))
+		$attachment = get_post ($attachment);
+	$output  = '<tr><th colspan="2"><strong>'.esc_html($attachment->post_title).'</strong></th></tr>';
+	$output .= '<tr><td width="46">'.wp_get_attachment_image ($attachment->ID, array(46,60), true).'</td>';
+	$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
+	$output .= '<tr><th scope="row">'.__('Filetype', MBSB).':</th><td>'.esc_html($attachment->post_mime_type).'</td></tr>';
+	$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table></td></tr>';
+	return $output;
 }
 ?>
