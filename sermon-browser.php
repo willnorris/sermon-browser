@@ -114,9 +114,9 @@ function mbsb_ajax_attachment_insert() {
 	if ($result = $sermon->add_attachment ($attachment->ID))
 		echo mbsb_add_media_row ($attachment, true);
 	elseif ($result === NULL)
-		echo '<tr><td colspan="2"><div class="message">'.__('That file is already attached to that sermon.', MBSB).'</div></td></tr>';
+		mbsb_do_media_row_error(__('That file is already attached to that sermon.', MBSB));
 	else
-		_e('There was an error attaching that file to the sermon.', MBSB);
+		mbsb_do_media_row_error(__('There was an error attaching that file to the sermon.', MBSB));
 	die();
 }
 
@@ -125,17 +125,31 @@ function mbsb_add_guid_to_where ($where) {
 }
 
 function mbsb_ajax_attach_url_embed() {
-	global $wpdb;
 	if (!check_ajax_referer ("mbsb_handle_url_embed_{$_POST['post_id']}"))
 		die ('Suspicious behaviour blocked');
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	if ($_POST['type'] == 'embed') {
-		$sermon->add_embed ($_POST['attachment']);
+		$result = $sermon->add_embed ($_POST['attachment']);
+		if ($result === null)
+			mbsb_do_media_row_error(__('That code is not acceptable.', MBSB));
+		elseif ($result === FALSE)
+			mbsb_do_media_row_error(__('There was an error attaching that embed code to the sermon.', MBSB));
+		else
+			echo mbsb_add_embed_row ($result);
 	} elseif ($_POST['type'] == 'url') {
 		$result = $sermon->add_url ($_POST['attachment']);
-		echo mbsb_add_url_row ($result);
+		if ($result === null)
+			mbsb_do_media_row_error(__('That does not appear to be a valid URL.', MBSB));
+		elseif ($result === FALSE)
+			mbsb_do_media_row_error(__('There was an error attaching that file to the sermon.', MBSB));
+		else
+			echo mbsb_add_url_row ($result);
 	}
 	die();
+}
+
+function mbsb_do_media_row_error ($message) {
+	return '<tr><td colspan="2"><div class="message">'.$message.'</div></td></tr>';
 }
 
 /**
@@ -560,6 +574,12 @@ function mbsb_sermon_media_meta_box() {
 		foreach ($urls as $url)
 			echo mbsb_add_url_row ($url);
 	}
+	$embeds = $sermon->get_embeds();
+	if ($embeds) {
+		$has_media = true;
+		foreach ($embeds as $embed)
+			echo mbsb_add_embed_row ($embed);
+	}
 	if (!$has_media)
 		echo '<tr id = "mbsb_attached_files_no_media"><td colspan="2">'.__('No media is currently attached to this sermon', MBSB).'</td></tr>';
 	echo '</table>';
@@ -793,6 +813,16 @@ function mbsb_add_url_row ($url_array, $hide=false) {
 	if ($url_array['size'] && $url_array['mime_type'] != 'text/html')
 		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
 	$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table></td></tr>';
+	return $output;
+}
+
+function mbsb_add_embed_row ($embed_array, $hide=false) {
+	$insert = $hide ? '  class="media_row_hide"' : '';
+	$title = __('Embed code');
+	$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($title).'</strong></th></tr>';
+	$output .= '<tr'.$insert.'><td width="46"><img class="attachment-46x60" width="46" height="60" alt="'.esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ('interactive').'"></td>';
+	$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('Code', MBSB).':</th><td>'.esc_html($embed_array['code']).'</td></tr>';
+	$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $embed_array['date_time']).'</td></tr></table></td></tr>';
 	return $output;
 }
 

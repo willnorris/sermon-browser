@@ -42,6 +42,8 @@ table.mbsb_media_detail th {
 	font-size:12px;
 	font-family:sans-serif;
 	font-weight: bold;
+	vertical-align:top;
+	white-space:nowrap;
 }
 table.mbsb_media_detail th, table.mbsb_media_detail td {
 	border: none;

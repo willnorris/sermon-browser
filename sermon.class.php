@@ -85,6 +85,17 @@ class mbsb_sermon {
 			return false;
 	}
 	
+	public function get_embeds ($most_recent_first = false) {
+		$attachments = get_post_meta ($this->id, 'embed_attachments');
+		if ($attachments) {
+			if ($most_recent_first)
+				return array_reverse($attachments);
+			else
+				return $attachments;
+		} else
+			return false;
+	}
+
 	/**
 	* Adds an attachment to a sermon
 	* 
@@ -121,6 +132,30 @@ class mbsb_sermon {
 		}
 	}
 	
+	/**
+	* Adds an embed to a sermon
+	*  
+	* @param string $embed
+	* @return mixed Null for invalid code. False for failure. The embed data on success. 
+	*/
+	public function add_embed ($embed) {
+		global $allowedposttags;
+		$old_allowedposttags = $allowedposttags;
+		$allowedposttags['object'] = array('height' => array(), 'width' => array(), 'classid' => array(), 'codebase' => array());
+		$allowedposttags['param'] = array('name' => array(), 'value' => array());
+		$allowedposttags['embed'] = array('src' => array(), 'type' => array(), 'allowfullscreen' => array(), 'allowscriptaccess' => array(), 'height' => array(), 'width' => array(), 'allowfullscreen' => array());
+		$allowedposttags['iframe'] = array('height' => array(), 'width' => array(), 'src' => array(), 'frameborder' => array(), 'allowfullscreen' => array());
+		$embed = wp_kses_post($embed);
+		$allowedposttags = $old_allowedposttags;
+		if (trim($embed) == '')
+			return null;
+		$data = array ('code' => $embed, 'date_time' => time());
+		if (add_post_meta ($this->id, 'embed_attachments', $data))
+			return $data;
+		else
+			return false;
+	}
+
 	/**
 	* Updates the time override metadata for this sermon
 	* 
