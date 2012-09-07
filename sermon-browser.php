@@ -111,8 +111,8 @@ function mbsb_ajax_attachment_insert() {
 	remove_filter ('posts_where_paged', 'mbsb_add_guid_to_where');
 	$attachment = $attachment[0];
 	$sermon = new mbsb_sermon($_POST['post_id']);
-	if ($result = $sermon->add_attachment ($attachment->ID))
-		echo mbsb_add_media_row ($attachment, true);
+	if ($result = $sermon->add_library_attachment ($attachment->ID))
+		echo mbsb_add_library_attachment_row ($attachment, true);
 	elseif ($result === NULL)
 		mbsb_do_media_row_error(__('That file is already attached to that sermon.', MBSB));
 	else
@@ -129,21 +129,21 @@ function mbsb_ajax_attach_url_embed() {
 		die ('Suspicious behaviour blocked');
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	if ($_POST['type'] == 'embed') {
-		$result = $sermon->add_embed ($_POST['attachment']);
+		$result = $sermon->add_embed_attachment ($_POST['attachment']);
 		if ($result === null)
 			mbsb_do_media_row_error(__('That code is not acceptable.', MBSB));
 		elseif ($result === FALSE)
 			mbsb_do_media_row_error(__('There was an error attaching that embed code to the sermon.', MBSB));
 		else
-			echo mbsb_add_embed_row ($result);
+			echo mbsb_add_embed_attachment_row ($result);
 	} elseif ($_POST['type'] == 'url') {
-		$result = $sermon->add_url ($_POST['attachment']);
+		$result = $sermon->add_url_attachment ($_POST['attachment']);
 		if ($result === null)
 			mbsb_do_media_row_error(__('That does not appear to be a valid URL.', MBSB));
 		elseif ($result === FALSE)
 			mbsb_do_media_row_error(__('There was an error attaching that file to the sermon.', MBSB));
 		else
-			echo mbsb_add_url_row ($result);
+			echo mbsb_add_url_attachment_row ($result);
 	}
 	die();
 }
@@ -561,26 +561,11 @@ function mbsb_sermon_media_meta_box() {
 	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
 	echo '<tr id="mbsb_media_table_header"><th colspan="2" scope="col">'.__('Attached media', MBSB).'</th></tr>';
 	$sermon = new mbsb_sermon($post->ID);
-	$has_media = false;
 	$attachments = $sermon->get_attachments();
-	if ($attachments) {
-		$has_media = true;
+	if ($attachments)
 		foreach ($attachments as $attachment)
-			echo mbsb_add_media_row ($attachment);
-	}
-	$urls = $sermon->get_urls();
-	if ($urls) {
-		$has_media = true;
-		foreach ($urls as $url)
-			echo mbsb_add_url_row ($url);
-	}
-	$embeds = $sermon->get_embeds();
-	if ($embeds) {
-		$has_media = true;
-		foreach ($embeds as $embed)
-			echo mbsb_add_embed_row ($embed);
-	}
-	if (!$has_media)
+			echo mbsb_add_attachment_row ($attachment);
+	else
 		echo '<tr id = "mbsb_attached_files_no_media"><td colspan="2">'.__('No media is currently attached to this sermon', MBSB).'</td></tr>';
 	echo '</table>';
 }
@@ -777,16 +762,22 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 	return $translated_text;
 }
 
+function mbsb_add_attachment_row ($data, $hide=false) {
+	if (!isset ($data['type']) || !in_array($data['type'], array ('library', 'url', 'embed')))
+		return false;
+	return call_user_func ("mbsb_add_{$data['type']}_attachment_row", $data, $hide);
+}
+
 /**
 * Returns a row, ready to be inserted in a table displaying a list of media items
 * 
-* @param mixed $attachment - the post_id of the attachment, or the entire post object
+* @param array $attachment - the the entire post object
 * @param boolean $hide - hides the row using CSS classes
 * @return string
 */
-function mbsb_add_media_row ($attachment, $hide=false) {
-	if (!is_object($attachment))
-		$attachment = get_post ($attachment);
+function mbsb_add_library_attachment_row ($attachment, $hide=false) {
+	if (is_array ($attachment) && isset($attachment['data']))
+		$attachment = $attachment['data'];
 	$filename = get_attached_file ($attachment->ID);
 	$insert = $hide ? '  class="media_row_hide"' : '';
 	$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($attachment->post_title).'</strong></th></tr>';
@@ -797,7 +788,7 @@ function mbsb_add_media_row ($attachment, $hide=false) {
 	return $output;
 }
 
-function mbsb_add_url_row ($url_array, $hide=false) {
+function mbsb_add_url_attachment_row ($url_array, $hide=false) {
 	$insert = $hide ? '  class="media_row_hide"' : '';
 	$address = substr($url_array['url'], strpos($url_array['url'], '//')+2);
 	$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($url_array['url']);
@@ -816,7 +807,7 @@ function mbsb_add_url_row ($url_array, $hide=false) {
 	return $output;
 }
 
-function mbsb_add_embed_row ($embed_array, $hide=false) {
+function mbsb_add_embed_attachment_row ($embed_array, $hide=false) {
 	$insert = $hide ? '  class="media_row_hide"' : '';
 	$title = __('Embed code');
 	$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($title).'</strong></th></tr>';

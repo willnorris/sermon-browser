@@ -61,11 +61,11 @@ class mbsb_sermon {
 	* @return mixed - false on failure, array on success
 	*/
 	public function get_attachments($most_recent_first = false) {
-		$attachment_ids = get_post_meta ($this->id, 'media_attachments');
-		if ($attachment_ids) {
-			$attachments = array();
-			foreach ($attachment_ids as $id)
-				$attachments[] = get_post ($id);
+		$attachments = get_post_meta ($this->id, 'attachments');
+		if ($attachments) {
+			foreach ($attachments as &$attachment)
+				if ($attachment['type'] == 'library')
+					$attachment ['data'] = get_post ($attachment['post_id']);
 			if ($most_recent_first)
 				return array_reverse($attachments);
 			else
@@ -74,40 +74,18 @@ class mbsb_sermon {
 			return false;
 	}
 	
-	public function get_urls ($most_recent_first = false) {
-		$attachments = get_post_meta ($this->id, 'url_attachments');
-		if ($attachments) {
-			if ($most_recent_first)
-				return array_reverse($attachments);
-			else
-				return $attachments;
-		} else
-			return false;
-	}
-	
-	public function get_embeds ($most_recent_first = false) {
-		$attachments = get_post_meta ($this->id, 'embed_attachments');
-		if ($attachments) {
-			if ($most_recent_first)
-				return array_reverse($attachments);
-			else
-				return $attachments;
-		} else
-			return false;
-	}
-
 	/**
 	* Adds an attachment to a sermon
 	* 
 	* @param integer $attachment_id - the post ID of the attachment
 	* @return mixed False for failure. Null if the file is already attached. True for success. 
 	*/
-	public function add_attachment ($attachment_id) {
-		$existing_meta = get_post_meta ($this->id, 'media_attachments');
+	public function add_library_attachment ($attachment_id) {
+		$existing_meta = get_post_meta ($this->id, 'attachments');
 		foreach ($existing_meta as $em)
-			if ($em == $attachment_id)
+			if ($em['type'] == 'library' && $em['post_id'] == $attachment_id)
 				return null;
-		return add_post_meta ($this->id, 'media_attachments', $attachment_id);
+		return add_post_meta ($this->id, 'attachments', array ('type' => 'library', 'post_id' => $attachment_id));
 	}
 	
 	/**
@@ -116,7 +94,7 @@ class mbsb_sermon {
 	* @param string $url
 	* @return mixed False for failure. Null if the URL is not valid. The attachment data on success. 
 	*/
-	public function add_url ($url) {
+	public function add_url_attachment ($url) {
 		$headers = wp_remote_head ($url, array ('redirection' => 5));
 		if ($headers['response']['code'] != 200)
 			return null;
@@ -124,8 +102,8 @@ class mbsb_sermon {
 			$content_type = isset($headers['headers']['content-type']) ? $headers['headers']['content-type'] : '';
 			if (($a = strpos($content_type, ';')) !== FALSE)
 				$content_type = substr($content_type, 0, $a);
-			$data = array ('url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
-			if (add_post_meta ($this->id, 'url_attachments', $data))
+			$data = array ('type' => 'url', 'url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
+			if (add_post_meta ($this->id, 'attachments', $data))
 				return $data;
 			else
 				return false;
@@ -138,7 +116,7 @@ class mbsb_sermon {
 	* @param string $embed
 	* @return mixed Null for invalid code. False for failure. The embed data on success. 
 	*/
-	public function add_embed ($embed) {
+	public function add_embed_attachment ($embed) {
 		global $allowedposttags;
 		$old_allowedposttags = $allowedposttags;
 		$allowedposttags['object'] = array('height' => array(), 'width' => array(), 'classid' => array(), 'codebase' => array());
@@ -149,8 +127,8 @@ class mbsb_sermon {
 		$allowedposttags = $old_allowedposttags;
 		if (trim($embed) == '')
 			return null;
-		$data = array ('code' => $embed, 'date_time' => time());
-		if (add_post_meta ($this->id, 'embed_attachments', $data))
+		$data = array ('type' => 'embed', 'code' => $embed, 'date_time' => time());
+		if (add_post_meta ($this->id, 'attachments', $data))
 			return $data;
 		else
 			return false;
