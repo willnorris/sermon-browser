@@ -40,7 +40,7 @@ spl_autoload_register('mbsb_autoload_classes');
 */
 function mbsb_autoload_classes ($class_name) {
 	if (substr($class_name, 0, 5) == 'mbsb_')
-		require (substr($class_name, 5).'.class.php');
+		require ('classes/'.substr($class_name, 5).'.php');
 }
 
 /**
@@ -60,7 +60,7 @@ function mbsb_plugins_loaded() {
 	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
 		mbsb_make_sure_date_time_is_saved();
 	if (isset ($_GET['mbsb_script']))
-		require ('scripts.php');
+		require ('js/scripts.php');
 }
 
 /**
@@ -193,7 +193,7 @@ function mbsb_add_javascript_and_styles_to_admin_pages() {
 	$screen = get_current_screen();
 	if ($screen->base == 'post' && $screen->id == 'mbsb_sermons') {
 		wp_enqueue_style ('thickbox');
-		wp_enqueue_script('mbsb_script_sermon_upload', home_url("?mbsb_script&amp;name=sermon_upload&amp;post_id={$post->ID}"), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('scripts.php')));
+		wp_enqueue_script('mbsb_script_sermon_upload', home_url("?mbsb_script&amp;name=sermon_upload&amp;post_id={$post->ID}"), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 	}
 }
 
