@@ -64,8 +64,7 @@ class mbsb_sermon {
 		$attachments = get_post_meta ($this->id, 'attachments');
 		if ($attachments) {
 			foreach ($attachments as &$attachment)
-				if ($attachment['type'] == 'library')
-					$attachment ['data'] = get_post ($attachment['post_id']);
+				$attachment = new mbsb_media_attachment($attachment);
 			if ($most_recent_first)
 				return array_reverse($attachments);
 			else
@@ -78,21 +77,25 @@ class mbsb_sermon {
 	* Adds an attachment to a sermon
 	* 
 	* @param integer $attachment_id - the post ID of the attachment
-	* @return mixed False for failure. Null if the file is already attached. True for success. 
+	* @return mixed False for failure. Null if the file is already attached. The media_attachment object if successful. 
 	*/
 	public function add_library_attachment ($attachment_id) {
 		$existing_meta = get_post_meta ($this->id, 'attachments');
 		foreach ($existing_meta as $em)
 			if ($em['type'] == 'library' && $em['post_id'] == $attachment_id)
 				return null;
-		return add_post_meta ($this->id, 'attachments', array ('type' => 'library', 'post_id' => $attachment_id));
+		$metadata = array ('type' => 'library', 'post_id' => $attachment_id);
+		if (add_post_meta ($this->id, 'attachments', $metadata))
+			return new mbsb_media_attachment($metadata);
+		else
+			return false;
 	}
 	
 	/**
 	* Adds a URL attachment to a sermon
 	*  
 	* @param string $url
-	* @return mixed False for failure. Null if the URL is not valid. The attachment data on success. 
+	* @return mixed False for failure. Null if the URL is not valid. The media_attachment object if successful.
 	*/
 	public function add_url_attachment ($url) {
 		$headers = wp_remote_head ($url, array ('redirection' => 5));
@@ -102,9 +105,9 @@ class mbsb_sermon {
 			$content_type = isset($headers['headers']['content-type']) ? $headers['headers']['content-type'] : '';
 			if (($a = strpos($content_type, ';')) !== FALSE)
 				$content_type = substr($content_type, 0, $a);
-			$data = array ('type' => 'url', 'url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
-			if (add_post_meta ($this->id, 'attachments', $data))
-				return $data;
+			$metadata = array ('type' => 'url', 'url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
+			if (add_post_meta ($this->id, 'attachments', $metadata))
+				return new mbsb_media_attachment($metadata);
 			else
 				return false;
 		}
@@ -114,7 +117,7 @@ class mbsb_sermon {
 	* Adds an embed to a sermon
 	*  
 	* @param string $embed
-	* @return mixed Null for invalid code. False for failure. The embed data on success. 
+	* @return mixed Null for invalid code. False for failure. The media_attachment object if successful. 
 	*/
 	public function add_embed_attachment ($embed) {
 		global $allowedposttags;
@@ -127,9 +130,9 @@ class mbsb_sermon {
 		$allowedposttags = $old_allowedposttags;
 		if (trim($embed) == '')
 			return null;
-		$data = array ('type' => 'embed', 'code' => $embed, 'date_time' => time());
-		if (add_post_meta ($this->id, 'attachments', $data))
-			return $data;
+		$metadata = array ('type' => 'embed', 'code' => $embed, 'date_time' => time());
+		if (add_post_meta ($this->id, 'attachments', $metadata))
+			return new mbsb_media_attachment($metadata);
 		else
 			return false;
 	}
