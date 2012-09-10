@@ -6,71 +6,76 @@
 */
 class mbsb_media_attachment {
 	
-	private $type, $data;
+	private $type, $meta_id, $data;
 
 	/**
 	* Initiates the object and populates its properties
 	* 
-	* @param array The raw data stored in the metadata table
+	* @param integer - the meta_id
 	* @return mbsb_media_attachment
 	*/
-	public function __construct ($data) {
+	public function __construct ($meta_id) {
+		$data = get_metadata_by_mid('post', $meta_id);
+		$data = $data->meta_value;
 		$this->type = $data ['type'];
 		unset ($data['type']);
 		if ($this->type == 'library')
 			$this->data = get_post ($data['post_id']);
 		else
 			$this->data = $data;
+		$this->meta_id = $meta_id;
 	}
-
+	
+	public function get_json_attachment_row($success = true, $message = '') {
+		if ($success)
+			return json_encode(array('result' => 'success', 'code' => $this->get_attachment_row ('mbsb_hide'), 'row_id' => $this->meta_id));
+		else
+			return json_encode(array('result' => 'failure', 'code' => mbsb_do_media_row_message ($message), 'row_id' => 'error_'.time()));
+	}
+	
 	/**
 	* Returns a row, ready to be inserted in a table displaying a list of media items
 	* 
-	* @param boolean $hide - hides the row using CSS classes
+	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
-	public function return_attachment_row ($hide=false) {
+	public function get_attachment_row ($class = '') {
 		$function_name = "add_{$this->type}_attachment_row";
-		return $this->{$function_name} ($hide);
-	}
-
-	/**
-	* Echoes a row into a table displaying a list of media items
-	* 
-	* @param boolean $hide - hides the row using CSS classes
-	* @return string
-	*/
-	public function echo_attachment_row ($hide=false) {
-		echo $this->return_attachment_row ($hide);
+		return $this->{$function_name} ($class);
 	}
 
 	/**
 	* Returns a library attachment row, ready to be inserted in a table displaying a list of media items
 	* 
-	* @param boolean $hide - hides the row using CSS classes
+	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
-	private function add_library_attachment_row ($hide=false) {
+	private function add_library_attachment_row ($class = '') {
 		$attachment = $this->data;
 		$filename = get_attached_file ($attachment->ID);
-		$insert = $hide ? '  class="media_row_hide"' : '';
-		$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($attachment->post_title).'</strong></th></tr>';
-		$output .= '<tr'.$insert.'><td width="46">'.wp_get_attachment_image ($attachment->ID, array(46,60), true).'</td>';
-		$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
+		$insert = $class ? "  class=\"{$class}\"" : '';
+		$actions = apply_filters ('mbsb_attachment_row_actions', '');
+		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($attachment->post_title).'</h3>';
+		if ($actions)
+			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table></td></tr>';
+		$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table>';
+		$output .= '</td></tr>';
 		return $output;
 	}
 
 	/**
 	* Returns a URL attachment row, ready to be inserted in a table displaying a list of media items
 	* 
-	* @param boolean $hide - hides the row using CSS classes
+	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
-	private function add_url_attachment_row ($hide=false) {
+	private function add_url_attachment_row ($class = '') {
 		$url_array = $this->data;
-		$insert = $hide ? '  class="media_row_hide"' : '';
+		$insert = $class ? "  class=\"{$class}\"" : '';
+		$actions = apply_filters ('mbsb_attachment_row_actions', '');
 		$address = substr($url_array['url'], strpos($url_array['url'], '//')+2);
 		$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($url_array['url']);
 		if (strlen($short_address) > strlen($address)) {
@@ -78,13 +83,17 @@ class mbsb_media_attachment {
 			$insert2 = '';
 		} else
 			$insert2 = ' title="'.esc_html($url_array['url']).'"';
-		$title = substr($url_array['url'], strrpos($url_array['url'], '/')+1);
-		$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($title).'</strong></th></tr>';
-		$output .= '<tr'.$insert.'><td width="46"><img class="attachment-46x60" width="46" height="60" alt="'.esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($url_array['mime_type']).'"></td>';
-		$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span'.$insert2.'>'.esc_html($short_address).'</span></td></tr>';
+		$title = rtrim($url_array['url'], '/');
+		$title = substr($title, strrpos($title, '/')+1);
+		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
+		if ($actions)
+			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($url_array['mime_type']).'">';
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span'.$insert2.'>'.esc_html($short_address).'</span></td></tr>';
 		if ($url_array['size'] && $url_array['mime_type'] != 'text/html')
 			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table></td></tr>';
+		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table>';
+		$output .= '</td></tr>';
 		return $output;
 	}
 
@@ -94,15 +103,22 @@ class mbsb_media_attachment {
 	* @param boolean $hide - hides the row using CSS classes
 	* @return string
 	*/
-	private function add_embed_attachment_row ($hide=false) {
+	private function add_embed_attachment_row ($class = '') {
 		$embed_array = $this->data;
-		$insert = $hide ? '  class="media_row_hide"' : '';
+		$insert = $class ? "  class=\"{$class}\"" : '';
+		$actions = apply_filters ('mbsb_attachment_row_actions', '');
 		$title = __('Embed code');
-		$output  = '<tr'.$insert.'><th colspan="2"><strong>'.esc_html($title).'</strong></th></tr>';
-		$output .= '<tr'.$insert.'><td width="46"><img class="attachment-46x60" width="46" height="60" alt="'.esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ('interactive').'"></td>';
-		$output .= '<td><table class="mbsb_media_detail"><tr><th scope="row">'.__('Code', MBSB).':</th><td>'.esc_html($embed_array['code']).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $embed_array['date_time']).'</td></tr></table></td></tr>';
+		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
+		if ($actions)
+			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ('interactive').'">';
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Code', MBSB).':</th><td>'.esc_html($embed_array['code']).'</td></tr>';
+		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $embed_array['date_time']).'</td></tr></table>';
+		$output .= '</td></tr>';
 		return $output;
 	}
 }
 ?>
+
+
+

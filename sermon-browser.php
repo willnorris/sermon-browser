@@ -84,16 +84,6 @@ function mbsb_init () {
 }
 
 /**
-* Returns a row for the attached media table, containing a message rather than a successful result
-* 
-* @param string $message
-* @return string
-*/
-function mbsb_do_media_row_error ($message) {
-	return '<tr><td colspan="2"><div class="message">'.$message.'</div></td></tr>';
-}
-
-/**
 * Registers the various custom post types and taxonomies
 */
 function mbsb_register_custom_post_types() {
@@ -200,6 +190,10 @@ function mbsb_return_select_list ($custom_post_type, $selected = '') {
 */
 function mbsb_plugin_dir_path ($relative_path = '') {
 	return plugin_dir_path(__FILE__).$relative_path;
+}
+
+function mbsb_plugins_url ($path = '') {
+	return plugins_url($path, __FILE__);
 }
 
 /**

@@ -12,8 +12,8 @@ add_action ('admin_init', 'mbsb_admin_init');
 */
 function mbsb_admin_init () {
 	$date = @filemtime(mbsb_plugin_dir_path('css/admin-style.php'));
-	wp_register_style ('mbsb_admin_style', plugins_url('css/admin-style.php', __FILE__), $date);
-	wp_register_style ('mbsb_jquery_ui', plugins_url('css/jquery-ui-1.8.23.custom.css', __FILE__), '');
+	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.php'), $date);
+	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), '');
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
@@ -317,11 +317,11 @@ function mbsb_ajax_attachment_insert() {
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
 	if ($result = $sermon->add_library_attachment ($attachment->ID))
-		$result->echo_attachment_row ('mbsb_hide');
+		echo $result->get_json_attachment_row();
 	elseif ($result === NULL)
-		mbsb_do_media_row_error(__('That file is already attached to that sermon.', MBSB));
+		echo mbsb_media_attachment::get_json_attachment_row(false, sprintf(__('%s is already attached to this sermon.', MBSB), $attachment->post_title));
 	else
-		mbsb_do_media_row_error(__('There was an error attaching that file to the sermon.', MBSB));
+		echo mbsb_media_attachment::get_json_attachment_row(false, sprintf(__('There was an error attaching %s to the sermon.', MBSB), $attachment->post_title));
 	die();
 }
 
@@ -347,19 +347,21 @@ function mbsb_ajax_attach_url_embed() {
 	if ($_POST['type'] == 'embed') {
 		$result = $sermon->add_embed_attachment ($_POST['attachment']);
 		if ($result === null)
-			mbsb_do_media_row_error(__('That code is not acceptable.', MBSB));
+			echo mbsb_media_attachment::get_json_attachment_row(false, __('That code is not acceptable.', MBSB));
 		elseif ($result === FALSE)
-			mbsb_do_media_row_error(__('There was an error attaching that embed code to the sermon.', MBSB));
+			echo mbsb_media_attachment::get_json_attachment_row(false, __('There was an error attaching that embed code to the sermon.', MBSB));
 		else
-			$result->echo_attachment_row ('mbsb_hide');
+			echo $result->get_json_attachment_row();
 	} elseif ($_POST['type'] == 'url') {
+		if (strtolower(substr($_POST['attachment'], 0, 4)) != 'http')
+			$_POST['attachment'] = "http://{$_POST['attachment']}";
 		$result = $sermon->add_url_attachment ($_POST['attachment']);
 		if ($result === null)
-			mbsb_do_media_row_error(__('That does not appear to be a valid URL.', MBSB));
+			echo mbsb_media_attachment::get_json_attachment_row(false, __('That does not appear to be a valid URL.', MBSB));
 		elseif ($result === FALSE)
-			mbsb_do_media_row_error(__('There was an error attaching that URL to the sermon.', MBSB));
+			echo mbsb_media_attachment::get_json_attachment_row(false, __('There was an error attaching that URL to the sermon.', MBSB));
 		else
-			$result->echo_attachment_row ('mbsb_hide');
+			echo $result->get_json_attachment_row();
 	}
 	die();
 }
@@ -367,12 +369,11 @@ function mbsb_ajax_attach_url_embed() {
 function mbsb_ajax_mbsb_remove_attachment() {
 	if (!check_ajax_referer ("mbsb_remove_attachment_{$_POST['post_id']}"))
 		die ('Suspicious behaviour blocked');
-	//$result = delete_metadata_by_mid('attachments', $_POST['attachment_id']);
-	$result = false;
+	$result = delete_metadata_by_mid('post', $_POST['attachment_id']);
 	if ($result)
 		echo json_encode(array('result' => 'success', 'row_id' => $_POST['attachment_id']));
 	else
-		echo json_encode (array('result' => 'fail', 'message' => __('The attachment could not be deleted.', MBSB)));
+		echo json_encode (array('result' => 'failure', 'message' => __('The attachment could not be deleted.', MBSB)));
 	die();
 }
 
@@ -430,19 +431,11 @@ function mbsb_sermon_media_meta_box() {
 	echo '</td></tr>';
 	echo '</table>';
 	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
-	$extra_cell = apply_filters ('mbsb_attachment_row_actions', '');
-	if ($extra_cell)
-		$cols = 3;
-	else
-		$cols = 2;
-	echo "<tr id=\"mbsb_media_table_header\"><th colspan=\"{$cols}\" scope=\"col\">".__('Attached media', MBSB).'</th></tr>';
 	$sermon = new mbsb_sermon($post->ID);
-	$attachments = $sermon->get_attachments();
+	$attachments = $sermon->get_attachments(true);
 	if ($attachments)
 		foreach ($attachments as $attachment)
-			$attachment->echo_attachment_row ();
-	else
-		echo "<tr id=\"mbsb_attached_files_no_media\"><td colspan=\"{$cols}\">".__('No media is currently attached to this sermon', MBSB).'</td></tr>';
+			echo $attachment->get_attachment_row ();
 	echo '</table>';
 }
 
@@ -483,7 +476,7 @@ function mbsb_sermon_save_meta_box() {
 * Add Sermons menu and sub-menus in admin
 */
 function mbsb_add_admin_menu() {
-	add_menu_page(__('Sermons', MBSB), __('Sermons', MBSB), 'publish_posts', 'sermon-browser', 'sb_manage_sermons', plugins_url('images/icon-16-color.png', __FILE__), 21);
+	add_menu_page(__('Sermons', MBSB), __('Sermons', MBSB), 'publish_posts', 'sermon-browser', 'sb_manage_sermons', mbsb_plugins_url('images/icon-16-color.png', __FILE__), 21);
 	add_submenu_page('sermon-browser', __('Files', MBSB), __('Files', MBSB), 'upload_files', 'sermon-browser/files.php', 'sb_files');
 	add_submenu_page('sermon-browser', __('Options', MBSB), __('Options', MBSB), 'manage_options', 'sermon-browser/options.php', 'sb_options');
 	add_submenu_page('sermon-browser', __('Templates', MBSB), __('Templates', MBSB), 'manage_options', 'sermon-browser/templates.php', 'sb_templates');
@@ -523,5 +516,15 @@ function mbsb_make_sure_date_time_is_saved () {
 	$_POST['hh'] = substr ($_POST['mbsb_time'], 0, strpos($_POST['mbsb_time'], ':'));
 	$_POST['mn'] = substr ($_POST['mbsb_time'], strpos($_POST['mbsb_time'], ':')+1);
 	$_POST['ss'] = 0;
+}
+
+/**
+* Returns a row for the attached media table, containing a message rather than a successful result
+* 
+* @param string $message
+* @return string
+*/
+function mbsb_do_media_row_message ($message) {
+	return '<tr><td><div class="message">'.$message.'</div></td></tr>';
 }
 ?>

@@ -61,14 +61,14 @@ class mbsb_sermon {
 	* @return mixed - false on failure, array on success
 	*/
 	public function get_attachments($most_recent_first = false) {
-		$attachments = get_post_meta ($this->id, 'attachments');
-		if ($attachments) {
-			foreach ($attachments as &$attachment)
-				$attachment = new mbsb_media_attachment($attachment);
-			if ($most_recent_first)
-				return array_reverse($attachments);
-			else
-				return $attachments;
+		global $wpdb;
+		$dir = $most_recent_first ? 'DESC' : 'ASC';
+		$meta_ids = $wpdb->get_col($wpdb->prepare("SELECT meta_id FROM {$wpdb->prefix}postmeta WHERE post_id=%s AND meta_key='attachments' ORDER BY meta_id {$dir}", $this->id));
+		if ($meta_ids) {
+			$attachments = array();
+			foreach ($meta_ids as $meta_id)
+				$attachments[] = new mbsb_media_attachment($meta_id);
+			return $attachments;
 		} else
 			return false;
 	}
@@ -85,8 +85,8 @@ class mbsb_sermon {
 			if ($em['type'] == 'library' && $em['post_id'] == $attachment_id)
 				return null;
 		$metadata = array ('type' => 'library', 'post_id' => $attachment_id);
-		if (add_post_meta ($this->id, 'attachments', $metadata))
-			return new mbsb_media_attachment($metadata);
+		if ($meta_id = add_post_meta ($this->id, 'attachments', $metadata))
+			return new mbsb_media_attachment($meta_id);
 		else
 			return false;
 	}
@@ -99,15 +99,15 @@ class mbsb_sermon {
 	*/
 	public function add_url_attachment ($url) {
 		$headers = wp_remote_head ($url, array ('redirection' => 5));
-		if ($headers['response']['code'] != 200)
+		if (is_wp_error($headers) || $headers['response']['code'] != 200)
 			return null;
 		else {
 			$content_type = isset($headers['headers']['content-type']) ? $headers['headers']['content-type'] : '';
 			if (($a = strpos($content_type, ';')) !== FALSE)
 				$content_type = substr($content_type, 0, $a);
 			$metadata = array ('type' => 'url', 'url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
-			if (add_post_meta ($this->id, 'attachments', $metadata))
-				return new mbsb_media_attachment($metadata);
+			if ($meta_id = add_post_meta ($this->id, 'attachments', $metadata))
+				return new mbsb_media_attachment($meta_id);
 			else
 				return false;
 		}
@@ -131,8 +131,8 @@ class mbsb_sermon {
 		if (trim($embed) == '')
 			return null;
 		$metadata = array ('type' => 'embed', 'code' => $embed, 'date_time' => time());
-		if (add_post_meta ($this->id, 'attachments', $metadata))
-			return new mbsb_media_attachment($metadata);
+		if ($meta_id = add_post_meta ($this->id, 'attachments', $metadata))
+			return new mbsb_media_attachment($meta_id);
 		else
 			return false;
 	}

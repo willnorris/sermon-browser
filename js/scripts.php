@@ -1,7 +1,7 @@
 <?php
 header ('Cache-Control: max-age=290304000, public');
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+290304000));
-header ('Content-type: text/javascript');
+header ('Content-type: text/javascript; charset=utf-8');
 $date = @filemtime(__FILE__);
 if ($date)
 	header ('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', $date));
@@ -29,9 +29,10 @@ function mbsb_handle_upload_insert_click() {
 			post_id: <?php echo $_GET['post_id']; ?>
 		};
 		$.post(ajaxurl, data, function(response) {
-			$('#mbsb_attached_files_no_media').hide();
-			$('#mbsb_media_table_header').after(response);
-			$('.media_row_hide').show(1200);
+			response = JSON.parse (response);
+			row_id = response.row_id; 
+			$('#mbsb_attached_files').prepend(response.code);
+			$('#row_'+row_id).show(1200);
 		});
 		tb_remove();
 		window.send_to_editor = orig_send_to_editor;
@@ -50,9 +51,10 @@ function mbsb_handle_url_embed (type) {
 			$('#mbsb_attach_url_button').val('<?php _e ('Attach', MBSB)?>');
 			$('#mbsb_attach_url_button').removeAttr('disabled');
 		};
-		$('#mbsb_attached_files_no_media').hide();
-		$('#mbsb_media_table_header').after(response);
-		$('.media_row_hide').show(1200);
+		response = JSON.parse (response);
+		row_id = response.row_id; 
+		$('#mbsb_attached_files').prepend(response.code);
+		$('#row_'+row_id).show(1200);
 	});
 }
 jQuery(document).ready(function($) {
@@ -80,6 +82,32 @@ jQuery(document).ready(function($) {
 	$('#mbsb_attach_embed_button').click(function() {
 		mbsb_handle_url_embed ('embed');
 		return false;
+	});
+	$('table#mbsb_attached_files').on('click', 'a.unattach', function (e) {
+		var data = {
+			action: 'mbsb_remove_attachment',
+			attachment_id:  $(this).parent().attr('id').slice(13),
+			_wpnonce: '<?php echo wp_create_nonce("mbsb_remove_attachment_{$_GET['post_id']}") ?>',
+			post_id: <?php echo $_GET['post_id']; ?>
+		};
+		$.post(ajaxurl, data, function(response) {
+			response = JSON.parse (response);
+			if (response.result == 'success') {
+				row_id = response.row_id; 
+				$('#row_'+row_id).hide(600);
+			} else {
+				$(this).after('response.message');
+			};
+		});
+		e.preventDefault();
+	});
+	$('table#mbsb_attached_files').on('mouseenter', 'tr', function (e) {
+		row_id = $(this).children('td').attr('id');
+		$('#'+row_id+' a.unattach').fadeIn(200);
+	});
+	$('table#mbsb_attached_files').on('mouseleave', 'tr', function (e) {
+		row_id = $(this).children('td').attr('id');
+		$('#'+row_id+' a.unattach').fadeOut(200);
 	});
 });
 <?php
