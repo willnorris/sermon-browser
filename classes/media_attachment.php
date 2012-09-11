@@ -26,6 +26,13 @@ class mbsb_media_attachment {
 		$this->meta_id = $meta_id;
 	}
 	
+	/**
+	* Returns JSON encoded data, ready for javascript to insert into the media table when editing a sermon
+	* 
+	* @param boolean $success - true if this is a success message, false if it is a failure message
+	* @param string $message - the message
+	* @return string - the JSON encoded result
+	*/
 	public function get_json_attachment_row($success = true, $message = '') {
 		if ($success)
 			return json_encode(array('result' => 'success', 'code' => $this->get_attachment_row ('mbsb_hide'), 'row_id' => $this->meta_id));
@@ -44,6 +51,11 @@ class mbsb_media_attachment {
 		return $this->{$function_name} ($class);
 	}
 	
+	/**
+	* Returns the embed code
+	* 
+	* @return boolean|string - False on failure, the embed code on success.
+	*/
 	public function get_embed_code () {
 		if ($this->type != 'embed')
 			return false;
@@ -51,6 +63,25 @@ class mbsb_media_attachment {
 			return $this->data['code'];
 	}
 	
+	/**
+	* Returns the id of the library attachment
+	* 
+	* @return boolean|integer - False on failure, the post_id on success.
+	*/
+	public function get_library_id () {
+		if ($this->type != 'library')
+			return false;
+		else
+			return $this->data->ID;
+	}
+	
+	/**
+	* Returns an appropriate title for the attachment
+	* 
+	* Returns the attachment's post_title for library items, or uses the URL or embed code to calculate an appropriate title.
+	* 
+	* @return string
+	*/
 	public function get_title () {
 		if ($this->type == 'library')
 			return $this->data->post_title;
@@ -87,12 +118,18 @@ class mbsb_media_attachment {
 		}
 	}
 	
+	/**
+	* Returns a shortened form of the URL attachment for use when space is tight
+	* 
+	* @return string
+	*/
 	public function get_short_url () {
 		if ($this->type == 'url') {
 			$address = substr($this->data['url'], strpos($this->data['url'], '//')+2);
 			$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($this->data['url']);
 			return (strlen($short_address) > strlen($address)) ? $address : $short_address;
-		}
+		} else
+			return false;
 	}
 
 	/**
@@ -163,6 +200,3 @@ class mbsb_media_attachment {
 	}
 }
 ?>
-
-
-

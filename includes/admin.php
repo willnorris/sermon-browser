@@ -11,27 +11,30 @@ add_action ('admin_init', 'mbsb_admin_init');
 * 
 */
 function mbsb_admin_init () {
+	// All admin pages
 	$date = @filemtime(mbsb_plugin_dir_path('css/admin-style.php'));
 	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.php'), $date);
 	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), '');
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
-	add_action ('load-edit.php', 'mbsb_onload_edit_page');
-	add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
+	// Single admin pages only
+	add_action ('load-edit.php', 'mbsb_onload_edit_page');
+	add_action ('load-upload.php', 'mbsb_onload_upload_page');
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
+	// Ajax API calls
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
 	add_action ('wp_ajax_mbsb_remove_attachment', 'mbsb_ajax_mbsb_remove_attachment');
-	// Is the user quick editing a custom post_type?
+	// Quick editing a custom post_type?
 	if (isset($_POST['action']) && $_POST['action'] == 'inline-save' && substr($_POST['post_type'], 0, 5) == 'mbsb_') {
 		$mbsb_post_type = substr($_POST['post_type'], 5);
 		if (function_exists("mbsb_add_{$mbsb_post_type}_columns"))
 			add_filter ("manage_mbsb_{$mbsb_post_type}_posts_columns", "mbsb_add_{$mbsb_post_type}_columns");
 	}
-	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons') {
+	// Saving a sermon?
+	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
 		add_filter ('wp_insert_post_data', 'mbsb_sermon_insert_post_modify_date_time');
-	}
 }
 
 /**
@@ -61,10 +64,21 @@ function mbsb_onload_edit_page () {
 		add_filter ('posts_fields', 'mbsb_edit_posts_fields');
 		add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
 		add_filter ('posts_groupby', 'mbsb_edit_posts_groupby');
+		add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
 		if (isset($_GET['s']))
 			add_filter ('posts_search', 'mbsb_edit_posts_search');
 		add_action ('admin_head', create_function ('', "echo '<style type=\"text/css\">table.fixed {table-layout:auto;} table.fixed th.column-tags, table.fixed td.column-tags {width:auto;}</style>';"));
 	}
+}
+
+/**
+* Runs on the load-upload.php action (i.e. when the Media Library page is loaded)
+* 
+* Makes sure the necessary filters are added to ensure the Attached To column is correct.
+*/
+function mbsb_onload_upload_page () {
+	add_action ('manage_media_columns', 'mbsb_manage_media_columns', 10, 2);
+	add_action ('manage_media_custom_column', 'mbsb_output_custom_media_columns', 10, 2);
 }
 
 /**
@@ -82,7 +96,62 @@ function mbsb_output_custom_columns($column, $post_id) {
 		if ($column == 'sermon_date')
 			echo date(get_option('date_format'), $sermon->timestamp);
 		else
-			echo str_replace(', ', '<br/>', $sermon->admin_filter_link ($post_type, $column));
+			echo str_replace(', ', '<br/>', $sermon->edit_php_cell ($post_type, $column));
+	}
+}
+
+/**
+* Runs on the manage_media_column action
+* 
+* Filters the list of columns to be displayed in the Media Library table
+* 
+* @param array $columns - the current columns
+* @param boolean $detached - true if the post type is detached
+* @return array
+*/
+function mbsb_manage_media_columns ($columns, $detached) {
+	if (isset($columns['parent']))
+		unset($columns['parent']);
+	if (!is_array($columns))
+		return $columns;
+	$new_c = array();
+	foreach ($columns as $k => $c) {
+		$new_c[$k] = $c;
+		if ($k == 'author')
+			$new_c['attached_to'] = __('Attached to', MBSB);
+	}
+	if (!isset($new_c['attached_to']))
+		$new_c['attached_to'] = __('Attached to', MBSB);
+	return $new_c;
+}
+
+/**
+* Outputs the custom attachments column in the Media Library table
+* 
+* @param string $column_name
+* @param integer $post_id
+*/
+function mbsb_output_custom_media_columns ($column_name, $post_id) {
+	if ($column_name == 'attached_to') {
+		$sermons = mbsb_get_sermons_from_media_id ($post_id);
+		if ($sermons) {
+			$output = array();
+			foreach ($sermons as $sermon)
+				$output[] = '<strong>'.(current_user_can ('edit_post', $sermon->id) ? ("<a href=\"".get_edit_post_link ($sermon->id)."\">{$sermon->title}</a>") : $sermon->title).'</strong>, '.get_the_time (__('Y/m/d'), $sermon->id);
+			echo implode ('<br/>', $output);
+		}
+		else {
+			$post = get_post($post_id);
+			if ($post->post_parent > 0) {
+				$parent = get_post($post->post_parent);
+				if ($parent && $parent->post_type != 'mbsb_sermons') {
+					$title =_draft_or_post_title ($post->post_parent);
+					echo '<strong>'.(current_user_can ('edit_post', $post->post_parent) ? ("<a href=\"".get_edit_post_link ($post->post_parent)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $post);
+				}
+			} else {
+				echo __( '(Unattached)' ).(current_user_can ('edit_post', $post_id) ? ("<br/><a class=\"hide-if-no-js\" onclick=\"findPosts.open( 'media[]','{$post->ID}' ); return false;\" href=\"#the-list\">".__('Attach').'</a>') : '');
+			}
+		}
 	}
 }
 
@@ -376,6 +445,9 @@ function mbsb_ajax_attach_url_embed() {
 	die();
 }
 
+/**
+* Handles the AJAX request for unattaching a media attachment
+*/
 function mbsb_ajax_mbsb_remove_attachment() {
 	if (!check_ajax_referer ("mbsb_remove_attachment_{$_POST['post_id']}"))
 		die ('Suspicious behaviour blocked');
@@ -511,5 +583,23 @@ function mbsb_save_post ($post_id, $post) {
 */
 function mbsb_do_media_row_message ($message) {
 	return '<tr><td><div class="message">'.$message.'</div></td></tr>';
+}
+
+/**
+* Returns an array of sermon objects that have a particular media item attached
+* 
+* @param integer $post_id - the post id of the media item
+* @return boolean|array - False on failure, an array of sermon objects on success.
+*/
+function mbsb_get_sermons_from_media_id ($post_id) {
+	$meta_value = serialize(array ('type' => 'library', 'post_id' => (string)$post_id));
+	$sermons = query_posts (array ('post_type' => 'mbsb_sermons', 'meta_query' => array (array('key' => 'attachments', 'value' => $meta_value))));
+	wp_reset_query();
+	if ($sermons) {
+		foreach ($sermons as &$s)
+			$s = new mbsb_sermon($s->ID);
+		return $sermons;
+	} else
+		return false;
 }
 ?>

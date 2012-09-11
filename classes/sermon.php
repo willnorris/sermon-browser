@@ -67,6 +67,11 @@ class mbsb_sermon {
 			return false;
 	}
 	
+	/**
+	* Returns a simple list of the media items (titles separated by <br/> tags)
+	* 
+	* @return string
+	*/
 	public function get_simple_media_list() {
 		$attachments = $this->get_attachments();
 		if ($attachments) {
@@ -224,18 +229,25 @@ class mbsb_sermon {
 		}
 	}
 	
-	public function admin_filter_link ($post_type, $type) {
+	/**
+	* Outputs a single cell on the custom posts edit page
+	* 
+	* @param string $post_type
+	* @param string $column
+	* @return string
+	*/
+	public function edit_php_cell ($post_type, $column) {
 		if (substr($post_type, 0, 5) != 'mbsb_')
 			$post_type = 'mbsb_'.$post_type;
-		if ($type == 'preacher')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->preacher->id}").'">'.esc_html($this->preacher->name).'</a>';
-		elseif ($type == 'service')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->service->id}").'">'.esc_html($this->service->name).'</a>';
-		elseif ($type == 'series')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->series->id}").'">'.esc_html($this->series->name).'</a>';
-		elseif ($type == 'passages')
+		if ($column == 'preacher')
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$column}={$this->preacher->id}").'">'.esc_html($this->preacher->name).'</a>';
+		elseif ($column == 'service')
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$column}={$this->service->id}").'">'.esc_html($this->service->name).'</a>';
+		elseif ($column == 'series')
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$column}={$this->series->id}").'">'.esc_html($this->series->name).'</a>';
+		elseif ($column == 'passages')
 			return $this->get_formatted_passages('admin_link');
-		elseif ($type == 'media')
+		elseif ($column == 'media')
 			return $this->get_simple_media_list();
 		else
 			return 'Unknown type';

@@ -199,6 +199,12 @@ function mbsb_plugin_dir_path ($relative_path = '') {
 	return plugin_dir_path(__FILE__).$relative_path;
 }
 
+/**
+* Returns the URL of the plugin, or to a specified path within it
+* 
+* @param string $path
+* @return string
+*/
 function mbsb_plugins_url ($path = '') {
 	return plugins_url($path, __FILE__);
 }
@@ -236,7 +242,15 @@ function mbsb_format_bytes ($bytes) {
 		return number_format($bytes/1000000000, 2).' '.__('GB', MBSB);
 }
 
-function mbsb_add_admin_attachment_row_actions($actions) {
+/**
+* Filters mbsb_attachment_row_actions
+* 
+* Returns the HTML of the attachment link in the media library table on the edit sermons page.
+* 
+* @param string $actions
+* @return string
+*/
+function mbsb_add_admin_attachment_row_actions($existing_actions) {
 	return '<a class="unattach" href="#">'.__('Unattach', MBSB).'</a>';
 }
 ?>
