@@ -7,6 +7,7 @@
 class mbsb_media_attachment {
 	
 	private $type, $meta_id, $data;
+	public $invalid;
 
 	/**
 	* Initiates the object and populates its properties
@@ -15,13 +16,16 @@ class mbsb_media_attachment {
 	* @return mbsb_media_attachment
 	*/
 	public function __construct ($meta_id) {
+		$this->invalid = false;
 		$data = get_metadata_by_mid('post', $meta_id);
 		$data = $data->meta_value;
 		$this->type = $data ['type'];
 		unset ($data['type']);
-		if ($this->type == 'library')
+		if ($this->type == 'library') {
 			$this->data = get_post ($data['post_id']);
-		else
+			if (!$this->data)
+				delete_metadata_by_mid ('post', $meta_id);
+		} else
 			$this->data = $data;
 		$this->meta_id = $meta_id;
 	}
@@ -139,19 +143,21 @@ class mbsb_media_attachment {
 	* @return string
 	*/
 	private function add_library_attachment_row ($class = '') {
-		$attachment = $this->data;
-		$filename = get_attached_file ($attachment->ID);
-		$insert = $class ? "  class=\"{$class}\"" : '';
-		$actions = apply_filters ('mbsb_attachment_row_actions', '');
-		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($attachment->post_title).'</h3>';
-		if ($actions)
-			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
-		$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
-		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table>';
-		$output .= '</td></tr>';
-		return $output;
+		if (!$this->invalid) {
+			$attachment = $this->data;
+			$filename = get_attached_file ($attachment->ID);
+			$insert = $class ? "  class=\"{$class}\"" : '';
+			$actions = apply_filters ('mbsb_attachment_row_actions', '');
+			$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($attachment->post_title).'</h3>';
+			if ($actions)
+				$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+			$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
+			$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
+			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
+			$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table>';
+			$output .= '</td></tr>';
+			return $output;
+		}
 	}
 
 	/**

@@ -253,4 +253,9 @@ function mbsb_format_bytes ($bytes) {
 function mbsb_add_admin_attachment_row_actions($existing_actions) {
 	return '<a class="unattach" href="#">'.__('Unattach', MBSB).'</a>';
 }
+
+function mbsb_get_meta_ids_by_value ($value) {
+	global $wpdb;
+	return $wpdb->get_col($wpdb->prepare("SELECT meta_id FROM {$wpdb->prefix}postmeta WHERE meta_value=%s", $value));
+}
 ?>

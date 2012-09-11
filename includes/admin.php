@@ -17,6 +17,7 @@ function mbsb_admin_init () {
 	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), '');
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
+	add_action ('delete_post', 'mbsb_handle_media_deletion');
 	// Single admin pages only
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('load-upload.php', 'mbsb_onload_upload_page');
@@ -601,5 +602,25 @@ function mbsb_get_sermons_from_media_id ($post_id) {
 		return $sermons;
 	} else
 		return false;
+}
+
+/**
+* Returns an array of sermon objects that have a particular media item attached
+* 
+* @param integer $post_id - the post id of the media item
+* @return boolean|array - False on failure, an array of sermon objects on success.
+*/
+function mbsb_unattach_media_item_from_all_sermons ($media_post_id) {
+	$meta_value = serialize(array ('type' => 'library', 'post_id' => (string)$media_post_id));
+	$meta_ids = mbsb_get_meta_ids_by_value ($meta_value);
+	if ($meta_ids)
+		foreach ($meta_ids as $meta_id)
+			delete_metadata_by_mid('post', $meta_id);
+}
+
+function mbsb_handle_media_deletion ($post_id) {
+	$post = get_post ($post_id);
+	if ($post->post_type == 'attachment')
+		mbsb_unattach_media_item_from_all_sermons ($post_id);
 }
 ?>
