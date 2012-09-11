@@ -59,10 +59,23 @@ function mbsb_activate () {
 * Contains functions that for performance or other reasons need to be run as soon as possible.
 */
 function mbsb_plugins_loaded() {
-	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
-		mbsb_make_sure_date_time_is_saved();
 	if (isset ($_GET['mbsb_script']))
 		require ('js/scripts.php');
+}
+
+function mbsb_sermon_insert_post_modify_date_time ($data) {
+	if ($data['post_type'] == 'mbsb_sermons')
+		if (isset($_POST['mbsb_date']) && $data['post_status'] != 'auto-draft') {
+			if (isset($_POST['mbsb_override_time']) && $_POST['mbsb_override_time'] == 'on' && isset($_POST['mbsb_time']))
+				$data['post_date'] = $data ['post_modified'] = "{$_POST['mbsb_date']} {$_POST['mbsb_time']}:00";
+			else {
+				$service = new mbsb_service($_POST['mbsb_service']);
+				$data['post_date'] = $data ['post_modified'] =  "{$_POST['mbsb_date']} ".$service->get_service_time();
+			}
+			if (isset($_POST['mbsb_date']) && isset($_POST['mbsb_time']))
+				$data['post_date_gmt'] = $data['post_modified_gmt'] = date ('Y-m-d H:i:s', mysql2date ('U', $data['post_date'])-(get_option('gmt_offset')*60*60));
+		}
+	return $data;
 }
 
 /**

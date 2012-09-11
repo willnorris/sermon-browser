@@ -22,15 +22,9 @@ class mbsb_sermon {
 		$this->timestamp = strtotime($post->post_date);
 		$this->date = date ('Y-m-d', $this->timestamp);
 		$this->time = date ('H:i', $this->timestamp);
-		$this->preacher_id = get_post_meta ($this->id, 'preacher', true);
-		$preacher = new mbsb_preacher ($this->preacher_id);
-		$this->preacher_name = $preacher->name;
-		$this->service_id = get_post_meta ($this->id, 'service', true);
-		$service = new mbsb_service ($this->service_id);
-		$this->service_name = $service->name;
-		$this->series_id = get_post_meta ($this->id, 'series', true);
-		$series = new mbsb_series ($this->series_id);
-		$this->series_name = $series->name;
+		$this->preacher = new mbsb_preacher (get_post_meta ($this->id, 'preacher', true));
+		$this->service = new mbsb_service (get_post_meta ($this->id, 'service', true));
+		$this->series = new mbsb_series (get_post_meta ($this->id, 'series', true));
 		$this->override_time = $this->get_misc_meta ('override_time');
 		$this->passages = get_post_meta ($this->id, 'passages_object', true);
 	}
@@ -185,9 +179,7 @@ class mbsb_sermon {
 	*/
 	public function update_service ($service_id) {
 		if ($result = update_post_meta ($this->id, 'service', $service_id)) {
-			$service = new mbsb_service ($service_id);
-			$this->service_id = $service_id;
-			$this->service_name = $service->name;
+			$this->service = new mbsb_service ($service_id);
 		}
 		return $result;
 	}
@@ -224,11 +216,11 @@ class mbsb_sermon {
 		if (substr($post_type, 0, 5) != 'mbsb_')
 			$post_type = 'mbsb_'.$post_type;
 		if ($type == 'preacher')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->preacher_id}").'">'.esc_html($this->preacher_name).'</a>';
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->preacher->id}").'">'.esc_html($this->preacher->name).'</a>';
 		elseif ($type == 'service')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->service_id}").'">'.esc_html($this->service_name).'</a>';
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->service->id}").'">'.esc_html($this->service->name).'</a>';
 		elseif ($type == 'series')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->series_id}").'">'.esc_html($this->series_name).'</a>';
+			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->series->id}").'">'.esc_html($this->series->name).'</a>';
 		elseif ($type == 'passages')
 			return $this->get_formatted_passages('admin_link');
 		else

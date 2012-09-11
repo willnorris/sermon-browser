@@ -21,5 +21,9 @@ class mbsb_service {
 			else
 				$this->$v = $post->$k;
 	}
+	
+	public function get_service_time() {
+		return '18:00';
+	}
 }
 ?>

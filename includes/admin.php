@@ -23,6 +23,9 @@ function mbsb_admin_init () {
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
 	add_action ('wp_ajax_mbsb_remove_attachment', 'mbsb_ajax_mbsb_remove_attachment');
+	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons') {
+		add_filter ('wp_insert_post_data', 'mbsb_sermon_insert_post_modify_date_time');
+	}
 }
 
 /**
@@ -391,7 +394,6 @@ function mbsb_sermons_meta_boxes () {
 	add_filter ('screen_options_show_screen', create_function ('', 'return false;'));
 	wp_enqueue_script ('jquery-ui-datepicker');
 	wp_enqueue_style('mbsb_jquery_ui');
-	add_action ('admin_footer', 'mbsb_add_edit_sermons_javascript');
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
 }
 
@@ -403,11 +405,12 @@ function mbsb_sermon_details_meta_box() {
 	//Todo: Pre-populate fields with defaults
 	wp_nonce_field (__FUNCTION__, 'details_nonce', true);
 	$sermon = new mbsb_sermon ($post->ID);
+	$screen = get_current_screen();
 	echo '<table class="sermon_details">';
-	echo '<tr><th scope="row"><label for="mbsb_preacher">'.__('Preacher', MBSB).':</label></th><td><select id="mbsb_preacher" name="mbsb_preacher">'.mbsb_return_select_list('preachers', $sermon->preacher_id).'</select></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series_id).'</select></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('services', $sermon->service_id).'</select></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.$sermon->time.'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_preacher">'.__('Preacher', MBSB).':</label></th><td><select id="mbsb_preacher" name="mbsb_preacher">'.mbsb_return_select_list('preachers', $sermon->preacher->id).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series->id).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('services', $sermon->service->id).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.($screen->action == 'add' ? $sermon->service->get_service_time() : $sermon->time).'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->get_formatted_passages().'"/></td></tr>';
 	echo '</table>';
 }
@@ -437,17 +440,6 @@ function mbsb_sermon_media_meta_box() {
 		foreach ($attachments as $attachment)
 			echo $attachment->get_attachment_row ();
 	echo '</table>';
-}
-
-/**
-* Adds required jvascript for the edit sermons page.
-* 
-* Designed to be called via the admin_footer action.
-* 
-*/
-function mbsb_add_edit_sermons_javascript() {
-	echo "<script type=\"text/javascript\">jQuery(document).ready(function(){jQuery('.add-date-picker').datepicker({dateFormat : 'yy-mm-dd'});});</script>\r\n";
-	echo "<script type=\"text/javascript\">var override = document.getElementById('mbsb_override_time'); override.change( function () {if (override.val() > 0) { var mbsb_time = document.getElementById('mbsb_time'); mbsb_time.Disabled = true; mbsb_time.style.backgroundColor='grey';} else {document.getElementById('mbsb_time').disabled = false;}})";
 }
 
 /**
@@ -502,20 +494,6 @@ function mbsb_save_post ($post_id, $post) {
 		$sermon->update_override_time (isset ($_POST['mbsb_override_time']));
 		$sermon->update_passages ($_POST['mbsb_passages']);
 	}
-}
-
-/**
-* Makes sure the date and time are saved when editing a custom post
-* 
-* Works by adding expected $_POST data from custom data.
-*/
-function mbsb_make_sure_date_time_is_saved () {
-	$_POST['aa'] = substr ($_POST['mbsb_date'], 0, 4);
-	$_POST['mm'] = substr ($_POST['mbsb_date'], 5, 2);
-	$_POST['jj'] = substr ($_POST['mbsb_date'], 8, 2);
-	$_POST['hh'] = substr ($_POST['mbsb_time'], 0, strpos($_POST['mbsb_time'], ':'));
-	$_POST['mn'] = substr ($_POST['mbsb_time'], strpos($_POST['mbsb_time'], ':')+1);
-	$_POST['ss'] = 0;
 }
 
 /**
