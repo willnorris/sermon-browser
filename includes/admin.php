@@ -23,6 +23,12 @@ function mbsb_admin_init () {
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
 	add_action ('wp_ajax_mbsb_remove_attachment', 'mbsb_ajax_mbsb_remove_attachment');
+	// Is the user quick editing a custom post_type?
+	if (isset($_POST['action']) && $_POST['action'] == 'inline-save' && substr($_POST['post_type'], 0, 5) == 'mbsb_') {
+		$mbsb_post_type = substr($_POST['post_type'], 5);
+		if (function_exists("mbsb_add_{$mbsb_post_type}_columns"))
+			add_filter ("manage_mbsb_{$mbsb_post_type}_posts_columns", "mbsb_add_{$mbsb_post_type}_columns");
+	}
 	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons') {
 		add_filter ('wp_insert_post_data', 'mbsb_sermon_insert_post_modify_date_time');
 	}
@@ -57,6 +63,7 @@ function mbsb_onload_edit_page () {
 		add_filter ('posts_groupby', 'mbsb_edit_posts_groupby');
 		if (isset($_GET['s']))
 			add_filter ('posts_search', 'mbsb_edit_posts_search');
+		add_action ('admin_head', create_function ('', "echo '<style type=\"text/css\">table.fixed {table-layout:auto;} table.fixed th.column-tags, table.fixed td.column-tags {width:auto;}</style>';"));
 	}
 }
 

@@ -67,6 +67,18 @@ class mbsb_sermon {
 			return false;
 	}
 	
+	public function get_simple_media_list() {
+		$attachments = $this->get_attachments();
+		if ($attachments) {
+			$output = array();
+			foreach ($attachments as $attachment)
+				$output[] = $attachment->get_title();
+			return implode('</br>', $output);
+		}
+		else
+			return __('No media attached', MBSB);
+	}
+	
 	/**
 	* Adds an attachment to a sermon
 	* 
@@ -223,6 +235,8 @@ class mbsb_sermon {
 			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$type}={$this->series->id}").'">'.esc_html($this->series->name).'</a>';
 		elseif ($type == 'passages')
 			return $this->get_formatted_passages('admin_link');
+		elseif ($type == 'media')
+			return $this->get_simple_media_list();
 		else
 			return 'Unknown type';
 	}

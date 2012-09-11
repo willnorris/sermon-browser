@@ -88,12 +88,6 @@ function mbsb_init () {
 	mbsb_register_custom_post_types();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
-	// Is the user quick editing a custom post_type?
-	if (isset($_POST['action']) && $_POST['action'] == 'inline-save' && substr($_POST['post_type'], 0, 5) == 'mbsb_') {
-		$mbsb_post_type = substr($_POST['post_type'], 5);
-		if (function_exists("mbsb_add_{$mbsb_post_type}_columns"))
-			add_filter ("manage_mbsb_{$mbsb_post_type}_posts_columns", "mbsb_add_{$mbsb_post_type}_columns");
-	}
 }
 
 /**

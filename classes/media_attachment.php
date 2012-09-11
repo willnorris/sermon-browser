@@ -43,6 +43,57 @@ class mbsb_media_attachment {
 		$function_name = "add_{$this->type}_attachment_row";
 		return $this->{$function_name} ($class);
 	}
+	
+	public function get_embed_code () {
+		if ($this->type != 'embed')
+			return false;
+		else
+			return $this->data['code'];
+	}
+	
+	public function get_title () {
+		if ($this->type == 'library')
+			return $this->data->post_title;
+		elseif ($this->type == 'url') {
+			$title = rtrim($this->data['url'], '/');
+			return substr($title, strrpos($title, '/')+1);
+		} elseif ($this->type == 'embed') {
+			$parse = new DOMDocument('4.0', 'utf-8');
+			@$parse->loadHTML ($this->get_embed_code());
+			$elements = array('iframe' => 'src', 'embed' => 'src', 'params' => 'value');
+			foreach ($elements as $element => $attribute) {
+				$found_elements = $parse->getElementsByTagName ($element);
+				foreach ($found_elements as $f) {
+					if (filter_var($f->getAttribute($attribute), FILTER_VALIDATE_URL)) {
+						$url = $f->getAttribute($attribute);
+						break;
+					}
+				}
+				if (isset($url))
+					break;
+			}
+			if (!isset($url))
+				return __('Embed code', MBSB);
+			$url = parse_url($url);
+			$url['host'] = strtolower ($url['host']);
+			if (substr($url['host'], 0, 4) == 'www.')
+				$url['host'] = substr ($url['host'], 4);
+			if (substr($url['host'], -4) == '.com') {
+				$a = substr ($url['host'], 0, -4);
+				if (strpos($a, '.') === false)
+					$url['host'] = $a;
+			}
+			return __('Embed code', MBSB).' ('.$url['host'].')';
+		}
+	}
+	
+	public function get_short_url () {
+		if ($this->type == 'url') {
+			$address = substr($this->data['url'], strpos($this->data['url'], '//')+2);
+			$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($this->data['url']);
+			return (strlen($short_address) > strlen($address)) ? $address : $short_address;
+		}
+	}
 
 	/**
 	* Returns a library attachment row, ready to be inserted in a table displaying a list of media items
@@ -76,20 +127,13 @@ class mbsb_media_attachment {
 		$url_array = $this->data;
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
-		$address = substr($url_array['url'], strpos($url_array['url'], '//')+2);
-		$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($url_array['url']);
-		if (strlen($short_address) > strlen($address)) {
-			$short_address = $address;
-			$insert2 = '';
-		} else
-			$insert2 = ' title="'.esc_html($url_array['url']).'"';
-		$title = rtrim($url_array['url'], '/');
-		$title = substr($title, strrpos($title, '/')+1);
+		$short_address = $this->get_short_url();
+		$title = $this->get_title();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
 		if ($actions)
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($url_array['mime_type']).'">';
-		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span'.$insert2.'>'.esc_html($short_address).'</span></td></tr>';
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span title="'.esc_html($url_array['url']).'">'.esc_html($short_address).'</span></td></tr>';
 		if ($url_array['size'] && $url_array['mime_type'] != 'text/html')
 			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table>';
@@ -107,7 +151,7 @@ class mbsb_media_attachment {
 		$embed_array = $this->data;
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
-		$title = __('Embed code');
+		$title = $this->get_title();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
 		if ($actions)
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
