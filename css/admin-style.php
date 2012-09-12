@@ -9,7 +9,7 @@
 .mbsb_hide {
 	display:none;
 }
-div.icon32-posts-mbsb_sermons {
+div.icon32-posts-mbsb_sermons, div.icon32-posts-mbsb_series, div.icon32-posts-mbsb_preachers, div.icon32-posts-mbsb_services {
 	background-image: url('../images/icon-32-color.png');
 }
 div.postbox th[scope=row] {
@@ -79,10 +79,10 @@ table#mbsb_attached_files table.mbsb_media_detail th, table#mbsb_attached_files 
 	border: none;
 	padding: 2px 7px;
 }
-body.post_mbsb_sermons #misc-publishing-actions {
+body.post_mbsb_sermons #misc-publishing-actions, body.post_mbsb_series #misc-publishing-actions, body.post_mbsb_preachers #misc-publishing-actions, body.post_mbsb_services #misc-publishing-actions {
 	display:none;
 }
-body.post_mbsb_sermons #minor-publishing {
+body.post_mbsb_sermons #minor-publishing, body.post_mbsb_series #minor-publishing, body.post_mbsb_preachers #minor-publishing, body.post_mbsb_services #minor-publishing {
 	border-bottom: none;
 	box-shadow: none;
 }
