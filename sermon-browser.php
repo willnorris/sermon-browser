@@ -94,7 +94,6 @@ function mbsb_init () {
 * Registers the various custom post types and taxonomies
 */
 function mbsb_register_custom_post_types() {
-	$sermons_slug = '/'.__('sermons', MBSB);
 	//Sermons post type
 	$args = array (	'label' => __('Sermons', MBSB),
 					'labels' => mbsb_generate_post_label (__('Sermons', MBSB), __('Sermon', MBSB)),
@@ -106,7 +105,7 @@ function mbsb_register_custom_post_types() {
 					'taxonomies' => array ('post_tag'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_sermons_meta_boxes',
-					'rewrite' => array('slug' => $sermons_slug, 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('sermons', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_sermons', $args);
 	//Series post type	
 	$args = array (	'label' => __('Series', MBSB),
@@ -115,9 +114,9 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
-					'supports' => array ('title', 'thumbnail', 'comments'),
+					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => $sermons_slug.'/'.__('series', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('series', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_series', $args);
 	//Preachers post type
 	$args = array (	'label' => __('Preachers', MBSB),
@@ -126,9 +125,9 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
-					'supports' => array ('title', 'thumbnail', 'comments'),
+					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => $sermons_slug.'/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_preachers', $args);
 	//Services post type
 	$args = array (	'label' => __('Services', MBSB),
@@ -139,7 +138,7 @@ function mbsb_register_custom_post_types() {
 					'show_in_menu' => 'sermon-browser',
 					'supports' => array ('title', 'editor', 'author', 'thumbnail', 'comments'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => $sermons_slug.'/'.__('services', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('services', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_services', $args);
 }
 
