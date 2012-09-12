@@ -146,7 +146,7 @@ class mbsb_passage {
 	*/
 	function parse_one ($passage, $previous = FALSE) {
 		$books = $this->bible_books();
-		if (preg_match('/^[A-Za-z]/', $passage) !== 0) {
+		if (preg_match('/[A-Za-z]/', $passage) !== 0) {
 			//Search through arrays looking for bookname
 			foreach ($books as $book_name => $book_index) {
 				if ($book_name != 'mbsb_index') {
