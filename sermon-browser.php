@@ -267,6 +267,8 @@ function mbsb_get_meta_ids_by_value ($value) {
 }
 
 function mbsb_shorten_string ($string, $max_length = 30) {
+	if (strlen($string) <= $max_length)
+		return $string;
 	$offset = min((integer)($max_length/4), 10);
 	$break_characters = array ('-', '+', ' ');
 	$left_array = $right_array = array();

@@ -80,8 +80,10 @@ class mbsb_sermon {
 			foreach ($attachments as $attachment)
 				if ($admin && ($library_id = $attachment->get_library_id()))
 					$output[] = '<strong>'.(current_user_can ('edit_post', $library_id) ? ("<a href=\"".get_edit_post_link ($library_id)."\">{$attachment->get_title()}</a>") : $attachment->get_title()).'</strong> ('.$attachment->get_friendly_mime_type().')';
-				else
+				elseif ($attachment->get_type() != 'embed')
 					$output[] = $attachment->get_title().' ('.$attachment->get_friendly_mime_type().')';
+				else
+					$output[] = $attachment->get_title();
 			return implode('</br>', $output);
 		}
 		else

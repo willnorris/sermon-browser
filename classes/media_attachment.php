@@ -30,6 +30,10 @@ class mbsb_media_attachment {
 		$this->meta_id = $meta_id;
 	}
 	
+	public function get_type() {
+		return $this->type;
+	}
+	
 	/**
 	* Returns JSON encoded data, ready for javascript to insert into the media table when editing a sermon
 	* 
