@@ -246,11 +246,11 @@ class mbsb_sermon {
 		if (substr($post_type, 0, 5) != 'mbsb_')
 			$post_type = 'mbsb_'.$post_type;
 		if ($column == 'preacher')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$column}={$this->preacher->id}").'">'.esc_html($this->preacher->name).'</a>';
+			return '<a href="'.get_edit_post_link($this->preacher->id).'">'.esc_html($this->preacher->name).'</a>';
 		elseif ($column == 'service')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$column}={$this->service->id}").'">'.esc_html($this->service->name).'</a>';
+			return '<a href="'.get_edit_post_link($this->service->id).'">'.esc_html($this->service->name).'</a>';
 		elseif ($column == 'series')
-			return '<a href="'.admin_url("edit.php?post_type={$post_type}&{$column}={$this->series->id}").'">'.esc_html($this->series->name).'</a>';
+			return '<a href="'.get_edit_post_link($this->series->id).'">'.esc_html($this->series->name).'</a>';
 		elseif ($column == 'passages')
 			return $this->get_formatted_passages('admin_link');
 		elseif ($column == 'media')
