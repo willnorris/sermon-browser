@@ -258,4 +258,21 @@ function mbsb_get_meta_ids_by_value ($value) {
 	global $wpdb;
 	return $wpdb->get_col($wpdb->prepare("SELECT meta_id FROM {$wpdb->prefix}postmeta WHERE meta_value=%s", $value));
 }
+
+function mbsb_shorten_string ($string, $max_length = 30) {
+	$offset = min((integer)($max_length/4), 10);
+	$break_characters = array ('-', '+', ' ');
+	$left_array = $right_array = array();
+	foreach ($break_characters as $b) {
+		$left_array[] = ($a = strpos($string, $b, $offset)) ? $a : 999;
+		$left_array[] = ($a = strpos($string, htmlentities($b), $offset)) ? $a : 999;
+		$right_array[] = ($a = strrpos($string, $b, -$offset)) ? $a : 999;
+		$right_array[] = ($a = strrpos($string, htmlentities($b), -$offset)) ? $a : 999;
+	}
+	$new_string = ($left = substr($string, 0, min($left_array))).'…'.substr($string, min($right_array)+1);
+	if (strlen($new_string) > $max_length)
+		return substr($left, 0, $max_length-1).'…';
+	else
+		return $new_string;
+}
 ?>

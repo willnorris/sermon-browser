@@ -91,7 +91,8 @@ class mbsb_media_attachment {
 			return $this->data->post_title;
 		elseif ($this->type == 'url') {
 			$title = rtrim($this->data['url'], '/');
-			return substr($title, strrpos($title, '/')+1);
+			$title = substr($title, strrpos($title, '/')+1);
+			return mbsb_shorten_string($title, 30);
 		} elseif ($this->type == 'embed') {
 			$parse = new DOMDocument('4.0', 'utf-8');
 			@$parse->loadHTML ($this->get_embed_code());
@@ -135,6 +136,36 @@ class mbsb_media_attachment {
 		} else
 			return false;
 	}
+	
+	/**
+	* Returns the mime type of the attachment
+	*/
+	public function get_mime_type() {
+		if ($this->type == 'url')
+			return $this->data['mime_type'];
+		elseif ($this->type == 'library')
+			return $this->data->post_mime_type;
+		elseif ($this->type == 'embed')
+			return __('embed', MBSB);
+	}
+	
+	/**
+	* Returns a friendly name for the mime type of the attachment
+	*/
+	public function get_friendly_mime_type() {
+		$mime_type = $this->get_mime_type();
+		if ($mime_type == 'application/pdf')
+			return __('PDF', MBSB);
+		elseif ($mime_type == 'text/html')
+			return __('link', MBSB);
+		$sub = substr($mime_type, 0, 6);
+		if ($sub == 'audio/')
+			return __('audio', MBSB);
+		elseif ($sub == 'image/')
+			return __('image', MBSB);
+		else
+			return $mime_type;
+	}
 
 	/**
 	* Returns a library attachment row, ready to be inserted in a table displaying a list of media items
@@ -175,9 +206,9 @@ class mbsb_media_attachment {
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
 		if ($actions)
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
-		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($url_array['mime_type']).'">';
+		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($this->get_mime_type()).'">';
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span title="'.esc_html($url_array['url']).'">'.esc_html($short_address).'</span></td></tr>';
-		if ($url_array['size'] && $url_array['mime_type'] != 'text/html')
+		if ($url_array['size'] && $this->get_mime_type() != 'text/html')
 			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table>';
 		$output .= '</td></tr>';

@@ -70,14 +70,18 @@ class mbsb_sermon {
 	/**
 	* Returns a simple list of the media items (titles separated by <br/> tags)
 	* 
+	* @param bool $admin - true if edit links to be added
 	* @return string
 	*/
-	public function get_simple_media_list() {
+	public function get_simple_media_list($admin = false) {
 		$attachments = $this->get_attachments();
 		if ($attachments) {
 			$output = array();
 			foreach ($attachments as $attachment)
-				$output[] = $attachment->get_title();
+				if ($admin && ($library_id = $attachment->get_library_id()))
+					$output[] = '<strong>'.(current_user_can ('edit_post', $library_id) ? ("<a href=\"".get_edit_post_link ($library_id)."\">{$attachment->get_title()}</a>") : $attachment->get_title()).'</strong> ('.$attachment->get_friendly_mime_type().')';
+				else
+					$output[] = $attachment->get_title().' ('.$attachment->get_friendly_mime_type().')';
 			return implode('</br>', $output);
 		}
 		else
@@ -248,7 +252,7 @@ class mbsb_sermon {
 		elseif ($column == 'passages')
 			return $this->get_formatted_passages('admin_link');
 		elseif ($column == 'media')
-			return $this->get_simple_media_list();
+			return $this->get_simple_media_list(true);
 		else
 			return 'Unknown type';
 	}
