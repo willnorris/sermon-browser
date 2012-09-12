@@ -18,11 +18,13 @@ function mbsb_admin_init () {
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
 	add_action ('delete_post', 'mbsb_handle_media_deletion');
+	add_filter ('admin_body_class', 'mbsb_admin_body_class');
 	// Single admin pages only
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('load-upload.php', 'mbsb_onload_upload_page');
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
+	add_filter ('gettext', 'mbsb_do_custom_translations', 1, 3);
 	// Ajax API calls
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
@@ -525,11 +527,9 @@ function mbsb_ajax_mbsb_remove_attachment() {
 * Also removes unwanted metaboxes and adds required styles and javascripts.
 */
 function mbsb_sermons_meta_boxes () {
-	add_meta_box ('mbsb_sermon_save', __('Save', MBSB), 'mbsb_sermon_save_meta_box', 'mbsb_sermons', 'side', 'high');
 	add_meta_box ('mbsb_sermon_media', __('Media', MBSB), 'mbsb_sermon_media_meta_box', 'mbsb_sermons', 'normal', 'high');
 	add_meta_box ('mbsb_sermon_details', __('Details', MBSB), 'mbsb_sermon_details_meta_box', 'mbsb_sermons', 'normal', 'high');
 	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermons', 'normal', 'default');
-	remove_meta_box ('submitdiv', 'mbsb_sermons', 'side');
 	add_filter ('screen_options_show_screen', create_function ('', 'return false;'));
 	wp_enqueue_script ('jquery-ui-datepicker');
 	wp_enqueue_style('mbsb_jquery_ui');
@@ -588,19 +588,6 @@ function mbsb_sermon_media_meta_box() {
 */
 function mbsb_sermon_editor_box ($post) {
 	wp_editor ($post->post_content, 'content', array ('media_buttons' => false, 'textarea_rows' => 5));
-}
-
-/**
-* Outputs the save/publish metabox
-* 
-* Code adapted from meta-boxes.php
-* @todo - check this code with WordPress 3.3
-*/
-function mbsb_sermon_save_meta_box() {
-	global $post;
-	$post_type = $post->post_type;
-	$post_type_object = get_post_type_object($post_type);
-	require mbsb_plugin_dir_path('includes/meta-box-save.php');
 }
 
 /**
@@ -681,5 +668,10 @@ function mbsb_handle_media_deletion ($post_id) {
 	$post = get_post ($post_id);
 	if ($post->post_type == 'attachment')
 		mbsb_unattach_media_item_from_all_sermons ($post_id);
+}
+
+function mbsb_admin_body_class ($class) {
+	$screen = get_current_screen();
+	return "{$class} {$screen->base}_{$screen->id}";
 }
 ?>

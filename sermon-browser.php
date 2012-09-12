@@ -220,8 +220,15 @@ function mbsb_plugins_url ($path = '') {
 * @return string
 */
 function mbsb_do_custom_translations ($translated_text, $text, $domain) {
-	if ((strpos(wp_get_referer(), 'referer=mbsb_sermons') || (isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermons'))&& $text == 'Insert into Post')
-		$translated_text = __("Attach to sermon", MBSB);
+	if ($text == 'Insert into Post' && ((isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermons') || strpos(wp_get_referer(), 'referer=mbsb_sermons')))
+		return __('Attach to sermon', MBSB);
+	if ($text == 'Publish' && isset($_GET['post_type']) && (substr($_GET['post_type'], 0, 5) == 'mbsb_'))
+		return __('Save', MBSB);
+	if ($text == 'Publish' && isset($_GET['post'])) {
+		$post = get_post ($_GET['post']);
+		if (substr($post->post_type, 0, 5) == 'mbsb_')
+			return __('Save', MBSB);
+	}
 	return $translated_text;
 }
 

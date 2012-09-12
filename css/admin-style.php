@@ -79,3 +79,10 @@ table#mbsb_attached_files table.mbsb_media_detail th, table#mbsb_attached_files 
 	border: none;
 	padding: 2px 7px;
 }
+body.post_mbsb_sermons #misc-publishing-actions {
+	display:none;
+}
+body.post_mbsb_sermons #minor-publishing {
+	border-bottom: none;
+	box-shadow: none;
+}
