@@ -99,6 +99,14 @@ function mbsb_output_custom_columns($column, $post_id) {
 		else
 			echo str_replace(', ', '<br/>', $sermon->edit_php_cell ($post_type, $column));
 	}
+	if ($column == 'image' && substr($post_type, 0, 5) == 'mbsb_') {
+		if (current_user_can('edit_post', $post_id)) {
+			$thumbnail = get_post_thumbnail_id($post_id);
+			if ($thumbnail)
+				echo "<a href=\"".get_edit_post_link ($thumbnail)."\">".wp_get_attachment_image ($thumbnail, array(100, 100)).'</a>';
+		} else
+			echo get_the_post_thumbnail($post_id, array(100, 100));
+	}
 }
 
 /**
@@ -251,6 +259,57 @@ function mbsb_make_sermons_columns_sortable ($columns) {
 	$columns ['stats'] = 'stats';
 	$columns ['sermon_date'] = 'sermon_date';
 	return $columns;
+}
+
+/**
+* Filters manage_mbsb_series_posts_columns (i.e. the names of additional columns when series are displayed in admin)
+* 
+* Adds the new columns required.
+* 
+* @param array $columns
+* @return array
+*/
+function mbsb_add_series_columns($columns) {
+	$new_columns ['cb'] = $columns['cb'];
+	$new_columns ['title'] = $columns ['title'];
+	$new_columns ['image'] = __('Image', MBSB);
+	if (post_type_supports ('mbsb_series', 'comments'))
+		$new_columns ['comments'] = $columns ['comments'];
+	return $new_columns;
+}
+
+/**
+* Filters manage_mbsb_preachers_posts_columns (i.e. the names of additional columns when preachers are displayed in admin)
+* 
+* Adds the new columns required.
+* 
+* @param array $columns
+* @return array
+*/
+function mbsb_add_preachers_columns($columns) {
+	$new_columns ['cb'] = $columns['cb'];
+	$new_columns ['title'] = $columns ['title'];
+	$new_columns ['image'] = __('Image', MBSB);
+	if (post_type_supports ('mbsb_preachers', 'comments'))
+		$new_columns ['comments'] = $columns ['comments'];
+	return $new_columns;
+}
+
+/**
+* Filters manage_mbsb_services_posts_columns (i.e. the names of additional columns when services are displayed in admin)
+* 
+* Adds the new columns required.
+* 
+* @param array $columns
+* @return array
+*/
+function mbsb_add_services_columns($columns) {
+	$new_columns ['cb'] = $columns['cb'];
+	$new_columns ['title'] = $columns ['title'];
+	$new_columns ['image'] = __('Image', MBSB);
+	if (post_type_supports ('mbsb_services', 'comments'))
+		$new_columns ['comments'] = $columns ['comments'];
+	return $new_columns;
 }
 
 /**
