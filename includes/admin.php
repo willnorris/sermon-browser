@@ -145,8 +145,10 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 		$sermons = mbsb_get_sermons_from_media_id ($post_id);
 		if ($sermons) {
 			$output = array();
-			foreach ($sermons as $sermon)
-				$output[] = '<strong>'.(current_user_can ('edit_post', $sermon->id) ? ("<a href=\"".get_edit_post_link ($sermon->id)."\">{$sermon->title}</a>") : $sermon->title).'</strong>, '.get_the_time (__('Y/m/d'), $sermon->id);
+			foreach ($sermons as $sermon) {
+				$title =_draft_or_post_title ($sermon->id);
+				$output[] = '<strong>'.(current_user_can ('edit_post', $sermon->id) ? ("<a href=\"".get_edit_post_link ($sermon->id)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $sermon->id);
+			}
 			echo implode ('<br/>', $output);
 		}
 		else {
