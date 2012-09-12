@@ -102,7 +102,7 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
-					'supports' => array ('title', 'comments'), // We will add 'editor' support later, so it can be positioned correctly
+					'supports' => array ('title', 'thumbnail', 'comments'), // No 'editor' support because we'll add it in a positionable box later
 					'taxonomies' => array ('post_tag'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_sermons_meta_boxes',
