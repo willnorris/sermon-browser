@@ -149,20 +149,18 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 				$title =_draft_or_post_title ($sermon->id);
 				$output[] = '<strong>'.(current_user_can ('edit_post', $sermon->id) ? ("<a href=\"".get_edit_post_link ($sermon->id)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $sermon->id);
 			}
-			echo implode ('<br/>', $output);
 		}
-		else {
-			$post = get_post($post_id);
-			if ($post->post_parent > 0) {
-				$parent = get_post($post->post_parent);
-				if ($parent && $parent->post_type != 'mbsb_sermons') {
-					$title =_draft_or_post_title ($post->post_parent);
-					echo '<strong>'.(current_user_can ('edit_post', $post->post_parent) ? ("<a href=\"".get_edit_post_link ($post->post_parent)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $post);
-				}
-			} else {
-				echo __( '(Unattached)' ).(current_user_can ('edit_post', $post_id) ? ("<br/><a class=\"hide-if-no-js\" onclick=\"findPosts.open( 'media[]','{$post->ID}' ); return false;\" href=\"#the-list\">".__('Attach').'</a>') : '');
+		$post = get_post($post_id);
+		if ($post->post_parent > 0) {
+			$parent = get_post($post->post_parent);
+			if ($parent && $parent->post_type != 'mbsb_sermons') {
+				$title =_draft_or_post_title ($post->post_parent);
+				$output[] = '<strong>'.(current_user_can ('edit_post', $post->post_parent) ? ("<a href=\"".get_edit_post_link ($post->post_parent)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $post);
 			}
+		} else {
+			$output[] = __( '(Unattached)' ).(current_user_can ('edit_post', $post_id) ? ("<br/><a class=\"hide-if-no-js\" onclick=\"findPosts.open( 'media[]','{$post->ID}' ); return false;\" href=\"#the-list\">".__('Attach').'</a>') : '');
 		}
+		echo implode ('<br/>', $output);
 	}
 }
 
