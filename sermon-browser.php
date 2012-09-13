@@ -287,26 +287,36 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 }
 
 /**
-* Prevents the last sermon/series/preacher/service being deleted
-*
+* Prevents sermon/series/preacher/services being deleted incorrectly
+* 
+* Ensures there is always at least one sermon/series/preacher/service
+* Does not allow series/preacher/services to be deleted if they are in use
+* Filters user_has_cap
+* 
 * Cannot use wp_count_posts() because of a WordPress bug
 * @link https://core.trac.wordpress.org/ticket/21879
-*
-* @param mixed $allcaps
-* @param mixed $caps
-* @param mixed $args
+* 
+* @param array $allcaps
+* @param array $caps
+* @param array $args
+* @return array
 */
 function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
-    global $wpdb;
-    if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
-        $post = get_post ($args[2]);
-        if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
-            $query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
-            $num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
-            if ($num_posts < 2)
-                $allcaps[$caps[0]] = false;
-        }
-    }
-    return $allcaps;
+	global $wpdb;
+	if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
+		$post = get_post ($args[2]);
+		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
+			$query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
+			$num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
+			if ($num_posts < 2)
+				$allcaps[$caps[0]] = false;
+		}
+		if ($post->post_type != 'mbsb_sermon') {
+			$type = substr($post->post_type, 5);
+			if (query_posts (array ('post_type' => 'mbsb_sermon', 'meta_query' => array (array('key' => $type, 'value' => $args[2])))))
+				$allcaps[$caps[0]] = false;
+		}
+	}
+	return $allcaps;
 }
-?>?>
+?>
