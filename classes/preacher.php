@@ -16,7 +16,7 @@ class mbsb_preacher {
 		$post = get_post ($post_id);
 		$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name');
 		foreach ($properties as $k => $v)
-			if (empty($post) || $post->post_type != 'mbsb_preachers')
+			if (empty($post) || $post->post_type != 'mbsb_preacher')
 				$this->$v = null;
 			else
 				$this->$v = $post->$k;

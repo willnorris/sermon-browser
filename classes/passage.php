@@ -42,7 +42,7 @@ class mbsb_passage {
 	* @return string
 	*/
 	public function get_admin_link() {
-		return str_replace(array ('(--', '--)', '(==)'), array('<a href="'.admin_url('edit.php?post_type=mbsb_sermons&book='), '">', '</a>'), esc_html($this->link_template));
+		return str_replace(array ('(--', '--)', '(==)'), array('<a href="'.admin_url('edit.php?post_type=mbsb_sermon&book='), '">', '</a>'), esc_html($this->link_template));
 	}
 	
 	/** 

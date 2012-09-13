@@ -105,13 +105,13 @@ jQuery(document).ready(function($) {
 	//Watch for the upload button being clicked
 	$('#mbsb_upload_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
-		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=<?php echo $_GET['post_id']; ?>&tab=type&TB_iframe=true', false);
+		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermon&post_id=<?php echo $_GET['post_id']; ?>&tab=type&TB_iframe=true', false);
 		return false;
 	});
 	//Watch for the library button being clicked
 	$('#mbsb_insert_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
-		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermons&post_id=<?php echo $_GET['post_id']; ?>&tab=library&TB_iframe=true', false);
+		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermon&post_id=<?php echo $_GET['post_id']; ?>&tab=library&TB_iframe=true', false);
 		return false;
 	});
 	//Watch for the URL button being clicked

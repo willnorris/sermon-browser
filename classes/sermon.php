@@ -14,7 +14,7 @@ class mbsb_sermon {
 	*/
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
-		if (empty($post) || $post->post_type != 'mbsb_sermons')
+		if (empty($post) || $post->post_type != 'mbsb_sermon')
 			return new WP_Error('NO_SERMON_WITH_THAT_ID');
 		$properties = array ('ID' => 'id', 'comment_count' => 'comment_count', 'comment_status' => 'comment_status', 'ping_status' => 'ping_status', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'title');
 		foreach ($properties as $k => $v)

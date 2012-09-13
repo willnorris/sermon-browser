@@ -16,7 +16,7 @@ class mbsb_service {
 		$post = get_post ($post_id);
 		$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name');
 		foreach ($properties as $k => $v)
-			if (empty($post) || $post->post_type != 'mbsb_services')
+			if (empty($post) || $post->post_type != 'mbsb_service')
 				$this->$v = null;
 			else
 				$this->$v = $post->$k;

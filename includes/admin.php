@@ -36,7 +36,7 @@ function mbsb_admin_init () {
 			add_filter ("manage_mbsb_{$mbsb_post_type}_posts_columns", "mbsb_add_{$mbsb_post_type}_columns");
 	}
 	// Saving a sermon?
-	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermons')
+	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermon')
 		add_filter ('wp_insert_post_data', 'mbsb_sermon_insert_post_modify_date_time');
 }
 
@@ -94,7 +94,7 @@ function mbsb_onload_upload_page () {
 */
 function mbsb_output_custom_columns($column, $post_id) {
 	$post_type = get_post_type ($post_id);
-	if ($post_type == 'mbsb_sermons') {
+	if ($post_type == 'mbsb_sermon') {
 		$sermon = new mbsb_sermon($post_id);
 		if ($column == 'sermon_date')
 			echo date(get_option('date_format'), $sermon->timestamp);
@@ -155,7 +155,7 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 		$post = get_post($post_id);
 		if ($post->post_parent > 0) {
 			$parent = get_post($post->post_parent);
-			if ($parent && $parent->post_type != 'mbsb_sermons') {
+			if ($parent && $parent->post_type != 'mbsb_sermon') {
 				$title =_draft_or_post_title ($post->post_parent);
 				$output[] = '<strong>'.(current_user_can ('edit_post', $post->post_parent) ? ("<a href=\"".get_edit_post_link ($post->post_parent)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $post);
 			}
@@ -175,7 +175,7 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 function mbsb_add_javascript_and_styles_to_admin_pages() {
 	global $post;
 	$screen = get_current_screen();
-	if ($screen->base == 'post' && $screen->id == 'mbsb_sermons') {
+	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon') {
 		wp_enqueue_style ('thickbox');
 		wp_enqueue_script('mbsb_script_sermon_upload', home_url("?mbsb_script&amp;name=sermon_upload&amp;post_id={$post->ID}"), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 	}
@@ -201,7 +201,7 @@ function mbsb_media_upload_actions() {
 * @return array
 */
 function mbsb_force_insert_post_on_media_popup ($args) {
-	if (isset ($_GET['post_id']) && get_post_type ($_GET['post_id']) == 'mbsb_sermons')
+	if (isset ($_GET['post_id']) && get_post_type ($_GET['post_id']) == 'mbsb_sermon')
 		$args ['send'] = true;
 	return $args;
 }
@@ -222,14 +222,14 @@ function mbsb_filter_media_upload_tabs ($tabs) {
 }
 
 /**
-* Filters manage_mbsb_sermons_posts_columns (i.e. the names of additional columns when sermons are displayed in admin)
+* Filters manage_mbsb_sermon_posts_columns (i.e. the names of additional columns when sermons are displayed in admin)
 * 
 * Adds the new columns required.
 * 
 * @param array $columns
 * @return array
 */
-function mbsb_add_sermons_columns($columns) {
+function mbsb_add_sermon_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
 	$new_columns ['passages'] = __('Bible passages', MBSB);
@@ -239,21 +239,21 @@ function mbsb_add_sermons_columns($columns) {
 	$new_columns ['media'] = __('Media', MBSB);
 	$new_columns ['tags'] = __('Tags', MBSB);
 	$new_columns ['stats'] = __('Stats', MBSB);
-	if (post_type_supports ('mbsb_sermons', 'comments'))
+	if (post_type_supports ('mbsb_sermon', 'comments'))
 		$new_columns ['comments'] = $columns ['comments'];
 	$new_columns ['sermon_date'] = $columns ['date'];
 	return $new_columns;
 }
 
 /**
-* Filters manage_edit-mbsb_sermons_sortable_columns (i.e. the list of sortable columns when sermons are displayed in admin)
+* Filters manage_edit-mbsb_sermon_sortable_columns (i.e. the list of sortable columns when sermons are displayed in admin)
 * 
 * Indicates which columns are sortable.
 * 
 * @param array $columns
 * @return array
 */
-function mbsb_make_sermons_columns_sortable ($columns) {
+function mbsb_make_sermon_columns_sortable ($columns) {
 	$columns ['passages'] = 'passages';
 	$columns ['preacher'] = 'preacher';
 	$columns ['service'] = 'service';
@@ -281,35 +281,35 @@ function mbsb_add_series_columns($columns) {
 }
 
 /**
-* Filters manage_mbsb_preachers_posts_columns (i.e. the names of additional columns when preachers are displayed in admin)
+* Filters manage_mbsb_preacher_posts_columns (i.e. the names of additional columns when preachers are displayed in admin)
 * 
 * Adds the new columns required.
 * 
 * @param array $columns
 * @return array
 */
-function mbsb_add_preachers_columns($columns) {
+function mbsb_add_preacher_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
 	$new_columns ['image'] = __('Image', MBSB);
-	if (post_type_supports ('mbsb_preachers', 'comments'))
+	if (post_type_supports ('mbsb_preacher', 'comments'))
 		$new_columns ['comments'] = $columns ['comments'];
 	return $new_columns;
 }
 
 /**
-* Filters manage_mbsb_services_posts_columns (i.e. the names of additional columns when services are displayed in admin)
+* Filters manage_mbsb_service_posts_columns (i.e. the names of additional columns when services are displayed in admin)
 * 
 * Adds the new columns required.
 * 
 * @param array $columns
 * @return array
 */
-function mbsb_add_services_columns($columns) {
+function mbsb_add_service_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
 	$new_columns ['image'] = __('Image', MBSB);
-	if (post_type_supports ('mbsb_services', 'comments'))
+	if (post_type_supports ('mbsb_service', 'comments'))
 		$new_columns ['comments'] = $columns ['comments'];
 	return $new_columns;
 }
@@ -324,11 +324,11 @@ function mbsb_add_services_columns($columns) {
 */
 function mbsb_edit_posts_join ($join) {
 	global $wpdb;
-	if ($_GET['post_type'] == 'mbsb_sermons') {
+	if ($_GET['post_type'] == 'mbsb_sermon') {
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'preacher') || isset($_GET['preacher']) || isset($_GET['s']))
-			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preachers')";
+			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preacher')";
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'service') || isset($_GET['service']) || isset($_GET['s']))
-			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_services')";
+			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_service')";
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'series') || isset($_GET['series']) || isset($_GET['s']))
 			$join .= " INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
 		if (isset($_GET['book']))
@@ -348,7 +348,7 @@ function mbsb_edit_posts_join ($join) {
 function mbsb_edit_posts_sort($orderby) {
 	global $wpdb;
 	if (isset($_GET['orderby'])) {
-		if ($_GET['post_type'] == 'mbsb_sermons') {
+		if ($_GET['post_type'] == 'mbsb_sermon') {
 			if ($_GET['orderby'] == 'preacher')
 				return "preachers.post_title ".$wpdb->escape($_GET["order"]);
 			elseif ($_GET['orderby'] == 'service')
@@ -372,7 +372,7 @@ function mbsb_edit_posts_sort($orderby) {
 */
 function mbsb_edit_posts_fields ($select) {
 	global $wpdb;
-	if ($_GET['post_type'] == 'mbsb_sermons') {
+	if ($_GET['post_type'] == 'mbsb_sermon') {
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'passages'))
 			$select .= ", (SELECT meta_value FROM {$wpdb->prefix}postmeta AS pm WHERE wp_posts.ID=pm.post_id AND pm.meta_key='passage_start' ORDER BY RIGHT(pm.meta_value, 4) LIMIT 1) AS passage_sort";
 	}
@@ -389,7 +389,7 @@ function mbsb_edit_posts_fields ($select) {
 */
 function mbsb_edit_posts_where($where) {
 	global $wpdb;
-	if ($_GET['post_type'] == 'mbsb_sermons') {
+	if ($_GET['post_type'] == 'mbsb_sermon') {
 		if (isset($_GET['preacher']))
 			$where .= " AND preachers.ID=".$wpdb->escape($_GET["preacher"]);
 		if (isset($_GET['series']))
@@ -412,7 +412,7 @@ function mbsb_edit_posts_where($where) {
 */
 function mbsb_edit_posts_groupby($groupby) {
 	global $wpdb;
-	if ($_GET['post_type'] == 'mbsb_sermons') {
+	if ($_GET['post_type'] == 'mbsb_sermon') {
 		if (isset($_GET['book']))
 			$groupby .= "{$wpdb->prefix}posts.ID";
 	}
@@ -431,7 +431,7 @@ function mbsb_edit_posts_groupby($groupby) {
 function mbsb_edit_posts_search ($search) {
 	global $wpdb;
 	if (isset($_GET['s'])) {
-		if ($_GET['post_type'] == 'mbsb_sermons')
+		if ($_GET['post_type'] == 'mbsb_sermon')
 			$new_search_fields = array ('preachers.post_title', 'services.post_title', 'series.post_title');
 		if (isset($new_search_fields)) {
 			$search = rtrim ($search, ' )').')';
@@ -526,10 +526,10 @@ function mbsb_ajax_mbsb_remove_attachment() {
 * 
 * Also removes unwanted metaboxes and adds required styles and javascripts.
 */
-function mbsb_sermons_meta_boxes () {
-	add_meta_box ('mbsb_sermon_media', __('Media', MBSB), 'mbsb_sermon_media_meta_box', 'mbsb_sermons', 'normal', 'high');
-	add_meta_box ('mbsb_sermon_details', __('Details', MBSB), 'mbsb_sermon_details_meta_box', 'mbsb_sermons', 'normal', 'high');
-	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermons', 'normal', 'default');
+function mbsb_sermon_meta_boxes () {
+	add_meta_box ('mbsb_sermon_media', __('Media', MBSB), 'mbsb_sermon_media_meta_box', 'mbsb_sermon', 'normal', 'high');
+	add_meta_box ('mbsb_sermon_details', __('Details', MBSB), 'mbsb_sermon_details_meta_box', 'mbsb_sermon', 'normal', 'high');
+	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermon', 'normal', 'default');
 	add_filter ('screen_options_show_screen', create_function ('', 'return false;'));
 	wp_enqueue_script ('jquery-ui-datepicker');
 	wp_enqueue_style('mbsb_jquery_ui');
@@ -546,9 +546,9 @@ function mbsb_sermon_details_meta_box() {
 	$sermon = new mbsb_sermon ($post->ID);
 	$screen = get_current_screen();
 	echo '<table class="sermon_details">';
-	echo '<tr><th scope="row"><label for="mbsb_preacher">'.__('Preacher', MBSB).':</label></th><td><select id="mbsb_preacher" name="mbsb_preacher">'.mbsb_return_select_list('preachers', $sermon->preacher->id).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_preacher">'.__('Preacher', MBSB).':</label></th><td><select id="mbsb_preacher" name="mbsb_preacher">'.mbsb_return_select_list('preacher', $sermon->preacher->id).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series->id).'</select></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('services', $sermon->service->id).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('service', $sermon->service->id).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.($screen->action == 'add' ? $sermon->service->get_service_time() : $sermon->time).'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->get_formatted_passages().'"/></td></tr>';
 	echo '</table>';
@@ -612,7 +612,7 @@ function mbsb_add_admin_menu() {
 * @param object $post
 */
 function mbsb_save_post ($post_id, $post) {
-	if (!empty($_POST) && isset($_POST['action']) && $_POST['action'] == 'editpost' && $_POST['post_type'] == 'mbsb_sermons' && !(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) && check_admin_referer ('mbsb_sermon_details_meta_box', 'details_nonce')) {
+	if (!empty($_POST) && isset($_POST['action']) && $_POST['action'] == 'editpost' && $_POST['post_type'] == 'mbsb_sermon' && !(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) && check_admin_referer ('mbsb_sermon_details_meta_box', 'details_nonce')) {
 		$sermon = new mbsb_sermon ($post_id);
 		$sermon->update_preacher ($_POST['mbsb_preacher']);
 		$sermon->update_series ($_POST['mbsb_series']);
@@ -640,7 +640,7 @@ function mbsb_do_media_row_message ($message) {
 */
 function mbsb_get_sermons_from_media_id ($post_id) {
 	$meta_value = serialize(array ('type' => 'library', 'post_id' => (string)$post_id));
-	$sermons = query_posts (array ('post_type' => 'mbsb_sermons', 'meta_query' => array (array('key' => 'attachments', 'value' => $meta_value))));
+	$sermons = query_posts (array ('post_type' => 'mbsb_sermon', 'meta_query' => array (array('key' => 'attachments', 'value' => $meta_value))));
 	wp_reset_query();
 	if ($sermons) {
 		foreach ($sermons as &$s)

@@ -64,7 +64,7 @@ function mbsb_plugins_loaded() {
 }
 
 function mbsb_sermon_insert_post_modify_date_time ($data) {
-	if ($data['post_type'] == 'mbsb_sermons')
+	if ($data['post_type'] == 'mbsb_sermon')
 		if (isset($_POST['mbsb_date']) && $data['post_status'] != 'auto-draft') {
 			if (isset($_POST['mbsb_override_time']) && $_POST['mbsb_override_time'] == 'on' && isset($_POST['mbsb_time']))
 				$data['post_date'] = $data ['post_modified'] = "{$_POST['mbsb_date']} {$_POST['mbsb_time']}:00";
@@ -105,9 +105,10 @@ function mbsb_register_custom_post_types() {
 					'supports' => array ('title', 'thumbnail', 'comments'), // No 'editor' support because we'll add it in a positionable box later
 					'taxonomies' => array ('post_tag'),
 					'has_archive' => true,
-					'register_meta_box_cb' => 'mbsb_sermons_meta_boxes',
-					'rewrite' => array('slug' => '/'.__('sermons', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
-	register_post_type ('mbsb_sermons', $args);
+					'query_var' => 'sermon',
+					'register_meta_box_cb' => 'mbsb_sermon_meta_boxes',
+					'rewrite' => array('slug' => '/'.__('sermon', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+	register_post_type ('mbsb_sermon', $args);
 	//Series post type	
 	$args = array (	'label' => __('Series', MBSB),
 					'labels' => mbsb_generate_post_label (_x('Series', 'Plural', MBSB), _x('Series', 'Singular', MBSB)),
@@ -128,8 +129,8 @@ function mbsb_register_custom_post_types() {
 					'show_in_menu' => 'sermon-browser',
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => '/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
-	register_post_type ('mbsb_preachers', $args);
+					'rewrite' => array('slug' => '/'.__('preacher', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+	register_post_type ('mbsb_preacher', $args);
 	//Services post type
 	$args = array (	'label' => __('Services', MBSB),
 					'labels' => mbsb_generate_post_label (__('Services', MBSB), __('Service', MBSB)),
@@ -139,8 +140,8 @@ function mbsb_register_custom_post_types() {
 					'show_in_menu' => 'sermon-browser',
 					'supports' => array ('title', 'editor', 'author', 'thumbnail', 'comments'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => '/'.__('services', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
-	register_post_type ('mbsb_services', $args);
+					'rewrite' => array('slug' => '/'.__('service', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+	register_post_type ('mbsb_service', $args);
 }
 
 /**
@@ -220,7 +221,7 @@ function mbsb_plugins_url ($path = '') {
 * @return string
 */
 function mbsb_do_custom_translations ($translated_text, $text, $domain) {
-	if ($text == 'Insert into Post' && ((isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermons') || strpos(wp_get_referer(), 'referer=mbsb_sermons')))
+	if ($text == 'Insert into Post' && ((isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermon') || strpos(wp_get_referer(), 'referer=mbsb_sermon')))
 		return __('Attach to sermon', MBSB);
 	if ($text == 'Publish' && isset($_GET['post_type']) && (substr($_GET['post_type'], 0, 5) == 'mbsb_'))
 		return __('Save', MBSB);
@@ -287,25 +288,25 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 
 /**
 * Prevents the last sermon/series/preacher/service being deleted
-* 
+*
 * Cannot use wp_count_posts() because of a WordPress bug
 * @link https://core.trac.wordpress.org/ticket/21879
-* 
+*
 * @param mixed $allcaps
 * @param mixed $caps
 * @param mixed $args
 */
 function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
-	global $wpdb;
-	if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
-		$post = get_post ($args[2]);
-		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
-			$query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
-			$num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
-			if ($num_posts < 2)
-				$allcaps[$caps[0]] = false;
-		}
-	}
-	return $allcaps;
+    global $wpdb;
+    if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
+        $post = get_post ($args[2]);
+        if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
+            $query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
+            $num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
+            if ($num_posts < 2)
+                $allcaps[$caps[0]] = false;
+        }
+    }
+    return $allcaps;
 }
-?>
+?>?>
