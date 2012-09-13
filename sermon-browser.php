@@ -88,6 +88,7 @@ function mbsb_init () {
 	mbsb_register_custom_post_types();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
+	add_filter ('user_has_cap', 'mbsb_prevent_cpt_deletions', 10, 3);
 }
 
 /**
@@ -282,5 +283,29 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 		return substr($left, 0, $max_length-1).'…';
 	else
 		return $new_string;
+}
+
+/**
+* Prevents the last sermon/series/preacher/service being deleted
+* 
+* Cannot use wp_count_posts() because of a WordPress bug
+* @link https://core.trac.wordpress.org/ticket/21879
+* 
+* @param mixed $allcaps
+* @param mixed $caps
+* @param mixed $args
+*/
+function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
+	global $wpdb;
+	if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
+		$post = get_post ($args[2]);
+		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
+			$query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
+			$num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
+			if ($num_posts < 2)
+				$allcaps[$caps[0]] = false;
+		}
+	}
+	return $allcaps;
 }
 ?>
