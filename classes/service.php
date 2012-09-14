@@ -26,7 +26,7 @@ class mbsb_service {
 	}
 	
 	public function display_time($format = 'H:i') {
-		return date ($format, $this->time);
+		return gmdate ($format, $this->time);
 	}
 	
 	public function set_time($time) {
