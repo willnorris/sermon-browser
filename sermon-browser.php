@@ -211,29 +211,6 @@ function mbsb_plugins_url ($path = '') {
 }
 
 /**
-* Provides a way of changing arbitary text without buffering.
-* 
-* Called by the gettext filter.
-* 
-* @param string $translated_text
-* @param string $text
-* @param string $domain
-* @return string
-*/
-function mbsb_do_custom_translations ($translated_text, $text, $domain) {
-	if ($text == 'Insert into Post' && ((isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermon') || strpos(wp_get_referer(), 'referer=mbsb_sermon')))
-		return __('Attach to sermon', MBSB);
-	if ($text == 'Publish' && isset($_GET['post_type']) && (substr($_GET['post_type'], 0, 5) == 'mbsb_'))
-		return __('Save', MBSB);
-	if ($text == 'Publish' && isset($_GET['post'])) {
-		$post = get_post ($_GET['post']);
-		if (substr($post->post_type, 0, 5) == 'mbsb_')
-			return __('Save', MBSB);
-	}
-	return $translated_text;
-}
-
-/**
 * Returns a nicely formatted byte-size string, complete with appropriate units (e.g. 12345678 becomes 12.34MB)
 * 
 * @param integer $bytes

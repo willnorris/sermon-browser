@@ -13,18 +13,19 @@ add_action ('admin_init', 'mbsb_admin_init');
 function mbsb_admin_init () {
 	// All admin pages
 	$date = @filemtime(mbsb_plugin_dir_path('css/admin-style.php'));
-	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.php'), $date);
-	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), '');
+	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.php'), array(), $date);
+	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), array(), '1.8.23');
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
 	add_action ('delete_post', 'mbsb_handle_media_deletion');
 	add_filter ('admin_body_class', 'mbsb_admin_body_class');
+	add_filter ('gettext', 'mbsb_do_custom_translations', 1, 3);
 	// Single admin pages only
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
+	add_action ('load-post.php', 'mbsb_onload_post_page');
 	add_action ('load-upload.php', 'mbsb_onload_upload_page');
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
-	add_filter ('gettext', 'mbsb_do_custom_translations', 1, 3);
 	// Ajax API calls
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
@@ -72,6 +73,17 @@ function mbsb_onload_edit_page () {
 			add_filter ('posts_search', 'mbsb_edit_posts_search');
 		add_action ('admin_head', create_function ('', "echo '<style type=\"text/css\">table.fixed {table-layout:auto;} table.fixed th.column-tags, table.fixed td.column-tags {width:auto;}</style>';"));
 	}
+}
+
+/**
+* Runs on the load-post.php action (i.e. when editing or creating a post)
+* 
+* 
+*/
+function mbsb_onload_post_page () {
+	$screen = get_current_screen();
+	if ($screen->post_type == 'mbsb_sermon')
+		add_filter ('get_user_option_meta-box-order_mbsb_sermon', 'mbsb_set_default_metabox_sort_order', 10, 3);
 }
 
 /**
@@ -673,5 +685,35 @@ function mbsb_handle_media_deletion ($post_id) {
 function mbsb_admin_body_class ($class) {
 	$screen = get_current_screen();
 	return "{$class} {$screen->base}_{$screen->id}";
+}
+
+/**
+* Provides a way of changing arbitary text without buffering.
+* 
+* Called by the gettext filter.
+* 
+* @param string $translated_text
+* @param string $text
+* @param string $domain
+* @return string
+*/
+function mbsb_do_custom_translations ($translated_text, $text, $domain) {
+	if ($text == 'Insert into Post' && ((isset($_GET['referer']) && $_GET['referer'] == 'mbsb_sermon') || strpos(wp_get_referer(), 'referer=mbsb_sermon')))
+		return __('Attach to sermon', MBSB);
+	if ($text == 'Publish' && isset($_GET['post_type']) && (substr($_GET['post_type'], 0, 5) == 'mbsb_'))
+		return __('Save', MBSB);
+	if ($text == 'Publish' && isset($_GET['post'])) {
+		$screen = get_current_screen();
+		if (substr($screen->post_type, 0, 5) == 'mbsb_')
+			return __('Save', MBSB);
+	}
+	return $translated_text;
+}
+
+function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
+	if ($option == 'meta-box-order_mbsb_sermon' && empty($result))
+		return array ('advanced' => '', 'normal' => 'mbsb_sermon_details,mbsb_sermon_media,mbsb_description,commentstatusdiv,slugdiv,commentsdiv', 'side' => 'submitdiv,tagsdiv-post_tag,postimagediv');
+	else
+		return $result;
 }
 ?>
