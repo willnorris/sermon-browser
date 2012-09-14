@@ -5,7 +5,9 @@
 * @package preacher
 */
 class mbsb_service {
-
+	
+	private $time;
+	
 	/**
 	* Initiates the object and populates its properties
 	* 
@@ -20,10 +22,19 @@ class mbsb_service {
 				$this->$v = null;
 			else
 				$this->$v = $post->$k;
+		$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
 	}
 	
-	public function get_service_time() {
-		return '18:00';
+	public function display_time($format = 'H:i') {
+		return date ($format, $this->time);
+	}
+	
+	public function set_time($time) {
+		if (($seconds = strtotime ('1 January 1970 '.trim($time).' UTC')) && update_post_meta ($this->id, 'mbsb_service_time', $seconds)) {
+			$this->time = $seconds;
+			return true;
+		}
+		return false;
 	}
 }
 ?>

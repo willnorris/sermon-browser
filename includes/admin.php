@@ -603,6 +603,28 @@ function mbsb_sermon_editor_box ($post) {
 }
 
 /**
+* Adds the metabox needed when editing/creating a service.
+*/
+function mbsb_service_meta_boxes () {
+	add_meta_box ('mbsb_service_details', __('Details and description', MBSB), 'mbsb_service_details_meta_box', 'mbsb_service', 'normal', 'high');
+	remove_meta_box ('authordiv', 'mbsb_service', 'normal');
+	remove_meta_box ('slugdiv', 'mbsb_service', 'normal');
+}
+
+function mbsb_service_details_meta_box () {
+	global $post;
+	//Todo: Pre-populate fields with defaults
+	wp_nonce_field (__FUNCTION__, 'details_nonce', true);
+	$service = new mbsb_service ($post->ID);
+	echo '<table class="series_details">';
+	echo '<tr><th scope="row"><label for="mbsb_service_time">'.__('Service time', MBSB).':</label></th>';
+	echo '<td><input type="text" id="mbsb_service_time" name="mbsb_service_time" value="'.$service->display_time().'"/></td>';
+	echo '<td>'.__('e.g. <b>13:45</b>, or <b>6pm</b>.').'</td></tr>';
+	echo '</table>';
+	wp_editor ($post->post_content, 'content', array ('media_buttons' => false, 'textarea_rows' => 5));
+}
+
+/**
 * Add Sermons menu and sub-menus in admin
 */
 function mbsb_add_admin_menu() {
@@ -631,6 +653,9 @@ function mbsb_save_post ($post_id, $post) {
 		$sermon->update_service ($_POST['mbsb_service']);
 		$sermon->update_override_time (isset ($_POST['mbsb_override_time']));
 		$sermon->update_passages ($_POST['mbsb_passages']);
+	} elseif (!empty($_POST) && isset($_POST['action']) && $_POST['action'] == 'editpost' && $_POST['post_type'] == 'mbsb_service' && !(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) && check_admin_referer ('mbsb_service_details_meta_box', 'details_nonce')) {
+		$service = new mbsb_service($post_id);
+		$service->set_time($_POST['mbsb_service_time']);
 	}
 }
 
