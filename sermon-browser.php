@@ -138,7 +138,7 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
-					'supports' => array ('title', 'author', 'thumbnail', 'comments'),
+					'supports' => array ('title', 'thumbnail', 'comments'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
 					'rewrite' => array('slug' => '/'.__('service', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future

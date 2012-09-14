@@ -82,8 +82,8 @@ function mbsb_onload_edit_page () {
 */
 function mbsb_onload_post_page () {
 	$screen = get_current_screen();
-	if ($screen->post_type == 'mbsb_sermon')
-		add_filter ('get_user_option_meta-box-order_mbsb_sermon', 'mbsb_set_default_metabox_sort_order', 10, 3);
+	if ($screen->post_type == 'mbsb_sermon' || $screen->post_type == 'mbsb_service')
+		add_filter ("get_user_option_meta-box-order_{$screen->post_type}", 'mbsb_set_default_metabox_sort_order', 10, 3);
 }
 
 /**
@@ -734,6 +734,16 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 	return $translated_text;
 }
 
+/**
+* Sets the default sort order for metaboxes
+* 
+* Used as a filter for get_user_option_meta-box-order_*
+* 
+* @param array $result - the existing sort order
+* @param string $option - the option being requested
+* @param WP_User $user - the current user
+* @return array
+*/
 function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 	if ($option == 'meta-box-order_mbsb_sermon' && empty($result))
 		return array ('advanced' => '', 'normal' => 'mbsb_sermon_details,mbsb_sermon_media,mbsb_description,commentstatusdiv,commentsdiv', 'side' => 'submitdiv,tagsdiv-post_tag,postimagediv');
