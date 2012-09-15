@@ -16,13 +16,13 @@ function mbsb_admin_init () {
 	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.php'), array(), $date);
 	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), array(), '1.8.23');
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
-	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
 	add_action ('delete_post', 'mbsb_handle_media_deletion');
 	add_filter ('admin_body_class', 'mbsb_admin_body_class');
 	add_filter ('gettext', 'mbsb_do_custom_translations', 1, 3);
 	// Single admin pages only
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('load-post.php', 'mbsb_onload_post_page');
+	add_action ('load-post-new.php', 'mbsb_onload_post_page');
 	add_action ('load-upload.php', 'mbsb_onload_upload_page');
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
@@ -39,6 +39,9 @@ function mbsb_admin_init () {
 	// Saving a sermon?
 	if (isset($_POST['mbsb_date']) && isset($_POST['post_type']) && $_POST['post_type'] == 'mbsb_sermon')
 		add_filter ('wp_insert_post_data', 'mbsb_sermon_insert_post_modify_date_time');
+	//Displaying in a thickbox?
+	if (isset($_GET['iframe']) && $_GET['iframe'] == 'true' && isset($_GET['post_type']) && substr($_GET['post_type'], 0, 5) == 'mbsb_')
+		add_action ('admin_head', 'mbsb_tb_iframe_admin_head');
 }
 
 /**
@@ -82,8 +85,9 @@ function mbsb_onload_edit_page () {
 */
 function mbsb_onload_post_page () {
 	$screen = get_current_screen();
-	if ($screen->post_type == 'mbsb_sermon' || $screen->post_type == 'mbsb_service')
+	if (substr($screen->post_type, 0, 5) == 'mbsb_')
 		add_filter ("get_user_option_meta-box-order_{$screen->post_type}", 'mbsb_set_default_metabox_sort_order', 10, 3);
+	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
 }
 
 /**
@@ -187,9 +191,12 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 function mbsb_add_javascript_and_styles_to_admin_pages() {
 	global $post;
 	$screen = get_current_screen();
-	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon') {
+	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon')
 		wp_enqueue_style ('thickbox');
-		wp_enqueue_script('mbsb_script_sermon_upload', home_url("?mbsb_script&amp;name=sermon_upload&amp;post_id={$post->ID}"), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+	if ($screen->base == 'post' && substr($screen->id, 0, 5) == 'mbsb_') {
+		wp_enqueue_script('mbsb_script_main_admin_script', home_url("?mbsb_script&amp;name=main_admin_script&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+		if (isset($_GET['iframe']) && $_GET['iframe'] == 'true')
+			wp_enqueue_script('mbsb_script_add_new_option', home_url("?mbsb_script&amp;name=add_new_option&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 	}
 }
 /**
@@ -558,9 +565,9 @@ function mbsb_sermon_details_meta_box() {
 	$sermon = new mbsb_sermon ($post->ID);
 	$screen = get_current_screen();
 	echo '<table class="sermon_details">';
-	echo '<tr><th scope="row"><label for="mbsb_preacher">'.__('Preacher', MBSB).':</label></th><td><select id="mbsb_preacher" name="mbsb_preacher">'.mbsb_return_select_list('preacher', $sermon->preacher->id).'</select></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series->id).'</select></td></tr>';
-	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('service', $sermon->service->id).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_preacher">'.__('Preacher', MBSB).':</label></th><td><select id="mbsb_preacher" name="mbsb_preacher">'.mbsb_return_select_list('preacher', $sermon->preacher->id, array ('new_preacher' => __('Add a new preacher', MBSB))).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_series">'.__('Series', MBSB).':</label></th><td><select id="mbsb_series" name="mbsb_series">'.mbsb_return_select_list('series', $sermon->series->id, array ('new_series' => __('Add a new series', MBSB))).'</select></td></tr>';
+	echo '<tr><th scope="row"><label for="mbsb_service">'.__('Service', MBSB).':</label></th><td><select id="mbsb_service" name="mbsb_service">'.mbsb_return_select_list('service', $sermon->service->id, array ('new_service' => __('Add a new service', MBSB))).'</select></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_date">'.__('Date', MBSB).':</label></th><td><span class="time_input"><input id="mbsb_date" name="mbsb_date" type="text" class="add-date-picker" value="'.$sermon->date.'"/></td><td><label for="mbsb_date">'.__('Time', MBSB).':</label></td><td><input id="mbsb_time" name="mbsb_time" type="text" value="'.($screen->action == 'add' ? $sermon->service->get_service_time() : $sermon->time).'"/></span> <input type="checkbox" id="mbsb_override_time" name="mbsb_override_time"'.($sermon->override_time ? ' checked="checked"' : '').'/> <label for="mbsb_override_time" style="font-weight:normal">'.__('Override default time', MBSB).'</label></td></tr>';
 	echo '<tr><th scope="row"><label for="mbsb_passages">'.__('Bible passages', MBSB).':</label></th><td colspan="3"><input id="mbsb_passages" name="mbsb_passages" type="text" value="'.$sermon->get_formatted_passages().'"/></td></tr>';
 	echo '</table>';
@@ -617,7 +624,7 @@ function mbsb_service_details_meta_box () {
 	$service = new mbsb_service ($post->ID);
 	echo '<table class="series_details">';
 	echo '<tr><th scope="row"><label for="mbsb_service_time">'.__('Service time', MBSB).':</label></th>';
-	echo '<td><input type="text" id="mbsb_service_time" name="mbsb_service_time" value="'.$service->display_time().'"/></td>';
+	echo '<td><input type="text" id="mbsb_service_time" name="mbsb_service_time" value="'.$service->get_time().'"/></td>';
 	echo '<td>'.__('e.g. <b>13:45</b>, or <b>6pm</b>.').'</td></tr>';
 	echo '</table>';
 	wp_editor ($post->post_content, 'content', array ('media_buttons' => false, 'textarea_rows' => 5));
@@ -749,7 +756,19 @@ function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 		return array ('advanced' => '', 'normal' => 'mbsb_sermon_details,mbsb_sermon_media,mbsb_description,commentstatusdiv,commentsdiv', 'side' => 'submitdiv,tagsdiv-post_tag,postimagediv');
 	elseif ($option == 'meta-box-order_mbsb_service' && empty($result))
 		return array ('advanced' => '', 'normal' => 'mbsb_service_details,commentstatusdiv,commentsdiv', 'side' => 'submitdiv,postimagediv');
+	elseif ($option == 'meta-box-order_mbsb_service' && isset($_GET['iframe']) && $_GET['iframe'] == 'true')
+		return array ('advanced' => '', 'normal' => 'mbsb_service_details,commentstatusdiv,commentsdiv,postimagediv,submitdiv');
+	elseif (($option == 'meta-box-order_mbsb_preacher' || $option == 'meta-box-order_mbsb_series') && isset($_GET['iframe']) && $_GET['iframe'] == 'true')
+		return array ('advanced' => '', 'normal' => 'postimagediv,commentstatusdiv,submitdiv', 'side' => '');
 	else
 		return $result;
+}
+
+function mbsb_tb_iframe_admin_head() {
+	echo "<style type=\"text/css\">";
+	echo "#adminmenuback, #adminmenuwrap, #screen-meta-links, #wpadminbar, #footer {display:none}";
+	echo "#wpcontent {margin-left:15px}";
+	echo "html.wp-toolbar {padding-top:0}";
+	echo "</style>\r\n";
 }
 ?>

@@ -25,7 +25,7 @@ class mbsb_service {
 		$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
 	}
 	
-	public function display_time($format = 'H:i') {
+	public function get_time($format = 'H:i') {
 		return gmdate ($format, $this->time);
 	}
 	

@@ -70,7 +70,7 @@ function mbsb_sermon_insert_post_modify_date_time ($data) {
 				$data['post_date'] = $data ['post_modified'] = "{$_POST['mbsb_date']} {$_POST['mbsb_time']}:00";
 			else {
 				$service = new mbsb_service($_POST['mbsb_service']);
-				$data['post_date'] = $data ['post_modified'] =  "{$_POST['mbsb_date']} ".$service->get_service_time();
+				$data['post_date'] = $data ['post_modified'] =  "{$_POST['mbsb_date']} ".$service->get_time();
 			}
 			if (isset($_POST['mbsb_date']) && isset($_POST['mbsb_time']))
 				$data['post_date_gmt'] = $data['post_modified_gmt'] = date ('Y-m-d H:i:s', mysql2date ('U', $data['post_date'])-(get_option('gmt_offset')*60*60));
@@ -172,10 +172,11 @@ function mbsb_generate_taxonomy_label ($plural, $singular) {
 * 
 * @param string $custom_post_type - the custom post type required
 * @param string $selected - the post_id of the custom post that should be pre-selected
+* @param array $additions - an array of additional items to be added to the list, with the key as the id, and the value as the text
 * @return string - the resulting HTML
 */
-function mbsb_return_select_list ($custom_post_type, $selected = '') {
-	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}"));
+function mbsb_return_select_list ($custom_post_type, $selected = '', $additions = array()) {
+	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}", 'numberposts' => 999, 'posts_per_page' => 999));
 	if (is_array($posts)) {
 		$output = '';
 		foreach ($posts as $post) {
@@ -183,13 +184,22 @@ function mbsb_return_select_list ($custom_post_type, $selected = '') {
 				$insert = ' selected="selected"';
 			else
 				$insert = '';
-			$output .= "<option value=\"{$post->ID}\"{$insert}>".esc_html($post->post_title)."</option>";
+			$output .= "<option value=\"{$post->ID}\"{$insert}>".esc_html($post->post_title)."&nbsp;</option>";
 		}
-	} else
-		$output = false;
-	return $output;
+	}
+	if (!empty($additions) && is_array($additions))
+		foreach ($additions as $id => $text) {
+			if ($selected != '' && $id == $selected)
+				$insert = ' selected="selected"';
+			else
+				$insert = '';
+			$output .= "<option value=\"{$id}\"{$insert}>".esc_html($text)."&nbsp;</option>";
+		}
+	if (!isset($output))
+		return false;
+	else
+		return $output;
 }
-
 
 /** 
 * Returns the path to the plugin, or to a specified file or folder within it

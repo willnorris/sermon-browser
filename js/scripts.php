@@ -7,7 +7,8 @@ if ($date)
 	header ('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', $date));
 if (!isset($_GET['name']))
 	wp_die ('Script name not specified');
-if ($_GET['name'] == 'sermon_upload') {
+if ($_GET['name'] == 'main_admin_script') {
+	if ($_GET['post_type'] == 'sermon') {
 ?>
 var mbsb_orig_time;
 var orig_send_to_editor;
@@ -36,6 +37,13 @@ function mbsb_hide_all() {
 	$('#embed-select').hide();
 }
 
+function add_new_select (post_type, option_name, option_id) {
+	var addition = '<option selected="selected" value="'+option_id+'">'+option_name+'</option>';
+	$('#mbsb_'+post_type).append(addition);
+	$('#mbsb_'+post_type).val(option_id);
+	tb_remove();
+}
+
 /**
 * Handle an upload/library attachment
 */
@@ -62,7 +70,6 @@ function mbsb_handle_upload_insert_click() {
 		window.send_to_editor = orig_send_to_editor;
 	};
 }
-
 /**
 * Handle a URL/embed attachment
 */
@@ -158,6 +165,29 @@ jQuery(document).ready(function($) {
 	//Add the date picker
 	$('.add-date-picker').datepicker({
 		dateFormat : 'yy-mm-dd'
+	});
+<?php
+		$post_types = array ('preacher' => esc_html(__('Add a new preacher', MBSB)), 'series' => esc_html(__('Add a new series', MBSB)), 'service' => esc_html(__('Add a new service', MBSB)));
+		foreach ($post_types as $post_type => $add_message) {
+?>
+	//Watch for the 'Add a new <?php echo $post_type; ?>' option
+	$('#mbsb_<?php echo $post_type; ?>').change(function() {
+		if ($(this).val() == 'new_<?php echo $post_type; ?>') {
+			tb_show('<?php echo $add_message;?>', 'post-new.php?post_type=mbsb_<?php echo $post_type; ?>&iframe=true&TB_iframe', false);
+		}
+	});
+<?php
+		}
+?>
+});
+<?php
+	}
+} elseif ($_GET['name'] == 'add_new_option') {
+?>
+jQuery(document).ready(function($) {
+	$('#publish').click(function() {
+		var name = $('#title').val();
+		parent.add_new_select('<?php echo esc_html($_GET['post_type'])?>', name, <?php echo esc_html($_GET['post_id']); ?>);
 	});
 });
 <?php
