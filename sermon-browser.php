@@ -2,7 +2,7 @@
 /*
 Plugin Name: Sermon Browser
 Plugin URI: http://www.sermonbrowser.com/
-Description: Upload sermons to your website, where they can be searched, listened to, and downloaded. Easy to use with comprehensive help and tutorials.
+Description: Upload video or audio sermons to your website, where they can be searched, listened to, and downloaded. Easy to use with comprehensive help and tutorials.
 Author: Mark Barnes
 Version: 2.0 alpha
 Author URI: http://www.4-14.org.uk/
@@ -19,13 +19,29 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details: <http://www.gnu.org/licenses/>
 */
+/**
+* This file sets up SermonBrowser by adding core actions and including the required files.
+* 
+* @package SermonBrowser
+* @author Mark Barnes
+*/
 
+/**
+* mbsb is used as a pseudo-namespace throughout the plugin to prevent classes with other plugins.
+* This constant is used as the domain in gettext calls.
+*/
 define ('MBSB', 'MBSB');
 
+// Make sure the necessary files are included
 if (is_admin())
 	require mbsb_plugin_dir_path ('includes/admin.php');
+else
+	require mbsb_plugin_dir_path ('includes/frontend.php');
 
-	//Register hooks
+require mbsb_plugin_dir_path ('includes/common.php');
+require mbsb_plugin_dir_path ('includes/helper_functions.php');
+
+//Register activation hook
 register_activation_hook(__FILE__, 'mbsb_activate');
 
 //Add 'standard' actions. Most actions are added in mbsb_init or mbsb_admin_init
@@ -63,21 +79,6 @@ function mbsb_plugins_loaded() {
 		require ('js/scripts.php');
 }
 
-function mbsb_sermon_insert_post_modify_date_time ($data) {
-	if ($data['post_type'] == 'mbsb_sermon')
-		if (isset($_POST['mbsb_date']) && $data['post_status'] != 'auto-draft') {
-			if (isset($_POST['mbsb_override_time']) && $_POST['mbsb_override_time'] == 'on' && isset($_POST['mbsb_time']))
-				$data['post_date'] = $data ['post_modified'] = "{$_POST['mbsb_date']} {$_POST['mbsb_time']}:00";
-			else {
-				$service = new mbsb_service($_POST['mbsb_service']);
-				$data['post_date'] = $data ['post_modified'] =  "{$_POST['mbsb_date']} ".$service->get_time();
-			}
-			if (isset($_POST['mbsb_date']) && isset($_POST['mbsb_time']))
-				$data['post_date_gmt'] = $data['post_modified_gmt'] = date ('Y-m-d H:i:s', mysql2date ('U', $data['post_date'])-(get_option('gmt_offset')*60*60));
-		}
-	return $data;
-}
-
 /**
 * Runs on the init action.
 * 
@@ -107,7 +108,7 @@ function mbsb_register_custom_post_types() {
 					'has_archive' => true,
 					'query_var' => 'sermon',
 					'register_meta_box_cb' => 'mbsb_sermon_meta_boxes',
-					'rewrite' => array('slug' => '/'.__('sermon', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('sermons', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_sermon', $args);
 	//Series post type	
 	$args = array (	'label' => __('Series', MBSB),
@@ -129,7 +130,7 @@ function mbsb_register_custom_post_types() {
 					'show_in_menu' => 'sermon-browser',
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => '/'.__('preacher', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_preacher', $args);
 	//Services post type
 	$args = array (	'label' => __('Services', MBSB),
@@ -141,7 +142,7 @@ function mbsb_register_custom_post_types() {
 					'supports' => array ('title', 'thumbnail', 'comments'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
-					'rewrite' => array('slug' => '/'.__('service', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => '/'.__('services', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_service', $args);
 }
 
@@ -167,39 +168,6 @@ function mbsb_generate_taxonomy_label ($plural, $singular) {
 	return array('name' => $plural, 'singular_name' => $singular, 'search_items' => sprintf(__('Search %s', MBSB), $plural), 'popular_items' => sprintf(__('Popular %s', MBSB), $plural), 'all_items' => sprintf(__('All %s', MBSB), $plural), 'parent_item' => sprintf(__('Parent %s', MBSB), $singular), 'edit_item' => sprintf(__('Edit %s', MBSB), $singular), 'update_item' => sprintf(__('Update %s', MBSB), $singular), 'add_new_item' => sprintf(__('Add New %s', MBSB), $singular), 'new_item_name' => sprintf(__('New %s Name', MBSB), $singular), 'separate_items_with_commas' => sprintf(__('Separate %s with commas', MBSB), $plural), 'add_or_remove_items' => sprintf(__('Add or remove %s', MBSB), $plural), 'choose_from_most_used' => sprintf(__('Choose from the most used %s', MBSB), $plural));
 }
 
-/**
-* Returns the HTML for a dropdown list of titles of a specified custom post type
-* 
-* @param string $custom_post_type - the custom post type required
-* @param string $selected - the post_id of the custom post that should be pre-selected
-* @param array $additions - an array of additional items to be added to the list, with the key as the id, and the value as the text
-* @return string - the resulting HTML
-*/
-function mbsb_return_select_list ($custom_post_type, $selected = '', $additions = array()) {
-	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}", 'numberposts' => 999, 'posts_per_page' => 999));
-	if (is_array($posts)) {
-		$output = '';
-		foreach ($posts as $post) {
-			if ($selected != '' && $post->ID == $selected)
-				$insert = ' selected="selected"';
-			else
-				$insert = '';
-			$output .= "<option value=\"{$post->ID}\"{$insert}>".esc_html($post->post_title)."&nbsp;</option>";
-		}
-	}
-	if (!empty($additions) && is_array($additions))
-		foreach ($additions as $id => $text) {
-			if ($selected != '' && $id == $selected)
-				$insert = ' selected="selected"';
-			else
-				$insert = '';
-			$output .= "<option value=\"{$id}\"{$insert}>".esc_html($text)."&nbsp;</option>";
-		}
-	if (!isset($output))
-		return false;
-	else
-		return $output;
-}
 
 /** 
 * Returns the path to the plugin, or to a specified file or folder within it
@@ -221,90 +189,4 @@ function mbsb_plugins_url ($path = '') {
 	return plugins_url($path, __FILE__);
 }
 
-/**
-* Returns a nicely formatted byte-size string, complete with appropriate units (e.g. 12345678 becomes 12.34MB)
-* 
-* @param integer $bytes
-* @return string
-*/
-function mbsb_format_bytes ($bytes) {
-	if ($bytes < 1100)
-		return number_format($bytes, 0).' '.__('bytes', MBSB);
-	elseif ($bytes < 1024000)
-		return number_format($bytes/1024, 1).' '.__('kB', MBSB);
-	elseif ($bytes < 1024000000)
-		return number_format($bytes/1000000, 2).' '.__('MB', MBSB);
-	elseif ($bytes < 1024000000000)
-		return number_format($bytes/1000000000, 2).' '.__('GB', MBSB);
-}
-
-/**
-* Filters mbsb_attachment_row_actions
-* 
-* Returns the HTML of the attachment link in the media library table on the edit sermons page.
-* 
-* @param string $actions
-* @return string
-*/
-function mbsb_add_admin_attachment_row_actions($existing_actions) {
-	return '<a class="unattach" href="#">'.__('Unattach', MBSB).'</a>';
-}
-
-function mbsb_get_meta_ids_by_value ($value) {
-	global $wpdb;
-	return $wpdb->get_col($wpdb->prepare("SELECT meta_id FROM {$wpdb->prefix}postmeta WHERE meta_value=%s", $value));
-}
-
-function mbsb_shorten_string ($string, $max_length = 30) {
-	if (strlen($string) <= $max_length)
-		return $string;
-	$offset = min((integer)($max_length/4), 10);
-	$break_characters = array ('-', '+', ' ');
-	$left_array = $right_array = array();
-	foreach ($break_characters as $b) {
-		$left_array[] = ($a = strpos($string, $b, $offset)) ? $a : 999;
-		$left_array[] = ($a = strpos($string, htmlentities($b), $offset)) ? $a : 999;
-		$right_array[] = ($a = strrpos($string, $b, -$offset)) ? $a : 999;
-		$right_array[] = ($a = strrpos($string, htmlentities($b), -$offset)) ? $a : 999;
-	}
-	$new_string = ($left = substr($string, 0, min($left_array))).'…'.substr($string, min($right_array)+1);
-	if (strlen($new_string) > $max_length)
-		return substr($left, 0, $max_length-1).'…';
-	else
-		return $new_string;
-}
-
-/**
-* Prevents sermon/series/preacher/services being deleted incorrectly
-* 
-* Ensures there is always at least one sermon/series/preacher/service
-* Does not allow series/preacher/services to be deleted if they are in use
-* Filters user_has_cap
-* 
-* Cannot use wp_count_posts() because of a WordPress bug
-* @link https://core.trac.wordpress.org/ticket/21879
-* 
-* @param array $allcaps
-* @param array $caps
-* @param array $args
-* @return array
-*/
-function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
-	global $wpdb;
-	if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
-		$post = get_post ($args[2]);
-		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
-			$query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
-			$num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
-			if ($num_posts < 2)
-				$allcaps[$caps[0]] = false;
-		}
-		if ($post->post_type != 'mbsb_sermon') {
-			$type = substr($post->post_type, 5);
-			if (query_posts (array ('post_type' => 'mbsb_sermon', 'meta_query' => array (array('key' => $type, 'value' => $args[2])))))
-				$allcaps[$caps[0]] = false;
-		}
-	}
-	return $allcaps;
-}
 ?>

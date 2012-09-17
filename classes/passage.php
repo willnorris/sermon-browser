@@ -2,7 +2,9 @@
 /**
 * Class that stores and parses Bible passages
 * 
-* @package passage
+* @package SermonBrowser
+* @subpackage passage
+* @author Mark Barnes
 */
 class mbsb_passage {
 	

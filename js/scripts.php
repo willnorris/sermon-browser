@@ -1,4 +1,13 @@
 <?php
+/**
+* Include file called when requested on the plugins_loaded action
+* 
+* Outputs customised javascript, then dies.
+* 
+* @package SermonBrowser
+* @subpackage scripts
+* @author Mark Barnes
+*/
 header ('Cache-Control: max-age=290304000, public');
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+290304000));
 header ('Content-type: text/javascript; charset=utf-8');
@@ -167,7 +176,7 @@ jQuery(document).ready(function($) {
 		dateFormat : 'yy-mm-dd'
 	});
 <?php
-		$post_types = array ('preacher' => esc_html(__('Add a new preacher', MBSB)), 'series' => esc_html(__('Add a new series', MBSB)), 'service' => esc_html(__('Add a new service', MBSB)));
+		$post_types = array ('preacher' => esc_js(__('Add a new preacher', MBSB)), 'series' => esc_js(__('Add a new series', MBSB)), 'service' => esc_js(__('Add a new service', MBSB)));
 		foreach ($post_types as $post_type => $add_message) {
 ?>
 	//Watch for the 'Add a new <?php echo $post_type; ?>' option
@@ -187,7 +196,7 @@ jQuery(document).ready(function($) {
 jQuery(document).ready(function($) {
 	$('#publish').click(function() {
 		var name = $('#title').val();
-		parent.add_new_select('<?php echo esc_html($_GET['post_type'])?>', name, <?php echo esc_html($_GET['post_id']); ?>);
+		parent.add_new_select('<?php echo esc_js($_GET['post_type'])?>', name, <?php echo esc_js($_GET['post_id']); ?>);
 	});
 });
 <?php

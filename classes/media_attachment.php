@@ -2,12 +2,13 @@
 /**
 * Class that handles media attachments
 * 
-* @package media_attachments
+* @package SermonBrowser
+* @subpackage media_attachments
+* @author Mark Barnes
 */
 class mbsb_media_attachment {
 	
 	private $type, $meta_id, $data;
-	public $invalid;
 
 	/**
 	* Initiates the object and populates its properties
@@ -16,7 +17,6 @@ class mbsb_media_attachment {
 	* @return mbsb_media_attachment
 	*/
 	public function __construct ($meta_id) {
-		$this->invalid = false;
 		$data = get_metadata_by_mid('post', $meta_id);
 		$data = $data->meta_value;
 		$this->type = $data ['type'];
@@ -30,8 +30,20 @@ class mbsb_media_attachment {
 		$this->meta_id = $meta_id;
 	}
 	
+	/**
+	* Returns the type of attachment ('library', 'url' or 'embed')
+	* 
+	*/
 	public function get_type() {
 		return $this->type;
+	}
+	
+	/**
+	* Returns the id of the attachment
+	* 
+	*/
+	public function get_id() {
+		return $this->meta_id;
 	}
 	
 	/**
@@ -43,7 +55,7 @@ class mbsb_media_attachment {
 	*/
 	public function get_json_attachment_row($success = true, $message = '') {
 		if ($success)
-			return json_encode(array('result' => 'success', 'code' => $this->get_attachment_row ('mbsb_hide'), 'row_id' => $this->meta_id));
+			return json_encode(array('result' => 'success', 'code' => $this->get_admin_attachment_row ('mbsb_hide'), 'row_id' => $this->meta_id));
 		else
 			return json_encode(array('result' => 'failure', 'code' => mbsb_do_media_row_message ($message), 'row_id' => 'error_'.time()));
 	}
@@ -54,8 +66,8 @@ class mbsb_media_attachment {
 	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
-	public function get_attachment_row ($class = '') {
-		$function_name = "add_{$this->type}_attachment_row";
+	public function get_admin_attachment_row ($class = '') {
+		$function_name = "add_admin_{$this->type}_attachment_row";
 		return $this->{$function_name} ($class);
 	}
 	
@@ -69,6 +81,47 @@ class mbsb_media_attachment {
 			return false;
 		else
 			return $this->data['code'];
+	}
+	
+	/**
+	* Returns the URL of the attachment file
+	* 
+	* @return boolean|string - False on failure, the URL on success
+	*/
+	public function get_url() {
+		if ($this->type == 'url')
+			return $this->data['url'];
+		elseif ($this->type == 'library')
+			return $this->data->guid;
+		else
+			return false;
+	}
+	
+	/**
+	* Returns a media player for the current attachment
+	* 
+	* If not media player is configured for this type of attachment, returns a HTML link to the attached file.
+	* 
+	* @return string
+	*/
+	public function get_media_player() {
+		if ($this->type == 'embed')
+			return $this->get_embed_code();
+		else {
+			$mime_type = substr($this->get_mime_type(), 0, 5);
+			if ($mime_type == 'audio' || $mime_type == 'video')
+				return do_shortcode (str_replace('%URL%', $this->get_url(), mbsb_get_option("{$mime_type}_shortcode")));
+			else
+				return $this->get_attachment_link();
+		}
+	}
+	
+	public function get_attachment_link() {
+		if ($this->type == 'embed')
+			return false;
+		else
+			return '<a href="'.$this->get_url().'">'.esc_html($this->get_title()).'</a>';
+			
 	}
 	
 	/**
@@ -177,22 +230,20 @@ class mbsb_media_attachment {
 	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
-	private function add_library_attachment_row ($class = '') {
-		if (!$this->invalid) {
-			$attachment = $this->data;
-			$filename = get_attached_file ($attachment->ID);
-			$insert = $class ? "  class=\"{$class}\"" : '';
-			$actions = apply_filters ('mbsb_attachment_row_actions', '');
-			$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($attachment->post_title).'</h3>';
-			if ($actions)
-				$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
-			$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
-			$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
-			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
-			$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table>';
-			$output .= '</td></tr>';
-			return $output;
-		}
+	private function add_admin_library_attachment_row ($class = '') {
+		$attachment = $this->data;
+		$filename = get_attached_file ($attachment->ID);
+		$insert = $class ? "  class=\"{$class}\"" : '';
+		$actions = apply_filters ('mbsb_attachment_row_actions', '');
+		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($attachment->post_title).'</h3>';
+		if ($actions)
+			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
+		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
+		$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table>';
+		$output .= '</td></tr>';
+		return $output;
 	}
 
 	/**
@@ -201,7 +252,7 @@ class mbsb_media_attachment {
 	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
-	private function add_url_attachment_row ($class = '') {
+	private function add_admin_url_attachment_row ($class = '') {
 		$url_array = $this->data;
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
@@ -225,7 +276,7 @@ class mbsb_media_attachment {
 	* @param boolean $hide - hides the row using CSS classes
 	* @return string
 	*/
-	private function add_embed_attachment_row ($class = '') {
+	private function add_admin_embed_attachment_row ($class = '') {
 		$embed_array = $this->data;
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');

@@ -2,7 +2,9 @@
 /**
 * Class that stores and processes the preacher custom post type
 * 
-* @package preacher
+* @package SermonBrowser
+* @subpackage preacher
+* @author Mark Barnes
 */
 class mbsb_preacher {
 

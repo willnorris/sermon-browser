@@ -2,7 +2,9 @@
 /**
 * Class that stores and processes the sermon custom post type
 * 
-* @package preacher
+* @package SermonBrowser
+* @subpackage preacher
+* @author Mark Barnes
 */
 class mbsb_sermon {
 	
@@ -12,7 +14,9 @@ class mbsb_sermon {
 	* @param integer $post_id
 	* @return mbsb_sermon
 	*/
-	public function __construct ($post_id) {
+	public function __construct ($post_id = null) {
+		if ($post_id === null)
+			$post_id == get_the_ID();
 		$post = get_post ($post_id);
 		if (empty($post) || $post->post_type != 'mbsb_sermon')
 			return new WP_Error('NO_SERMON_WITH_THAT_ID');
@@ -68,6 +72,33 @@ class mbsb_sermon {
 	}
 	
 	/**
+	* Returns the preacher's name
+	* 
+	* @return string
+	*/
+	public function get_preacher_name() {
+		return $this->preacher->name;
+	}
+	
+	/**
+	* Returns the sermon's description
+	* 
+	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
+	*/
+	public function get_description($raw = false) {
+		if ($raw)
+			return $this->description;
+		else {
+			if ($sermon_content_filter = has_filter('the_content', 'mbsb_provide_content'))
+				remove_filter ('the_content', 'mbsb_provide_content', $sermon_content_filter);
+			$description = apply_filters ('the_content', $this->description);
+			if ($sermon_content_filter)
+				add_filter ('the_content', 'mbsb_provide_content', $sermon_content_filter);
+			return $description;
+		}
+	}
+	
+	/**
 	* Returns a simple list of the media items (titles separated by <br/> tags)
 	* 
 	* @param bool $admin - true if edit links to be added
@@ -88,6 +119,38 @@ class mbsb_sermon {
 		}
 		else
 			return __('No media attached', MBSB);
+	}
+	
+	/**
+	* Returns a simple list of the media items (titles separated by <br/> tags)
+	* 
+	* @param bool $admin - true if edit links to be added
+	* @return string
+	*/
+	public function get_frontend_media_list() {
+		$attachments = $this->get_attachments();
+		if ($attachments) {
+			$output = '';
+			foreach ($attachments as $attachment)
+				$output .= $this->do_div($attachment->get_media_player(), $attachment->get_type().'_'.$attachment->get_id());
+			return $output;
+		}
+		else
+			return __('No media attached', MBSB);
+	}
+
+	/**
+	* Returns the entire frontend output for the sermon
+	* 
+	* @return string
+	*/
+	public function get_frontend_output() {
+		$sections = mbsb_get_option('frontend_sections');
+		$output = $this->get_main_output();
+		//$output .= $this->get_preacher_output();
+		//$output .= $this->get_series_output();
+		//$otuput .= $this->get_passages_output();
+		return "<div class=\"sermon_wrapper\" id=\"sermon_".$this->id."\">{$output}</div>";
 	}
 	
 	/**
@@ -330,6 +393,36 @@ class mbsb_sermon {
 			return $misc[$meta_key];
 		else
 			return null;
+	}
+	
+	/**
+	* Returns the output of the 'main' section of the frontend
+	* 
+	* @return string
+	*/
+	private function get_main_output() {
+		$output = "<h2>".$this->get_preacher_name();
+		$passages = $this->get_formatted_passages();
+		if ($passages)
+			$output .= " ({$passages})";
+		$output .= "</h2>";
+		$output .= $this->do_div ($this->get_description(), 'description');
+		$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
+		return $this->do_div ($output, 'main');
+	}
+	
+	/**
+	* Helper function, that wraps text in a div
+	* 
+	* Used when creating the major sections of the frontend
+	* A class is added, and the class name appended with the sermon id is used to provide a unique id
+	* 
+	* @param string $content - the HTML to be wrapped in the div
+	* @param string $div_type - a descriptor that is used in the class and id
+	* @return string
+	*/
+	private function do_div ($content, $div_type) {
+		return "<div id=\"sermon_{$this->id}_{$div_type}\" class=\"sermon_{$div_type}\">{$content}</div>";		
 	}
 }
 ?>

@@ -2,7 +2,9 @@
 /**
 * Class that stores and processes the series custom post type
 * 
-* @package preacher
+* @package SermonBrowser
+* @subpackage preacher
+* @author Mark Barnes
 */
 class mbsb_series {
 
@@ -21,6 +23,5 @@ class mbsb_series {
 			else
 				$this->$v = $post->$k;
 	}
-
 }
 ?>

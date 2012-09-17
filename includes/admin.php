@@ -1,8 +1,10 @@
 <?php
 /**
-* File is called when is_admin() is true
+* Include file called when is_admin() is true
 * 
-* @package admin
+* @package SermonBrowser
+* @subpackage admin
+* @author Mark Barnes
 */
 add_action ('admin_init', 'mbsb_admin_init');
 
@@ -12,8 +14,8 @@ add_action ('admin_init', 'mbsb_admin_init');
 */
 function mbsb_admin_init () {
 	// All admin pages
-	$date = @filemtime(mbsb_plugin_dir_path('css/admin-style.php'));
-	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.php'), array(), $date);
+	$date = @filemtime(mbsb_plugin_dir_path('css/admin-style.css'));
+	wp_register_style ('mbsb_admin_style', mbsb_plugins_url('css/admin-style.css'), array(), $date);
 	wp_register_style ('mbsb_jquery_ui', mbsb_plugins_url('css/jquery-ui-1.8.23.custom.css'), array(), '1.8.23');
 	add_action ('admin_print_styles', 'mbsb_admin_print_styles');
 	add_action ('delete_post', 'mbsb_handle_media_deletion');
@@ -194,9 +196,9 @@ function mbsb_add_javascript_and_styles_to_admin_pages() {
 	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon')
 		wp_enqueue_style ('thickbox');
 	if ($screen->base == 'post' && substr($screen->id, 0, 5) == 'mbsb_') {
-		wp_enqueue_script('mbsb_script_main_admin_script', home_url("?mbsb_script&amp;name=main_admin_script&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+		wp_enqueue_script('mbsb_script_main_admin_script', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=main_admin_script&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 		if (isset($_GET['iframe']) && $_GET['iframe'] == 'true')
-			wp_enqueue_script('mbsb_script_add_new_option', home_url("?mbsb_script&amp;name=add_new_option&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+			wp_enqueue_script('mbsb_script_add_new_option', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=add_new_option&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 	}
 }
 /**
@@ -549,7 +551,7 @@ function mbsb_sermon_meta_boxes () {
 	add_meta_box ('mbsb_sermon_media', __('Media', MBSB), 'mbsb_sermon_media_meta_box', 'mbsb_sermon', 'normal', 'high');
 	add_meta_box ('mbsb_sermon_details', __('Details', MBSB), 'mbsb_sermon_details_meta_box', 'mbsb_sermon', 'normal', 'high');
 	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermon', 'normal', 'default');
-	remove_meta_box ('slugdiv', 'mbsb_series', 'normal');
+	remove_meta_box ('slugdiv', 'mbsb_sermon', 'normal');
 	wp_enqueue_script ('jquery-ui-datepicker');
 	wp_enqueue_style('mbsb_jquery_ui');
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
@@ -596,7 +598,7 @@ function mbsb_sermon_media_meta_box() {
 	$attachments = $sermon->get_attachments(true);
 	if ($attachments)
 		foreach ($attachments as $attachment)
-			echo $attachment->get_attachment_row ();
+			echo $attachment->get_admin_attachment_row ();
 	echo '</table>';
 }
 
@@ -617,9 +619,11 @@ function mbsb_service_meta_boxes () {
 	remove_meta_box ('slugdiv', 'mbsb_service', 'normal');
 }
 
+/**
+* Adds the service details metabox
+*/
 function mbsb_service_details_meta_box () {
 	global $post;
-	//Todo: Pre-populate fields with defaults
 	wp_nonce_field (__FUNCTION__, 'details_nonce', true);
 	$service = new mbsb_service ($post->ID);
 	echo '<table class="series_details">';
@@ -707,12 +711,24 @@ function mbsb_unattach_media_item_from_all_sermons ($media_post_id) {
 			delete_metadata_by_mid('post', $meta_id);
 }
 
+/**
+* Runs on the delete_post action and removes deleted media items from their sermons.
+* 
+* @param integer $post_id
+*/
 function mbsb_handle_media_deletion ($post_id) {
 	$post = get_post ($post_id);
 	if ($post->post_type == 'attachment')
 		mbsb_unattach_media_item_from_all_sermons ($post_id);
 }
 
+
+/**
+* Filters admin_body_class so that we can apply CSS styling to particular post_types
+* 
+* @param string $class
+* @return string
+*/
 function mbsb_admin_body_class ($class) {
 	$screen = get_current_screen();
 	return "{$class} {$screen->base}_{$screen->id}";
@@ -764,11 +780,29 @@ function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 		return $result;
 }
 
+/**
+* Adds CSS to the <head> section to remove unwanted information
+* 
+* Is called only when adding preachers/series/services in thickbox popups
+* 
+*/
 function mbsb_tb_iframe_admin_head() {
 	echo "<style type=\"text/css\">";
 	echo "#adminmenuback, #adminmenuwrap, #screen-meta-links, #wpadminbar, #footer {display:none}";
 	echo "#wpcontent {margin-left:15px}";
 	echo "html.wp-toolbar {padding-top:0}";
 	echo "</style>\r\n";
+}
+
+/**
+* Filters mbsb_attachment_row_actions
+* 
+* Returns the HTML of the attachment link in the media library table on the edit sermons page.
+* 
+* @param string $actions
+* @return string
+*/
+function mbsb_add_admin_attachment_row_actions($existing_actions) {
+	return '<a class="unattach" href="#">'.__('Unattach', MBSB).'</a>';
 }
 ?>

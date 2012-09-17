@@ -2,7 +2,9 @@
 /**
 * Class that stores and processes the service custom post type
 * 
-* @package preacher
+* @package SermonBrowser
+* @subpackage preacher
+* @author Mark Barnes
 */
 class mbsb_service {
 	
@@ -25,10 +27,22 @@ class mbsb_service {
 		$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
 	}
 	
+	/**
+	* Returns a the service time as a formatted string
+	* 
+	* @param string $format - uses PHP date formats
+	* @return string
+	*/
 	public function get_time($format = 'H:i') {
 		return gmdate ($format, $this->time);
 	}
 	
+	/**
+	* Stores the service time in the service metadata
+	* 
+	* @param string $time - the time to be stored as a human-friendly string (e.g. 6pm, or 12:45)
+	* @return boolean - true on success, false on failure
+	*/
 	public function set_time($time) {
 		if (($seconds = strtotime ('1 January 1970 '.trim($time).' UTC')) && update_post_meta ($this->id, 'mbsb_service_time', $seconds)) {
 			$this->time = $seconds;
