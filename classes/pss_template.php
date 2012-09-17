@@ -44,6 +44,10 @@ class mbsb_pss_template {
 		return get_permalink ($this->id);
 	}
 	
+	public function get_name() {
+		return get_the_title ($this->id);
+	}
+
 	/**
 	* Returns the number of sermons preached by the current preacher/in the current series/at the current service
 	* 

@@ -72,24 +72,6 @@ class mbsb_sermon {
 	}
 	
 	/**
-	* Returns the preacher's name
-	* 
-	* @return string
-	*/
-	public function get_preacher_name() {
-		return $this->preacher->name;
-	}
-	
-	/**
-	* Returns the URL of the preacher's page
-	* 
-	* @return string
-	*/
-	public function get_preacher_link() {
-		return get_permalink ($this->preacher->id);
-	}
-
-	/**
 	* Returns the sermon's description
 	* 
 	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
@@ -156,9 +138,10 @@ class mbsb_sermon {
 	public function get_frontend_output() {
 		$sections = mbsb_get_option('frontend_sections');
 		$output = $this->get_main_output();
-		$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->get_preacher_link().'">'.esc_html($this->get_preacher_name()).'</a>', 'preacher_name');
+		$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->preacher->get_url().'">'.esc_html($this->preacher->get_name()).'</a>', 'preacher_name');
 		$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
-		//$output .= $this->get_series_output();
+		$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
+		$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
 		//$otuput .= $this->get_passages_output();
 		return "<div class=\"sermon_wrapper\" id=\"sermon_".$this->id."\">{$output}</div>";
 	}

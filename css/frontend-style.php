@@ -31,16 +31,6 @@ div.sermon_media_item {
 div.mbsb_collapsible_heading {
 	width:100%;
 	display:table;
-}
-div.mbsb_collapsible_heading div.alignright {
-	margin-left:0;
-	margin-top:0;
-}
-div.mbsb_collapsible_heading div.alignleft {
-	margin-right:0;
-	margin-top:0;
-}
-div.sermon_preacher_name {
 	background-color: <?php echo $color_black; ?>;
 	color: <?php echo $color_white; ?>;
 	padding: 0.5em;
@@ -49,7 +39,15 @@ div.sermon_preacher_name {
 	font-family: <?php echo $font_headings; ?>;
 	font-size: 125%;
 }
-div.sermon_preacher_name a {
+div.mbsb_collapsible_heading a {
 	color: <?php echo $color_white; ?>;
 	text-decoration:none;
+}
+div.mbsb_collapsible_heading div.alignright {
+	margin-left:0;
+	margin-top:0;
+}
+div.mbsb_collapsible_heading div.alignleft {
+	margin-right:0;
+	margin-top:0;
 }
