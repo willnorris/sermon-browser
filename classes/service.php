@@ -25,6 +25,7 @@ class mbsb_service {
 			else
 				$this->$v = $post->$k;
 		$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
+    	$this->type = substr($post->post_type, 5);
 	}
 	
 	/**

@@ -6,7 +6,7 @@
 * @subpackage preacher
 * @author Mark Barnes
 */
-class mbsb_preacher {
+class mbsb_preacher extends mbsb_pss_template {
 
 	/**
 	* Initiates the object and populates its properties
@@ -22,8 +22,9 @@ class mbsb_preacher {
 				$this->$v = null;
 			else
 				$this->$v = $post->$k;
+		$this->type = substr($post->post_type, 5);
 	}
-
+		
 	/**
 	* Outputs the preacher details
 	* 
@@ -50,114 +51,5 @@ class mbsb_preacher {
 		}
 		return $this->do_div ($output, 'preacher');
 	}
-	
-	/**
-	* Returns the preacher's description
-	* 
-	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
-	*/
-	public function get_description($raw = false) {
-		if ($raw)
-			return $this->description;
-		else {
-			if ($content_filter = has_filter('the_content', 'mbsb_provide_content'))
-				remove_filter ('the_content', 'mbsb_provide_content', $content_filter);
-			$description = apply_filters ('the_content', $this->description);
-			if ($content_filter)
-				add_filter ('the_content', 'mbsb_provide_content', $content_filter);
-			return $description;
-		}
-	}
-	
-	/**
-	* Returns the URL of the current preacher
-	* 
-	* @return string
-	*/
-	public function get_url() {
-		return get_permalink ($this->id);
-	}
-	
-	/**
-	* Returns the number of sermons preached by the current preacher
-	* 
-	* @uses WP_Query
-	* @return integer
-	*/
-	public function get_sermon_count() {
-		$query = new WP_Query(array ('post_type' => 'mbsb_sermon', 'meta_key' => 'preacher', 'meta_value' => $this->id));
-		return $query->found_posts;
-	}
-	
-	/**
-	* Returns the number of series the current preacher has contributed to
-	* 
-	* @uses WP_Query
-	* @return integer
-	*/
-	public function get_series_count() {
-		add_filter ('posts_join_paged', array ($this, 'query_join_series'));
-		add_filter ('posts_groupby', array ($this, 'query_groupby_series'));
-		$posts = $this->get_sermon_count();
-		remove_filter ('posts_join_paged', array ($this, 'query_join_series'));
-		remove_filter ('posts_groupby', array ($this, 'query_groupby_series'));
-		return $posts;
-	}
-	
-    /**
-    * Adds SQL for the JOIN when querying on series
-    * 
-    * Filters posts_join_paged
-    * 
-    * @param string $join
-    * @return string
-    */
-    public function query_join_series ($join) {
-		return $join.mbsb_join_string('series');
-    }
-    
-    /**
-    * Adds SQL for the GROUP BY when querying on series
-    * 
-    * Filters posts_groupby
-    * 
-    * @param string $groupby
-    * @return string
-    */
-    public function query_groupby_series ($groupby) {
-		return "series_postmeta.meta_value";
-    }
-	
-	/**
-	* Gets the excerpt for the current preacher (if provided), or computes one to the required length
-	* 
-	* @param integer $excerpt_length
-	*/
-	private function get_excerpt($excerpt_length = null) {
-		if ($excerpt_length === null)
-			$excerpt_length = mbsb_get_option ('excerpt_length');
-		if ($this->excerpt)
-			return $this->excerpt;
-		else {
-			return wp_trim_words($this->get_description(), $excerpt_length, '&hellip; (<a href="'.$this->get_url().'" id="read_more_preacher">'.__('read more', MBSB).')</a>');
-		}
-	}
-	
-	/**
-	* Helper function, that wraps text in a div
-	* 
-	* Used when creating the major sections of the frontend
-	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
-	* @param string $content - the HTML to be wrapped in the div
-	* @param string $div_type - a descriptor that is used in the class and id
-	* @return string
-	*/
-	private function do_div ($content, $div_type, $class='') {
-		if ($class == '')
-			$class = "sermon_{$div_type}";
-		return "<div id=\"preacher_{$this->id}_{$div_type}\" class=\"{$class}\">{$content}</div>";
-	}
-
 }
 ?>
