@@ -17,7 +17,7 @@
 * @return string - the resulting HTML
 */
 function mbsb_return_select_list ($custom_post_type, $selected = '', $additions = array()) {
-	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}", 'numberposts' => 999, 'posts_per_page' => 999));
+	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}", 'numberposts' => -1, 'posts_per_page' => -1));
 	if (is_array($posts)) {
 		$output = '';
 		foreach ($posts as $post) {
@@ -111,22 +111,54 @@ function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
 }
 
 /**
-* Returns the various JOIN strings required by functions that query sermons and filter posts_join_paged
+* Returns a the SQL to JOIN preachers metadata to a sermons query
 * 
-* @param string $join_type = Accepted values are preacher, service, series and book
+* Designed to filter posts_join_paged
+* 
+* @param string $join
 * @return string
 */
-function mbsb_join_string ($join_type) {
+function mbsb_join_preacher ($join) {
 	global $wpdb;
-	if ($join_type == 'preacher')
-		return " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preacher')";
-	elseif ($join_type == 'service')
-		return " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_service')";
-	elseif ($join_type == 'series')
-		return " INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
-	elseif ($join_type == 'book')
-		return " INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
-	else
-		wp_die ("Incorrect join type {$join_type} specified in mbsb_join_string");
+	return $join." INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preacher')";
+}
+
+/**
+* Returns a the SQL to JOIN service metadata to a sermons query
+* 
+* Designed to filter posts_join_paged
+* 
+* @param string $join
+* @return string
+*/
+function mbsb_join_service ($join) {
+	global $wpdb;
+	return $join." INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_service')";
+}
+
+/**
+* Returns a the SQL to JOIN series metadata to a sermons query
+* 
+* Designed to filter posts_join_paged
+* 
+* @param string $join
+* @return string
+*/
+function mbsb_join_series ($join) {
+	global $wpdb;
+	return $join." INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
+}
+
+/**
+* Returns a the SQL to JOIN book metadata to a sermons query
+* 
+* Designed to filter posts_join_paged
+* 
+* @param string $join
+* @return string
+*/
+function mbsb_join_book ($join) {
+	global $wpdb;
+	return $join." INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
 }
 ?>

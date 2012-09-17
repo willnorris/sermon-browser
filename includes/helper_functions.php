@@ -90,7 +90,7 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 	if (strlen($string) <= $max_length)
 		return $string;
 	$offset = min((integer)($max_length/4), 10);
-	$break_characters = array ('-', '+', ' ');
+	$break_characters = array ('-', '+', ' ', '_');
 	$left_array = $right_array = array();
 	foreach ($break_characters as $b) {
 		$left_array[] = ($a = strpos($string, $b, $offset)) ? $a : 999;

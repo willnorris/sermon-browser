@@ -51,3 +51,9 @@ div.mbsb_collapsible_heading div.alignleft {
 	margin-right:0;
 	margin-top:0;
 }
+.mbsb_textright {
+	text-align:right;
+}
+.mbsb_textleft {
+	text-align:left;
+}

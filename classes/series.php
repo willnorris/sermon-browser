@@ -40,17 +40,18 @@ class mbsb_series extends mbsb_pss_template {
 		$description = ($excerpt_length == 0) ? $this->get_description() : '<p>'.$this->get_excerpt($excerpt_length).'</p>';
 		$output .= $this->do_div ($description, 'description');
 		if (mbsb_get_option('show_statistics_on_sermon_page')) {
-			$sermon_count = $this->get_sermon_count();
-			if ($sermon_count > 1) {
-				$output .= '<p class="series_statistics"><strong>'.__('See more', MBSB).'</strong>: ';
-				$stats = sprintf(__('%s sermons in this series', MBSB), $sermon_count);
-				if ($showing_series_page)
-					$output .= $stats;
-				else
-					$output .= '<a href="'.$this->get_url().'">'.$stats.'</a>';
-				$output .= '</p>';
-			}
 			
+			if ($post->post_type == 'mbsb_sermon') {
+				$next_previous = '';
+				$next = $this->get_next();
+				if ($next)
+					$next_previous .= $this->do_div ($next->get_linked_name(true).' &#9654;', 'next_sermon_in_series', 'alignright mbsb_textright');
+				$previous = $this->get_previous();
+				if ($previous)
+					$next_previous .= $this->do_div ('&#9664; '.$previous->get_linked_name(true), 'previous_sermon_in_series', 'alignleft mbsb_textleft');
+				if ($next_previous)
+					$output .= $this->do_div ($next_previous, 'series_next_previous');
+			}
 		}
 		return $this->do_div ($output, 'series');
 	}

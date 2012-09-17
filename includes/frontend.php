@@ -67,7 +67,7 @@ function mbsb_filter_author ($author) {
 	global $post;
 	if (isset($post->post_type) && $post->post_type == 'mbsb_sermon') {
 		$sermon = new mbsb_sermon($post->ID);
-		return $sermon->preacher->get_url();
+		return $sermon->preacher->get_name();
 	} else
 		return $author;
 	

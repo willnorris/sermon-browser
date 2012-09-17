@@ -6,7 +6,7 @@
 * @subpackage preacher
 * @author Mark Barnes
 */
-class mbsb_sermon {
+class mbsb_sermon extends mbsb_spss_template {
 	
 	/**
 	* Initiates the object and populates its properties
@@ -31,6 +31,7 @@ class mbsb_sermon {
 		$this->series = new mbsb_series (get_post_meta ($this->id, 'series', true));
 		$this->override_time = $this->get_misc_meta ('override_time');
 		$this->passages = get_post_meta ($this->id, 'passages_object', true);
+		$this->type = 'sermon';
 	}
 	
 	/**
@@ -433,22 +434,6 @@ class mbsb_sermon {
 			return get_the_post_thumbnail($this->service->id, 'mbsb_sermon', $attr);
 	}
 	
-	/**
-	* Helper function, that wraps text in a div
-	* 
-	* Used when creating the major sections of the frontend
-	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
-	* @param string $content - the HTML to be wrapped in the div
-	* @param string $div_type - a descriptor that is used in the class and id
-	* @return string
-	*/
-	private function do_div ($content, $div_type, $class='') {
-		if ($class == '')
-			$class = "sermon_{$div_type}";
-		return "<div id=\"sermon_{$this->id}_{$div_type}\" class=\"{$class}\">{$content}</div>";
-	}
-
 	/**
 	* Helper function, that wraps text in a heading div, adding a triangle on the right
 	* 

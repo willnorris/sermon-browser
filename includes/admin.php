@@ -347,13 +347,13 @@ function mbsb_edit_posts_join ($join) {
 	global $wpdb;
 	if ($_GET['post_type'] == 'mbsb_sermon') {
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'preacher') || isset($_GET['preacher']) || isset($_GET['s']))
-			$join .= mbsb_join_string ('preacher');
+			$join .= mbsb_join_preacher ('');
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'service') || isset($_GET['service']) || isset($_GET['s']))
-			$join .= mbsb_join_string ('service');
+			$join .= mbsb_join_service ('');
 		if ((isset($_GET['orderby']) && $_GET['orderby'] == 'series') || isset($_GET['series']) || isset($_GET['s']))
-			$join .= mbsb_join_string ('series');
+			$join .= mbsb_join_series ('');
 		if (isset($_GET['book']))
-			$join .= mbsb_join_string ('book');
+			$join .= mbsb_join_book ('');
 	}
 	return $join;
 }
