@@ -146,7 +146,7 @@ class mbsb_passage {
 	* @param mixed $previous - set to FALSE if we're parsing the first part of a range, or to an associative array (keys are 'chapter' and 'verse') if we're pasing the second part of a range
 	* @return array - associative array (keys are 'book', 'chapter' and 'verse') of integers (although 'chapter' can also be set to 'wholebook')
 	*/
-	function parse_one ($passage, $previous = FALSE) {
+	private function parse_one ($passage, $previous = FALSE) {
 		$books = $this->bible_books();
 		if (preg_match('/[A-Za-z]/', $passage) !== 0) {
 			//Search through arrays looking for bookname
@@ -179,7 +179,7 @@ class mbsb_passage {
 	* @param mixed $previous - set to FALSE if we're parsing the first part of a range, or to an associative array (keys are 'chapter' and 'verse') if we're pasing the second part of a range
 	* @return array - associative array (keys are 'chapter' and 'verse') of integers
 	*/
-	function parse_chapter_verse ($passage, $previous) {
+	private function parse_chapter_verse ($passage, $previous) {
 		$period = strpos($passage, '.');
 		$colon = strpos($passage, ':');
 		if ($period === FALSE && $colon === FALSE)
@@ -314,7 +314,7 @@ class mbsb_passage {
 	* @param bool $add_link_template - if true, wraps the output of the book name in a template which can later be used to insert HTML links
 	* @return string - the human friendly reference
 	*/
-	function friendly_reference ($start, $end, $add_link_template = FALSE) {
+	private function friendly_reference ($start, $end, $add_link_template = FALSE) {
 		$bible_books = $this->bible_books();
 		$start_book = $bible_books['mbsb_index'][$start['book']];
 		$end_book = $bible_books['mbsb_index'][$end['book']];
@@ -336,6 +336,12 @@ class mbsb_passage {
 			$reference =  "{$start_book} {$start['chapter']}:{$start['verse']} - {$end_book} {$end['chapter']}:{$end['verse']}";
 		}
 		return $reference;
+	}
+	
+	public function get_bible_list() {
+		$biblia_bibles = wp_remote_get('http://api.biblia.com/v1/bible/find?key='.mbsb_get_option('biblia_api_key'));
+		$biblia_bibles = json_decode($biblia_bibles);
+		$biblia_bibles = $biblia_bibles->bibles;
 	}
 }
 ?>
