@@ -87,6 +87,7 @@ function mbsb_plugins_loaded() {
 */
 function mbsb_init () {
 	mbsb_register_custom_post_types();
+	mbsb_register_image_sizes();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
 	add_filter ('user_has_cap', 'mbsb_prevent_cpt_deletions', 10, 3);
@@ -117,6 +118,8 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
+					'capability_type' => 'page',
+					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
 					'rewrite' => array('slug' => '/'.__('series', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
@@ -128,6 +131,8 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
+					'capability_type' => 'page',
+					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
 					'rewrite' => array('slug' => '/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
@@ -139,6 +144,8 @@ function mbsb_register_custom_post_types() {
 					'public' => true,
 					'show_ui' => true,
 					'show_in_menu' => 'sermon-browser',
+					'capability_type' => 'page',
+					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
@@ -168,6 +175,16 @@ function mbsb_generate_taxonomy_label ($plural, $singular) {
 	return array('name' => $plural, 'singular_name' => $singular, 'search_items' => sprintf(__('Search %s', MBSB), $plural), 'popular_items' => sprintf(__('Popular %s', MBSB), $plural), 'all_items' => sprintf(__('All %s', MBSB), $plural), 'parent_item' => sprintf(__('Parent %s', MBSB), $singular), 'edit_item' => sprintf(__('Edit %s', MBSB), $singular), 'update_item' => sprintf(__('Update %s', MBSB), $singular), 'add_new_item' => sprintf(__('Add New %s', MBSB), $singular), 'new_item_name' => sprintf(__('New %s Name', MBSB), $singular), 'separate_items_with_commas' => sprintf(__('Separate %s with commas', MBSB), $plural), 'add_or_remove_items' => sprintf(__('Add or remove %s', MBSB), $plural), 'choose_from_most_used' => sprintf(__('Choose from the most used %s', MBSB), $plural));
 }
 
+/**
+* Registers the standard image size for each custom post type
+*/
+function mbsb_register_image_sizes() {
+	$cpts = array ('sermon', 'series', 'preacher', 'service');
+	foreach ($cpts as $c) {
+		$size = mbsb_get_option ("{$c}_image_size");
+		add_image_size ("mbsb_{$c}", $size['width'], $size['height'], $size['crop']);
+	}
+}
 
 /** 
 * Returns the path to the plugin, or to a specified file or folder within it
@@ -188,5 +205,4 @@ function mbsb_plugin_dir_path ($relative_path = '') {
 function mbsb_plugins_url ($path = '') {
 	return plugins_url($path, __FILE__);
 }
-
 ?>

@@ -81,6 +81,15 @@ class mbsb_sermon {
 	}
 	
 	/**
+	* Returns the URL of the preacher's page
+	* 
+	* @return string
+	*/
+	public function get_preacher_link() {
+		return get_permalink ($this->preacher->id);
+	}
+
+	/**
 	* Returns the sermon's description
 	* 
 	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
@@ -132,7 +141,7 @@ class mbsb_sermon {
 		if ($attachments) {
 			$output = '';
 			foreach ($attachments as $attachment)
-				$output .= $this->do_div($attachment->get_media_player(), $attachment->get_type().'_'.$attachment->get_id());
+				$output .= $this->do_div($attachment->get_media_player(), $attachment->get_type().'_'.$attachment->get_id(), 'sermon_media_item sermon_media_item_'.$attachment->get_type());
 			return $output;
 		}
 		else
@@ -401,14 +410,27 @@ class mbsb_sermon {
 	* @return string
 	*/
 	private function get_main_output() {
-		$output = "<h2>".$this->get_preacher_name();
-		$passages = $this->get_formatted_passages();
-		if ($passages)
-			$output .= " ({$passages})";
-		$output .= "</h2>";
+		$output = '';
+		if (mbsb_get_option('sermon_image') != 'none' && $this->has_thumbnail())
+			$output .= $this->do_div ($this->get_thumbnail(array ('class' => mbsb_get_option('sermon_image'))), 'sermon_image');
 		$output .= $this->do_div ($this->get_description(), 'description');
 		$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
 		return $this->do_div ($output, 'main');
+	}
+	
+	private function has_thumbnail() {
+		return (has_post_thumbnail() || has_post_thumbnail($this->series->id) || has_post_thumbnail($this->preacher->id) || has_post_thumbnail($this->service->id));
+	}
+	
+	public function get_thumbnail($attr) {
+		if (has_post_thumbnail($this->id))
+			return get_the_post_thumbnail($this->id, 'mbsb_sermon', $attr);
+		elseif (has_post_thumbnail($this->series->id))
+			return get_the_post_thumbnail($this->series->id, 'mbsb_sermon', $attr);
+		elseif (has_post_thumbnail($this->preacher->id))
+			return get_the_post_thumbnail($this->preacher->id, 'mbsb_sermon', $attr);
+		elseif (has_post_thumbnail($this->service->id))
+			return get_the_post_thumbnail($this->service->id, 'mbsb_sermon', $attr);
 	}
 	
 	/**
@@ -421,8 +443,10 @@ class mbsb_sermon {
 	* @param string $div_type - a descriptor that is used in the class and id
 	* @return string
 	*/
-	private function do_div ($content, $div_type) {
-		return "<div id=\"sermon_{$this->id}_{$div_type}\" class=\"sermon_{$div_type}\">{$content}</div>";		
+	private function do_div ($content, $div_type, $class='') {
+		if ($class == '')
+			$class = "sermon_{$div_type}";
+		return "<div id=\"sermon_{$this->id}_{$div_type}\" class=\"{$class}\">{$content}</div>";
 	}
 }
 ?>

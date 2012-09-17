@@ -16,6 +16,12 @@ function mbsb_default_options($all_options) {
 	$all_options ['frontend_sections'] = array ('main', 'preacher', 'series', 'passages');
 	$all_options ['audio_shortcode'] = '[mejsaudio src="%URL%"]';
 	$all_options ['video_shortcode'] = '[mejsvideo src="%URL%"]';
+	$all_options ['biblia_api_key'] = '123';
+	$all_options ['sermon_image'] = 'alignright';
+	$all_options ['preacher_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['series_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['sermon_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	return $all_options;
 }
 
