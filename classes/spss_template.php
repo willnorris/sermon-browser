@@ -55,7 +55,11 @@ class mbsb_spss_template {
 
 	public function get_linked_name($add_detail_to_title_attr = false) {
 		if ($add_detail_to_title_attr) {
-			$detail = esc_html(sprintf(__('%1s on %2s'), $this->preacher->get_name(), $this->get_formatted_passages()));
+			$passages = $this->get_formatted_passages();
+			if ($passages)
+				$detail = esc_html(sprintf(__('%1s on %2s'), $this->preacher->get_name(), $passages));
+			else
+				$detail = $this->preacher->get_name();
 			return '<a title="'.$detail.'" href="'.$this->get_url().'">'.esc_html($this->title).'</a>';
 		} else
 			return '<a href="'.$this->get_url().'">'.esc_html($this->get_name()).'</a>';
@@ -90,6 +94,25 @@ class mbsb_spss_template {
 		if ($class == '')
 			$class = "{$this->type}_{$div_type}";
 		return "<div id=\"{$this->type}_{$this->id}_{$div_type}\" class=\"{$class}\">{$content}</div>";
+	}
+
+	/**
+	* Helper function, that wraps text in a heading div, adding a triangle on the right
+	* 
+	* Used when creating the major sections of the frontend
+	* A class is added, and the class name appended with the sermon id is used to provide a unique id
+	* 
+	* @param string $content - the HTML to be wrapped in the div
+	* @param string $div_type - a descriptor that is used in the class and id
+	* @return string
+	*/
+	protected function do_heading ($content, $div_type, $class='') {
+		if ($class == '')
+			$class = "sermon_{$div_type} mbsb_collapsible_heading";
+		else
+			$class = "{$class} mbsb_collapsible_heading";
+		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('&#9660;', "{$div_type}_pointer", 'alignright');
+		return $this->do_div ($content, $div_type, $class);
 	}
 
 	public function get_previous () {

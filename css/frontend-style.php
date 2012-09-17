@@ -57,3 +57,7 @@ div.mbsb_collapsible_heading div.alignleft {
 .mbsb_textleft {
 	text-align:left;
 }
+div.series_next_previous {
+	display: table;
+	margin-bottom: 1em;
+}

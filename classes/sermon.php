@@ -139,12 +139,16 @@ class mbsb_sermon extends mbsb_spss_template {
 	public function get_frontend_output() {
 		$sections = mbsb_get_option('frontend_sections');
 		$output = $this->get_main_output();
+		if (!mbsb_get_option('hide_media_heading'))
+			$output .= $this->do_heading (__('Media', MBSB).':', 'media_attachments');
+		$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
 		$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->preacher->get_url().'">'.esc_html($this->preacher->get_name()).'</a>', 'preacher_name');
 		$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
 		$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
 		$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
-		//$otuput .= $this->get_passages_output();
-		return "<div class=\"sermon_wrapper\" id=\"sermon_".$this->id."\">{$output}</div>";
+		$output .= $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
+		$output .= $this->passages->get_output();
+		return $this->do_div($output, 'sermon');
 	}
 	
 	/**
@@ -399,7 +403,6 @@ class mbsb_sermon extends mbsb_spss_template {
 		if (mbsb_get_option('sermon_image') != 'none' && $this->has_thumbnail())
 			$output .= $this->do_div ($this->get_thumbnail(array ('class' => mbsb_get_option('sermon_image'))), 'sermon_image');
 		$output .= $this->do_div ($this->get_description(), 'description');
-		$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
 		return $this->do_div ($output, 'main');
 	}
 	
@@ -432,25 +435,6 @@ class mbsb_sermon extends mbsb_spss_template {
 			return get_the_post_thumbnail($this->preacher->id, 'mbsb_sermon', $attr);
 		elseif (has_post_thumbnail($this->service->id))
 			return get_the_post_thumbnail($this->service->id, 'mbsb_sermon', $attr);
-	}
-	
-	/**
-	* Helper function, that wraps text in a heading div, adding a triangle on the right
-	* 
-	* Used when creating the major sections of the frontend
-	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
-	* @param string $content - the HTML to be wrapped in the div
-	* @param string $div_type - a descriptor that is used in the class and id
-	* @return string
-	*/
-	private function do_heading ($content, $div_type, $class='') {
-		if ($class == '')
-			$class = "sermon_{$div_type} mbsb_collapsible_heading";
-		else
-			$class = "{$class} mbsb_collapsible_heading";
-		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('&#9660;', "{$div_type}_pointer", 'alignright');
-		return $this->do_div ($content, $div_type, $class);
 	}
 }
 ?>

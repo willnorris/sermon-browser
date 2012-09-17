@@ -6,7 +6,7 @@
 * @subpackage passage
 * @author Mark Barnes
 */
-class mbsb_passage {
+class mbsb_passage extends mbsb_pss_template {
 	
 	private $formatted, $processed;
 	
@@ -339,9 +339,74 @@ class mbsb_passage {
 	}
 	
 	public function get_bible_list() {
-		$biblia_bibles = wp_remote_get('http://api.biblia.com/v1/bible/find?key='.mbsb_get_option('biblia_api_key'));
-		$biblia_bibles = json_decode($biblia_bibles);
-		$biblia_bibles = $biblia_bibles->bibles;
+		$bibles = get_transient ('mbsb_bible_list');
+		$bibles = false;
+		if (!$bibles) {
+			$bibles = array();
+			$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_option('biblia_api_key'));
+			$biblia_bibles = json_decode($biblia_bibles['body']);
+			if (isset($biblia_bibles->bibles)) {
+				$biblia_ignore = mbsb_get_option ('ignored_biblia_bibles');
+				$biblia_bibles = $biblia_bibles->bibles;
+				foreach ($biblia_bibles as $bible) {
+					$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
+					if (strtolower(substr($bible->title, 0, 4)) == 'the ')
+						$bible->title = substr($bible->title, 4);
+					if (!in_array($bible->bible, $biblia_ignore))
+						$bibles[] = array ('name' => $bible->title, 'code' => $bible->bible, 'language_code' => $bible->languages[0], 'language_name' => $this->language_from_code($bible->languages[0]), 'service' => 'biblia');
+				}
+			}
+			set_transient ('mbsb_bible_list', $bibles, 604800);
+		}
+		usort($bibles, array ($this, 'bible_sort'));
+		return $bibles;
+	}
+	
+	public function bible_sort ($a, $b) {
+		if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
+			return 0;
+		elseif ($a['language_name'] == $b['language_name'])
+			return ($a['name'] > $b['name']) ? 1 : -1;
+		else
+			return ($a['language_name'] > $b['language_name']) ? 1 : -1;
+	}
+	
+	public function do_bible_list_dropdown($preferred_version = '') {
+		$bibles = $this->get_bible_list();
+		$locale = get_locale();
+		if ($preferred_version == '')
+			$preferred_version = mbsb_get_option ('bible_version_'.$locale);
+		$local_bibles = array();
+		$other_bibles = array ('<optgroup label="'.__('Other languages', MBSB).'">');
+		foreach ($bibles as $bible) {
+			if ($bible['code'] == $preferred_version)
+				$insert = ' selected="selected"';
+			else
+				$insert = '';
+			if (strpos($locale, "{$bible['language_code']}_") === 0)
+				$local_bibles[] = "<option{$insert} value=\"{$bible['code']}-{$bible['service']}\">{$bible['name']}</option>";
+			else
+				$other_bibles[] = "<option{$insert} value=\"{$bible['code']}-{$bible['service']}\">{$bible['language_name']}: {$bible['name']}</option>";
+		}
+		$other_bibles[] = '</optgroup>';
+		if (mbsb_get_option('hide_other_language_bibles'))
+			$bibles = $local_bibles;
+		else
+			$bibles = array_merge ($local_bibles, $other_bibles);
+		return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select>';
+	}
+	
+	private function language_from_code ($code) {
+		$languages = array ('ar' => __('Arabic', MBSB), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish'), 'fr' => __('French', MBSB), 'it' => 'Italian', 'nl' => __('Dutch'), 'pt' => 'Portuguese', 'ru' => 'Russian');
+		if (isset($languages[$code]))
+			return $languages[$code];
+		else
+			return $code;
+	}
+	
+	public function get_output () {
+		$output = $this->do_bible_list_dropdown();
+		return $output;
 	}
 }
 ?>

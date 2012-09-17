@@ -161,4 +161,31 @@ function mbsb_join_book ($join) {
 	global $wpdb;
 	return $join." INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
 }
+
+/**
+* Downloads a file after first checking the cache.
+* 
+* It does not use transient caching, as we will still use an out of date cache if the page is unreachable.
+* 
+* @param mixed $url
+* @param mixed $cached_time
+*/
+function mbsb_cached_download ($url, $cached_time = 604800) { // 1 week
+	$option_name = 'mbsb_cache_'.md5($url);
+	$cached = get_option ($option_name);
+	if ($cached && (($cached['time']+$cached_time) > time()))
+		return $cached ['data'];
+	else {
+		$download = wp_remote_get ($url);
+		if (is_wp_error ($download) || $download['response']['code'] != 200) {
+			if ($cached) {
+				$cached ['time'] = time() - $cached_time + min($cached_time, 21600); // Use out-of-date cache for no more than 6 more hours, or the specified cache time
+				update_option ($option_name, $cached);
+				return $cached ['data'];
+			}
+		} else
+			update_option ($option_name, array ('data' => $download, 'time' => time()));
+		return $download;
+	}
+} 
 ?>
