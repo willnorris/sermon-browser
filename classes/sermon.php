@@ -98,11 +98,11 @@ class mbsb_sermon {
 		if ($raw)
 			return $this->description;
 		else {
-			if ($sermon_content_filter = has_filter('the_content', 'mbsb_provide_content'))
-				remove_filter ('the_content', 'mbsb_provide_content', $sermon_content_filter);
+			if ($content_filter = has_filter('the_content', 'mbsb_provide_content'))
+				remove_filter ('the_content', 'mbsb_provide_content', $content_filter);
 			$description = apply_filters ('the_content', $this->description);
-			if ($sermon_content_filter)
-				add_filter ('the_content', 'mbsb_provide_content', $sermon_content_filter);
+			if ($content_filter)
+				add_filter ('the_content', 'mbsb_provide_content', $content_filter);
 			return $description;
 		}
 	}
@@ -156,7 +156,8 @@ class mbsb_sermon {
 	public function get_frontend_output() {
 		$sections = mbsb_get_option('frontend_sections');
 		$output = $this->get_main_output();
-		//$output .= $this->get_preacher_output();
+		$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->get_preacher_link().'">'.esc_html($this->get_preacher_name()).'</a>', 'preacher_name');
+		$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
 		//$output .= $this->get_series_output();
 		//$otuput .= $this->get_passages_output();
 		return "<div class=\"sermon_wrapper\" id=\"sermon_".$this->id."\">{$output}</div>";
@@ -418,10 +419,26 @@ class mbsb_sermon {
 		return $this->do_div ($output, 'main');
 	}
 	
+	/**
+	* Returns true if a post thumbnail can be derived for this sermons
+	* 
+	* Attempts to use the featured image of the sermon, series, preacher and service, in that order.
+	* 
+	* @return boolean
+	* @todo Look for image attachments
+	*/
 	private function has_thumbnail() {
 		return (has_post_thumbnail() || has_post_thumbnail($this->series->id) || has_post_thumbnail($this->preacher->id) || has_post_thumbnail($this->service->id));
 	}
 	
+	/**
+	* Returns the HTML code for the image appropriate to this sermon
+	* 
+	* Attempts to use the featured image of the sermon, series, preacher and service, in that order.
+	* 
+	* @uses get_the_post_thumbnail()
+	* @param string|array $attr Optional. Query string or array of attributes.
+ 	*/
 	public function get_thumbnail($attr) {
 		if (has_post_thumbnail($this->id))
 			return get_the_post_thumbnail($this->id, 'mbsb_sermon', $attr);
@@ -447,6 +464,25 @@ class mbsb_sermon {
 		if ($class == '')
 			$class = "sermon_{$div_type}";
 		return "<div id=\"sermon_{$this->id}_{$div_type}\" class=\"{$class}\">{$content}</div>";
+	}
+
+	/**
+	* Helper function, that wraps text in a heading div, adding a triangle on the right
+	* 
+	* Used when creating the major sections of the frontend
+	* A class is added, and the class name appended with the sermon id is used to provide a unique id
+	* 
+	* @param string $content - the HTML to be wrapped in the div
+	* @param string $div_type - a descriptor that is used in the class and id
+	* @return string
+	*/
+	private function do_heading ($content, $div_type, $class='') {
+		if ($class == '')
+			$class = "sermon_{$div_type} mbsb_collapsible_heading";
+		else
+			$class = "{$class} mbsb_collapsible_heading";
+		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('&#9660;', "{$div_type}_pointer", 'alignright');
+		return $this->do_div ($content, $div_type, $class);
 	}
 }
 ?>

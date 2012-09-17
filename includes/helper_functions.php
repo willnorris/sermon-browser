@@ -8,20 +8,29 @@
 * @author Mark Barnes
 */
 
+// Temporary filter whilst the Options Page is being built.
 add_filter ('option_sermon_browser_2', 'mbsb_default_options');
-/**
-* Temporary function whilst the Options Page is being built.
-*/
+
 function mbsb_default_options($all_options) {
-	$all_options ['frontend_sections'] = array ('main', 'preacher', 'series', 'passages');
+	//Standard options
 	$all_options ['audio_shortcode'] = '[mejsaudio src="%URL%"]';
 	$all_options ['video_shortcode'] = '[mejsvideo src="%URL%"]';
-	$all_options ['biblia_api_key'] = '123';
+	//Advanced options
+	$all_options ['biblia_api_key'] = '';
+	$all_options ['esv_api_key'] = '';
+	//Standard template options
+	$all_options ['frontend_sections'] = array ('main', 'preacher', 'series', 'passages');
 	$all_options ['sermon_image'] = 'alignright';
+	$all_options ['preacher_image'] = 'alignright';
+	$all_options ['series_image'] = 'alignright';
+	$all_options ['service_image'] = 'alignright';
+	//Advanced template options
 	$all_options ['preacher_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['series_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['sermon_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['excerpt_length'] = 55;
+	$all_options ['show_statistics_on_sermon_page'] = true;
 	return $all_options;
 }
 
@@ -35,9 +44,10 @@ function mbsb_default_options($all_options) {
 function mbsb_get_option ($option, $default = false) {
 	$all_options = get_option ('sermon_browser_2');
 	if (isset ($all_options[$option]))
-		return $all_options[$option];
+		$return = $all_options[$option];
 	else
-		return $default;
+		$return = $default;
+	return apply_filters ("mbsb_get_option_{$option}", $return);
 }
 
 /**

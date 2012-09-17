@@ -109,4 +109,24 @@ function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
 	}
 	return $allcaps;
 }
+
+/**
+* Returns the various JOIN strings required by functions that query sermons and filter posts_join_paged
+* 
+* @param string $join_type = Accepted values are preacher, service, series and book
+* @return string
+*/
+function mbsb_join_string ($join_type) {
+	global $wpdb;
+	if ($join_type == 'preacher')
+		return " INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preacher')";
+	elseif ($join_type == 'service')
+		return " INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_service')";
+	elseif ($join_type == 'series')
+		return " INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
+	elseif ($join_type == 'book')
+		return " INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
+	else
+		wp_die ("Incorrect join type {$join_type} specified in mbsb_join_string");
+}
 ?>
