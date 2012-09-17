@@ -51,9 +51,10 @@ function mbsb_filter_titles ($title, $id) {
 	$post = get_post ($id);
 	if ($post->post_type == 'mbsb_sermon') {
 		$sermon = new mbsb_sermon($id);
-		return $title.' <span class="title_passage">('.$sermon->get_formatted_passages().')</span>';
-	} else
-		return $title;
+		if ($p = $sermon->get_formatted_passages())
+			return $title.' <span class="title_passage">('.$p.')</span>';
+	}
+	return $title;
 }
 
 /**
