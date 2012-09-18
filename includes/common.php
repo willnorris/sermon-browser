@@ -18,8 +18,8 @@
 */
 function mbsb_return_select_list ($custom_post_type, $selected = '', $additions = array()) {
 	$posts = get_posts (array ('orderby' => 'title', 'order' => 'ASC', 'post_type' => "mbsb_{$custom_post_type}", 'numberposts' => -1, 'posts_per_page' => -1));
+	$output = "<option value=\"0\">&nbsp;</option>";
 	if (is_array($posts)) {
-		$output = '';
 		foreach ($posts as $post) {
 			if ($selected != '' && $post->ID == $selected)
 				$insert = ' selected="selected"';
@@ -28,7 +28,7 @@ function mbsb_return_select_list ($custom_post_type, $selected = '', $additions 
 			$output .= "<option value=\"{$post->ID}\"{$insert}>".esc_html($post->post_title)."&nbsp;</option>";
 		}
 	}
-	if (!empty($additions) && is_array($additions))
+	if (!empty($additions) && is_array($additions)) {
 		foreach ($additions as $id => $text) {
 			if ($selected != '' && $id == $selected)
 				$insert = ' selected="selected"';
@@ -36,6 +36,7 @@ function mbsb_return_select_list ($custom_post_type, $selected = '', $additions 
 				$insert = '';
 			$output .= "<option value=\"{$id}\"{$insert}>".esc_html($text)."&nbsp;</option>";
 		}
+	}
 	if (!isset($output))
 		return false;
 	else
@@ -79,12 +80,8 @@ function mbsb_get_meta_ids_by_value ($value) {
 /**
 * Prevents sermon/series/preacher/services being deleted incorrectly
 * 
-* Ensures there is always at least one sermon/series/preacher/service
 * Does not allow series/preacher/services to be deleted if they are in use
 * Filters user_has_cap
-* 
-* Cannot use wp_count_posts() because of a WordPress bug
-* @link https://core.trac.wordpress.org/ticket/21879
 * 
 * @param array $allcaps
 * @param array $caps
@@ -93,15 +90,10 @@ function mbsb_get_meta_ids_by_value ($value) {
 */
 function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
 	global $wpdb;
-	if (isset($args[0]) && isset($args[2]) && $args[0] == 'delete_post') {
+	if (isset($args[0]) && isset($args[2]) && ($args[0] == 'delete_post' || $args[0] == 'delete_page')) {
 		$post = get_post ($args[2]);
-		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_') {
-			$query = "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = %s";
-			$num_posts = $wpdb->get_var ($wpdb->prepare ($query, $post->post_type));
-			if ($num_posts < 2)
-				$allcaps[$caps[0]] = false;
-		}
-		if ($post->post_type != 'mbsb_sermon') {
+		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_' && $post->post_type != 'mbsb_sermon') {
+			//Prevent deletion of data used in existing sermons
 			$type = substr($post->post_type, 5);
 			if (query_posts (array ('post_type' => 'mbsb_sermon', 'meta_query' => array (array('key' => $type, 'value' => $args[2])))))
 				$allcaps[$caps[0]] = false;
