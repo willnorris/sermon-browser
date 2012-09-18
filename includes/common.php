@@ -180,4 +180,86 @@ function mbsb_cached_download ($url, $cached_time = 604800) { // 1 week
 		return $download;
 	}
 } 
+
+function mbsb_get_preferred_version() {
+	return mbsb_get_option ('bible_version_'.get_locale());
+}
+
+function mbsb_get_bible_list_dropdown($preferred_version = '') {
+	$bibles = mbsb_get_bible_list();
+	if ($preferred_version == '')
+		$preferred_version = mbsb_get_preferred_version();
+	$local_bibles = array();
+	$other_bibles = array ('<optgroup label="'.__('Other languages', MBSB).'">');
+	foreach ($bibles as $code => $bible) {
+		if ($code == $preferred_version)
+			$insert = ' selected="selected"';
+		else
+			$insert = '';
+		if (strpos(get_locale(), "{$bible['language_code']}_") === 0)
+			$local_bibles[] = "<option{$insert} value=\"{$code}\">{$bible['name']}</option>";
+		else
+			$other_bibles[] = "<option{$insert} value=\"{$code}\">{$bible['language_name']}: {$bible['name']}</option>";
+	}
+	$other_bibles[] = '</optgroup>';
+	if (mbsb_get_option('hide_other_language_bibles'))
+		$bibles = $local_bibles;
+	else
+		$bibles = array_merge ($local_bibles, $other_bibles);
+	return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select>';
+}
+
+
+function mbsb_get_bible_list() {
+	$bibles = get_transient ('mbsb_bible_list_'.get_locale());
+	$bibles = false;
+	if (!$bibles) {
+		$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_api_key('biblia'));
+		$biblia_bibles = json_decode($biblia_bibles['body']);
+		if (isset($biblia_bibles->bibles)) {
+			$biblia_ignore = mbsb_get_option ('ignored_biblia_bibles');
+			$biblia_bibles = $biblia_bibles->bibles;
+			foreach ($biblia_bibles as $bible) {
+				$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
+				if (strtolower(substr($bible->title, 0, 4)) == 'the ')
+					$bible->title = substr($bible->title, 4);
+				if (!in_array($bible->bible, $biblia_ignore))
+					$bibles[$bible->bible] = array ('name' => $bible->title, 'language_code' => $bible->languages[0], 'language_name' => mbsb_bible_language_from_code($bible->languages[0]), 'service' => 'biblia');
+			}
+		}
+		uasort($bibles, 'mbsb_bible_sort');
+		set_transient ('mbsb_bible_list_'.get_locale(), $bibles, 604800);
+	}
+	return $bibles;
+}
+
+function mbsb_get_api_key($service) {
+	if ($service == 'biblia')
+		return mbsb_get_option('biblia_api_key');
+}
+
+function mbsb_get_bible_details($version) {
+	$bibles = mbsb_get_bible_list();
+	if (isset($bibles[$version]))
+		return $bibles[$version];
+	else
+		return false;
+}
+
+function mbsb_bible_sort ($a, $b) {
+	if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
+		return 0;
+	elseif ($a['language_name'] == $b['language_name'])
+		return ($a['name'] > $b['name']) ? 1 : -1;
+	else
+		return ($a['language_name'] > $b['language_name']) ? 1 : -1;
+}
+	
+function mbsb_bible_language_from_code ($code) {
+	$languages = array ('ar' => __('Arabic', MBSB), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish'), 'fr' => __('French', MBSB), 'it' => 'Italian', 'nl' => __('Dutch'), 'pt' => 'Portuguese', 'ru' => 'Russian');
+	if (isset($languages[$code]))
+		return $languages[$code];
+	else
+		return $code;
+}
 ?>

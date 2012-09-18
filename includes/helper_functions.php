@@ -20,6 +20,7 @@ function mbsb_default_options($all_options) {
 	$all_options ['biblia_api_key'] = '4738f84c62c4ce50f5b838b73d01806f';
 	$all_options ['esv_api_key'] = '';
 	$all_options ['ignored_biblia_bibles'] = array ('KJVAPOC', 'scrmorph', 'wh1881mr');
+	$all_options ['hide_other_language_bibles'] = false;
 	//Standard template options
 	$all_options ['frontend_sections'] = array ('main', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;
@@ -34,7 +35,6 @@ function mbsb_default_options($all_options) {
 	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['excerpt_length'] = 55;
 	$all_options ['show_statistics_on_sermon_page'] = true;
-	$all_options ['hide_other_language_bibles'] = false;
 	return $all_options;
 	
 	/*

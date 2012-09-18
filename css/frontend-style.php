@@ -60,4 +60,17 @@ div.mbsb_collapsible_heading div.alignleft {
 div.series_next_previous {
 	display: table;
 	margin-bottom: 1em;
+	width: 100%;
+}
+div.passage_heading {
+	font-family: <?php echo $font_headings; ?>;
+	font-weight: bold;
+}
+#passages_bible_dropdown {
+	display:table;
+	width:100%;
+}
+#passages_wrap #bible_dropdown {
+	float:right;
+	margin-bottom: 0.5em;
 }

@@ -93,7 +93,11 @@ class mbsb_spss_template {
 	protected function do_div ($content, $div_type, $class='') {
 		if ($class == '')
 			$class = "{$this->type}_{$div_type}";
-		return "<div id=\"{$this->type}_{$this->id}_{$div_type}\" class=\"{$class}\">{$content}</div>";
+		if ($this->id)
+			$id = "{$this->id}_";
+		else
+			$id = '';
+		return "<div id=\"{$this->type}_{$id}{$div_type}\" class=\"{$class}\">{$content}</div>";
 	}
 
 	/**

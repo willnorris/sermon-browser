@@ -30,7 +30,7 @@ class mbsb_sermon extends mbsb_spss_template {
 		$this->service = new mbsb_service (get_post_meta ($this->id, 'service', true));
 		$this->series = new mbsb_series (get_post_meta ($this->id, 'series', true));
 		$this->override_time = $this->get_misc_meta ('override_time');
-		$this->passages = get_post_meta ($this->id, 'passages_object', true);
+		$this->passages = new mbsb_passages(get_post_meta ($this->id, 'passage_start'), get_post_meta ($this->id, 'passage_end'));
 		$this->type = 'sermon';
 	}
 	
@@ -43,7 +43,7 @@ class mbsb_sermon extends mbsb_spss_template {
 	* @return string
 	*/
 	public function get_formatted_passages($link_type = '') {
-		if (is_object($this->passages) and is_a($this->passages, 'mbsb_passage'))
+		if (is_object($this->passages) and is_a($this->passages, 'mbsb_passages'))
 			if ($link_type == '')
 				return $this->passages->get_formatted();
 			elseif ($link_type = 'admin_link') {
@@ -146,7 +146,7 @@ class mbsb_sermon extends mbsb_spss_template {
 		$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
 		$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
 		$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
-		if (is_object($this->passages)) {
+		if ($this->get_formatted_passages()) {
 			$output .= $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
 			$output .= $this->passages->get_output();
 		}
@@ -277,7 +277,7 @@ class mbsb_sermon extends mbsb_spss_template {
 	* @return mixed - true on success, WP_Error on failure
 	*/
 	public function update_passages ($passages_raw) {
-		$new_passages = new mbsb_passage($passages_raw);
+		$new_passages = new mbsb_passages($passages_raw);
 		if ($error = $new_passages->is_error())
 			return $error;
 		else {
