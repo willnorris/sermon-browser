@@ -212,7 +212,7 @@ class mbsb_passage extends mbsb_pss_template {
 	private function bible_books() {
 		$mbsb_bible_books = wp_cache_get ('mbsb_bible_books', get_bloginfo('language'));
 		if (!$mbsb_bible_books){
-			$books = array(__('Genesis, Gen, Gn', MBSB), __('Exodus, Exod, Ex', MBSB), __('Leviticus, Lev, Lv', MBSB), __('Numbers, Num, Nm', MBSB), __('Deuteronomy, Deut, Dt', MBSB), __('Joshua, Josh, Jo', MBSB), __('Judges, Judg, Jgs', MBSB), __('Ruth, Ru', MBSB), __('1 Samuel, 1 Sam, 1Sam, 1Sm, 1 Sm', MBSB), __('2 Samuel, 2 Sam, 2Sam, 2 Sm, 2Sm', MBSB), __('1 Kings, 1 Kgs, 1Kgs', MBSB), __('2 Kings, 2 Kgs, 2Kgs', MBSB), __('1 Chronicles, 1 Chron, 1Chron, 1 Chr, 1Chr', MBSB), __('2 Chronicles, 2 Chron, 2Chron, 2 Chr, 2Chr',MBSB), __('Ezra, Ezr', MBSB), __('Nehemiah, Neh', MBSB), __('Esther, Est', MBSB), __('Job, Jb', MBSB), __('Psalm, Psalms, Pss, Ps', MBSB), __('Proverbs, Prov, Prv', MBSB), __('Ecclesiastes, Eccles, Eccl', MBSB), __('Song of Solomon, Song of Songs, Song of Sol, Songs, Sg', MBSB), __('Isaiah, Isa, Is', MBSB), __('Jeremiah, Jer', MBSB), __('Lamentations, Lam', MBSB), __('Ezekiel, Ezek, Ezk, Ez', MBSB), __('Daniel, Dan, Dn', MBSB), __('Hosea, Hos', MBSB), __('Joel, Jl', MBSB), __('Amos, Am', MBSB), __('Obadiah, Obad, Ob', MBSB), __('Jonah, Jon', MBSB), __('Micah, Mic, Mi', MBSB), __('Nahum, Nah, Na', MBSB), __('Habakkuk, Hab, Hb', MBSB), __('Zephaniah, Zeph, Zep', MBSB), __('Haggai, Hag, Hg', MBSB), __('Zechariah, Zech, Zec', MBSB), __('Malachi, Mal', MBSB), __('Matthew, Matt, Mt', MBSB), __('Mark, Mk', MBSB), __('Luke, Lk', MBSB), __('John, Jn', MBSB), __('Acts', MBSB), __('Romans, Rom', MBSB), __('1 Corinthians, 1 Cor, 1Cor', MBSB), __('2 Corinthians, 2 Cor, 2Cor', MBSB), __('Galatians, Gal', MBSB), __('Ephesians, Eph', MBSB), __('Philippians, Phil', MBSB), __('Colossians, Col', MBSB), __('1 Thessalonians, 1 Thess, 1Thess, 1 Thes, 1Thes, 1 Th, 1Th', MBSB), __('2 Thessalonians, 2 Thess, 2Thess, 2 Thes, 2Thes, 2 Th, 2Th', MBSB), __('1 Timothy, 1 Tim, 1Tim, 1 Ti, 1Ti, 1 Tm, 1Tm', MBSB), __('2 Timothy, 2 Tim, 2Tim, 2 Ti, 2Ti, 2 Tm, 2Tm', MBSB), __('Titus, Tit, Ti', MBSB), __('Philemon, Philem, Phlm', MBSB), __('Hebrews, Heb', MBSB), __('James, Jas', MBSB), __('1 Peter, 1Peter, 1 Pet, 1Pet, 1 Pt, 1Pt', MBSB), __('2 Peter, 2Peter, 2 Pet, 2Pet, 2 Pt, 2Pt', MBSB), __('1 John, 1John, 1 Jn, 1Jn', MBSB), __('2 John, 2John, 2 Jn, 2Jn', MBSB), __('3 John, 3John, 3 Jn, 3Jn', MBSB), __('Jude', MBSB), __('Revelation, Rev, Rv', MBSB));
+			$books = array(__('Genesis, Gen, Gn', MBSB), __('Exodus, Exod, Ex', MBSB), __('Leviticus, Lev, Lv', MBSB), __('Numbers, Num, Nm', MBSB), __('Deuteronomy, Deut, Dt', MBSB), __('Joshua, Josh, Jo', MBSB), __('Judges, Judg, Jgs', MBSB), __('Ruth, Ru', MBSB), __('1 Samuel, 1 Sam, 1Sam, 1Sm, 1 Sm', MBSB), __('2 Samuel, 2 Sam, 2Sam, 2 Sm, 2Sm', MBSB), __('1 Kings, 1 Kgs, 1Kgs', MBSB), __('2 Kings, 2 Kgs, 2Kgs', MBSB), __('1 Chronicles, 1 Chron, 1Chron, 1 Chr, 1Chr', MBSB), __('2 Chronicles, 2 Chron, 2Chron, 2 Chr, 2Chr',MBSB), __('Ezra, Ezr', MBSB), __('Nehemiah, Neh', MBSB), __('Esther, Est', MBSB), __('Job, Jb', MBSB), __('Psalm, Psalms, Pss, Psa, Ps', MBSB), __('Proverbs, Prov, Prv', MBSB), __('Ecclesiastes, Eccles, Eccl', MBSB), __('Song of Solomon, Song of Songs, Song of Sol, Songs, Sg', MBSB), __('Isaiah, Isa, Is', MBSB), __('Jeremiah, Jer', MBSB), __('Lamentations, Lam', MBSB), __('Ezekiel, Ezek, Ezk, Ez', MBSB), __('Daniel, Dan, Dn', MBSB), __('Hosea, Hos', MBSB), __('Joel, Jl', MBSB), __('Amos, Am', MBSB), __('Obadiah, Obad, Ob', MBSB), __('Jonah, Jon', MBSB), __('Micah, Mic, Mi', MBSB), __('Nahum, Nah, Na', MBSB), __('Habakkuk, Hab, Hb', MBSB), __('Zephaniah, Zeph, Zep', MBSB), __('Haggai, Hag, Hg', MBSB), __('Zechariah, Zech, Zec', MBSB), __('Malachi, Mal', MBSB), __('Matthew, Matt, Mt', MBSB), __('Mark, Mk', MBSB), __('Luke, Lk', MBSB), __('John, Jn', MBSB), __('Acts', MBSB), __('Romans, Rom', MBSB), __('1 Corinthians, 1 Cor, 1Cor', MBSB), __('2 Corinthians, 2 Cor, 2Cor', MBSB), __('Galatians, Gal', MBSB), __('Ephesians, Eph', MBSB), __('Philippians, Phil', MBSB), __('Colossians, Col', MBSB), __('1 Thessalonians, 1 Thess, 1Thess, 1 Thes, 1Thes, 1 Th, 1Th', MBSB), __('2 Thessalonians, 2 Thess, 2Thess, 2 Thes, 2Thes, 2 Th, 2Th', MBSB), __('1 Timothy, 1 Tim, 1Tim, 1 Ti, 1Ti, 1 Tm, 1Tm', MBSB), __('2 Timothy, 2 Tim, 2Tim, 2 Ti, 2Ti, 2 Tm, 2Tm', MBSB), __('Titus, Tit, Ti', MBSB), __('Philemon, Philem, Phlm', MBSB), __('Hebrews, Heb', MBSB), __('James, Jas', MBSB), __('1 Peter, 1Peter, 1 Pet, 1Pet, 1 Pt, 1Pt', MBSB), __('2 Peter, 2Peter, 2 Pet, 2Pet, 2 Pt, 2Pt', MBSB), __('1 John, 1John, 1 Jn, 1Jn', MBSB), __('2 John, 2John, 2 Jn, 2Jn', MBSB), __('3 John, 3John, 3 Jn, 3Jn', MBSB), __('Jude', MBSB), __('Revelation, Rev, Rv', MBSB));
 			foreach ($books as $num => $names) {
 				$num++;
 				$names = explode (',', $names);
@@ -338,74 +338,9 @@ class mbsb_passage extends mbsb_pss_template {
 		return $reference;
 	}
 	
-	public function get_bible_list() {
-		$bibles = get_transient ('mbsb_bible_list');
-		$bibles = false;
-		if (!$bibles) {
-			$bibles = array();
-			$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_option('biblia_api_key'));
-			$biblia_bibles = json_decode($biblia_bibles['body']);
-			if (isset($biblia_bibles->bibles)) {
-				$biblia_ignore = mbsb_get_option ('ignored_biblia_bibles');
-				$biblia_bibles = $biblia_bibles->bibles;
-				foreach ($biblia_bibles as $bible) {
-					$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
-					if (strtolower(substr($bible->title, 0, 4)) == 'the ')
-						$bible->title = substr($bible->title, 4);
-					if (!in_array($bible->bible, $biblia_ignore))
-						$bibles[] = array ('name' => $bible->title, 'code' => $bible->bible, 'language_code' => $bible->languages[0], 'language_name' => $this->language_from_code($bible->languages[0]), 'service' => 'biblia');
-				}
-			}
-			set_transient ('mbsb_bible_list', $bibles, 604800);
-		}
-		usort($bibles, array ($this, 'bible_sort'));
-		return $bibles;
-	}
-	
-	public function bible_sort ($a, $b) {
-		if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
-			return 0;
-		elseif ($a['language_name'] == $b['language_name'])
-			return ($a['name'] > $b['name']) ? 1 : -1;
-		else
-			return ($a['language_name'] > $b['language_name']) ? 1 : -1;
-	}
-	
-	public function do_bible_list_dropdown($preferred_version = '') {
-		$bibles = $this->get_bible_list();
-		$locale = get_locale();
-		if ($preferred_version == '')
-			$preferred_version = mbsb_get_option ('bible_version_'.$locale);
-		$local_bibles = array();
-		$other_bibles = array ('<optgroup label="'.__('Other languages', MBSB).'">');
-		foreach ($bibles as $bible) {
-			if ($bible['code'] == $preferred_version)
-				$insert = ' selected="selected"';
-			else
-				$insert = '';
-			if (strpos($locale, "{$bible['language_code']}_") === 0)
-				$local_bibles[] = "<option{$insert} value=\"{$bible['code']}-{$bible['service']}\">{$bible['name']}</option>";
-			else
-				$other_bibles[] = "<option{$insert} value=\"{$bible['code']}-{$bible['service']}\">{$bible['language_name']}: {$bible['name']}</option>";
-		}
-		$other_bibles[] = '</optgroup>';
-		if (mbsb_get_option('hide_other_language_bibles'))
-			$bibles = $local_bibles;
-		else
-			$bibles = array_merge ($local_bibles, $other_bibles);
-		return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select>';
-	}
-	
-	private function language_from_code ($code) {
-		$languages = array ('ar' => __('Arabic', MBSB), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish'), 'fr' => __('French', MBSB), 'it' => 'Italian', 'nl' => __('Dutch'), 'pt' => 'Portuguese', 'ru' => 'Russian');
-		if (isset($languages[$code]))
-			return $languages[$code];
-		else
-			return $code;
-	}
-	
 	public function get_output () {
-		$output = $this->do_bible_list_dropdown();
+		$bible_text = new mbsb_bible_text($this);
+		$output = $bible_text->get_bible_text();
 		return $output;
 	}
 }
