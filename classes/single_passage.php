@@ -51,6 +51,12 @@ class mbsb_single_passage {
 		}
 		return trim($reference);
 	}
+	
+	public function get_machine_readable($type) {
+		
+	}
+	
+
 	public function get_bible_text($preferred_version = '') {
 		if ($preferred_version == '')
 			$preferred_version = mbsb_get_preferred_version();

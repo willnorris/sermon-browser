@@ -278,24 +278,13 @@ class mbsb_sermon extends mbsb_spss_template {
 	*/
 	public function update_passages ($passages_raw) {
 		$new_passages = new mbsb_passages($passages_raw);
-		if ($error = $new_passages->is_error())
-			return $error;
-		else {
-			$existing_passages = get_post_meta ($this->id, 'passages_object', true);
-			if ($existing_passages != $new_passages) {
-				update_post_meta ($this->id, 'passages_object', $new_passages);
-				$processed = $new_passages->get_processed();
-				$type = array ('start', 'end');
+		$type = array ('start', 'end');
+		foreach ($type as $t)
+			delete_post_meta($this->id, "passage_{$t}");
+		if ($new_passages->get_formatted())
+			foreach ($new_passages->passages as $index => $p)
 				foreach ($type as $t)
-					delete_post_meta($this->id, "passage_{$t}");
-				foreach ($processed as $index => $p)
-					if (!is_wp_error($p['error']))
-						foreach ($type as $t)
-							add_post_meta ($this->id, "passage_{$t}", $this->passage_array_to_metadata_string($p[$t], $index));
-			}
-			$this->passages = $new_passages;
-			return true;
-		}
+					add_post_meta ($this->id, "passage_{$t}", $this->passage_array_to_metadata_string($p->$t, $index));
 	}
 	
 	/**

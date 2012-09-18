@@ -33,10 +33,12 @@ class mbsb_passages extends mbsb_spss_template {
 				if ($result = $this->check_raw_format ($s))
 					$verses [$result['index']]['end'] = $result ['result'];
 		}
-		if (isset ($verses) && !is_wp_error($verses))
+		if (isset ($verses) && !is_wp_error($verses)) {
+			ksort ($verses);
 			foreach ($verses as $v)
 				if (isset($v['start']) && isset($v['end']))
 					$passages[] = new mbsb_single_passage ($v['start'], $v['end']);
+		}
 		if (isset($passages))
 			$this->passages = $passages;
 		else
@@ -44,6 +46,13 @@ class mbsb_passages extends mbsb_spss_template {
 		$this->formatted = $this->get_formatted();
 		$this->type = 'passages';
 		$this->id = '';
+	}
+	
+	public function __get($name) {
+		if (isset($this->$name) && ($name == 'formatted' || $name == 'passages'))
+			return $this->$name;
+		else
+			trigger_error ('Invalid property '.$name.' requested', E_USER_ERROR);
 	}
 	
 	private function check_raw_format ($s){
