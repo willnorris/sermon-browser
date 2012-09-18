@@ -146,8 +146,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
 		$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
 		$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
-		$output .= $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
-		$output .= $this->passages->get_output();
+		if (is_object($this->passages)) {
+			$output .= $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
+			$output .= $this->passages->get_output();
+		}
 		return $this->do_div($output, 'sermon');
 	}
 	
