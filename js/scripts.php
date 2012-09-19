@@ -203,14 +203,24 @@ jQuery(document).ready(function($) {
 } elseif ($_GET['name'] == 'frontend_script') {
 ?>
 var mbsb_ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>';
+
+function mbsbSetCookie(cookieName, value, numDays) {
+	var expiryDate = new Date();
+	expiryDate.setDate(expiryDate.getDate() + numDays);
+	var cookieValue = cookieName + "=" + escape(value) + ((numDays==null) ? "" : "; expires=" + expiryDate.toUTCString()) + "; path=<?php echo esc_js(COOKIEPATH) ?>";
+	document.cookie = cookieValue;
+}
+
 /**
 * The main jQuery function that runs when the document is ready
 */
 jQuery(document).ready(function($) {
 	$('#bible_dropdown').change(function() {
+		var version = $(this).val();
+		mbsbSetCookie('sermon_browser_bible', version, 365);
 		var data = {
 			action: 'mbsb_get_bible_text',
-			version: $(this).val(),
+			version: version,
 			post_id: <?php echo esc_js($_GET['post_id'])?>
 		};
 		$.post(mbsb_ajaxurl, data, function(response) {

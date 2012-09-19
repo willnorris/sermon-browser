@@ -182,7 +182,10 @@ function mbsb_cached_download ($url, $cached_time = 604800) { // 1 week
 } 
 
 function mbsb_get_preferred_version() {
-	return mbsb_get_option ('bible_version_'.get_locale());
+	if (mbsb_get_option ('allow_user_to_change_bible') && isset($_COOKIE['sermon_browser_bible']))
+		return $_COOKIE['sermon_browser_bible'];
+    else
+		return mbsb_get_option ('bible_version_'.get_locale());
 }
 
 function mbsb_get_bible_list_dropdown($preferred_version = '') {

@@ -335,8 +335,11 @@ class mbsb_passages extends mbsb_spss_template {
 
 	public function get_output () {
 		if ($this->passages) {
-			$output = $this->do_div (mbsb_get_bible_list_dropdown(), 'bible_dropdown');
-			$output .= $this->do_div ($this->get_text_output(), 'text');
+			if (mbsb_get_option('allow_user_to_change_bible')) {
+				$output = $this->do_div (mbsb_get_bible_list_dropdown(), 'bible_dropdown');
+			}
+			$preferred_version = mbsb_get_preferred_version();
+			$output .= $this->do_div ($this->get_text_output($preferred_version), 'text');
 			return $this->do_div ($output, 'wrap');
 		}
 	}

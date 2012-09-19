@@ -68,4 +68,3 @@ class mbsb_single_passage {
 	}
 }
 ?>
-
