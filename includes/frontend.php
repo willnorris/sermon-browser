@@ -16,9 +16,7 @@ add_action ('init', 'mbsb_frontend_init');
 * 
 */
 function mbsb_frontend_init() {
-	$date = @filemtime(mbsb_plugin_dir_path('css/frontend-style.php'));
-	wp_register_style ('mbsb_frontend_style', mbsb_plugins_url('css/frontend-style.php'), array(), $date);
-	wp_enqueue_style ('mbsb_frontend_style');
+	add_action ('wp_enqueue_scripts', 'mbsb_enqueue_frontend_scripts');
 	add_filter ('the_content', 'mbsb_provide_content');
 	add_filter ('the_title', 'mbsb_filter_titles', 10, 2);
 	add_filter ('the_author', 'mbsb_filter_author');
@@ -80,5 +78,14 @@ function mbsb_filter_author_link ($link, $author_id, $author_nicename) {
 		return $sermon->preacher->get_url();
 	} else
 		return $link;
+}
+
+function mbsb_enqueue_frontend_scripts() {
+	global $post;
+	$date = @filemtime(mbsb_plugin_dir_path('css/frontend-style.php'));
+	wp_register_style ('mbsb_frontend_style', mbsb_plugins_url('css/frontend-style.php'), array(), $date);
+	wp_enqueue_style ('mbsb_frontend_style');
+	wp_register_script ('mbsb_frontend_script', home_url("?mbsb_script&locale=".get_locale()."&name=frontend_script&post_id={$post->ID}"), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+	wp_enqueue_script ('mbsb_frontend_script');
 }
 ?>

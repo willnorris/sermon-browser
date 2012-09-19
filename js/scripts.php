@@ -200,6 +200,28 @@ jQuery(document).ready(function($) {
 	});
 });
 <?php
+} elseif ($_GET['name'] == 'frontend_script') {
+?>
+var mbsb_ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>';
+/**
+* The main jQuery function that runs when the document is ready
+*/
+jQuery(document).ready(function($) {
+	$('#bible_dropdown').change(function() {
+		var data = {
+			action: 'mbsb_get_bible_text',
+			version: $(this).val(),
+			post_id: <?php echo esc_js($_GET['post_id'])?>
+		};
+		$.post(mbsb_ajaxurl, data, function(response) {
+			$('#passages_text').fadeOut('slow', function() {
+				$(this).html(response)
+			}).fadeIn('slow');
+		});
+
+	});
+});
+<?php
 }
 die();
 ?>

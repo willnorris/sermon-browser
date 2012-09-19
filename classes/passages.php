@@ -336,14 +336,20 @@ class mbsb_passages extends mbsb_spss_template {
 	public function get_output () {
 		if ($this->passages) {
 			$output = $this->do_div (mbsb_get_bible_list_dropdown(), 'bible_dropdown');
-			$c = count ($this->passages);
-			foreach ($this->passages as $index => $p) {
-				if ($c > 1)
-					$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
-				$output .= $this->do_div ($p->get_bible_text(), "body_{$index}", 'passage_body');
-			}
+			$output .= $this->do_div ($this->get_text_output(), 'text');
 			return $this->do_div ($output, 'wrap');
 		}
+	}
+	
+	public function get_text_output($version = '') {
+		$output = '';
+		$c = count ($this->passages);
+		foreach ($this->passages as $index => $p) {
+			if ($c > 1)
+				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
+			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", 'passage_body');
+		}
+		return $output;
 	}
 }
 ?>

@@ -52,11 +52,6 @@ class mbsb_single_passage {
 		return trim($reference);
 	}
 	
-	public function get_machine_readable($type) {
-		
-	}
-	
-
 	public function get_bible_text($preferred_version = '') {
 		if ($preferred_version == '')
 			$preferred_version = mbsb_get_preferred_version();
@@ -65,7 +60,7 @@ class mbsb_single_passage {
 			return false;
 		else {
 			if ($bible['service'] == 'biblia') {
-				$url = "http://api.biblia.com/v1/bible/content/{$preferred_version}.html?fulltext=true&formatting=character&key=".mbsb_get_api_key('biblia')."&passage=".urlencode($this->formatted);
+				$url = "http://api.biblia.com/v1/bible/content/{$preferred_version}.html?fulltext=false&redLetter=false&formatting=character&key=".mbsb_get_api_key('biblia')."&passage=".urlencode($this->formatted);
 				$bible_text = mbsb_cached_download ($url);
 				return $bible_text['body'];
 			}

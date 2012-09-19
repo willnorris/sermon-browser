@@ -32,6 +32,8 @@ function mbsb_admin_init () {
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
 	add_action ('wp_ajax_mbsb_remove_attachment', 'mbsb_ajax_mbsb_remove_attachment');
+	add_action ('wp_ajax_mbsb_get_bible_text', 'mbsb_ajax_mbsb_get_bible_text');
+	add_action ('wp_ajax_nopriv_mbsb_get_bible_text', 'mbsb_ajax_mbsb_get_bible_text');
 	// Quick editing a custom post_type?
 	if (isset($_POST['action']) && $_POST['action'] == 'inline-save' && substr($_POST['post_type'], 0, 5) == 'mbsb_') {
 		$mbsb_post_type = substr($_POST['post_type'], 5);
@@ -805,5 +807,12 @@ function mbsb_tb_iframe_admin_head() {
 */
 function mbsb_add_admin_attachment_row_actions($existing_actions) {
 	return '<a class="unattach" href="#">'.__('Unattach', MBSB).'</a>';
+}
+
+function mbsb_ajax_mbsb_get_bible_text() {
+	$sermon = new mbsb_sermon ($_POST['post_id']);
+	$text = $sermon->passages->get_text_output($_POST['version']);
+	echo $text;
+	die();
 }
 ?>
