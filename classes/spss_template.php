@@ -34,6 +34,13 @@ class mbsb_spss_template {
 			return $description;
 		}
 	}
+	
+	public function get_id() {
+		if (isset($this->id) && $this->id !== null)
+			return $this->id;
+		else
+			return false;
+	}
 
 	/**
 	* Returns the URL of the current preacher/series/service
