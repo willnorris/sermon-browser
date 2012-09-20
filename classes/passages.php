@@ -360,7 +360,7 @@ class mbsb_passages extends mbsb_spss_template {
 		foreach ($this->passages as $index => $p) {
 			if ($c > 1)
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
-			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}-{$version}");
+			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version}");
 		}
 		return $output;
 	}
