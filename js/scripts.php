@@ -210,11 +210,30 @@ function mbsbSetCookie(cookieName, value, numDays) {
 	var cookieValue = cookieName + "=" + escape(value) + ((numDays==null) ? "" : "; expires=" + expiryDate.toUTCString()) + "; path=<?php echo esc_js(COOKIEPATH) ?>";
 	document.cookie = cookieValue;
 }
-
+function mbsbGetCookie(cookieName) {
+    var nameEQ = cookieName + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ')
+        	c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0)
+        	return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
 /**
 * The main jQuery function that runs when the document is ready
 */
 jQuery(document).ready(function($) {
+	hideableSections = new Array("sermon_media_list", "preacher_preacher", "series_series", "service_service", "passages_wrap");
+	$.each (hideableSections, function (key, value) {
+		var display = mbsbGetCookie('sermon_browser_section_'+value);
+		if (display == 'hide') {
+			$('div.'+value).hide();
+			var a = $('div.'+value).prev().find('a.heading_pointer').html('&#9654;');
+		}
+	});
 	$('#bible_dropdown').change(function() {
 		var version = $(this).val();
 		mbsbSetCookie('sermon_browser_bible', version, 365);
@@ -228,8 +247,24 @@ jQuery(document).ready(function($) {
 				$(this).html(response)
 			}).fadeIn('slow');
 		});
-
 	});
+	$('div.mbsb_collapsible_heading').on('click', 'a.heading_pointer', function (e) {
+		var button = $(this);
+		var to_collapse = $(this).parents('div.mbsb_collapsible_heading').next();
+		if (to_collapse.is(':hidden')) {
+			mbsbSetCookie('sermon_browser_section_'+to_collapse.attr('class'), 'show', 365);
+			to_collapse.slideDown('slow', function () {
+				button.html('&#9660;');
+			});
+		} else {
+			mbsbSetCookie('sermon_browser_section_'+to_collapse.attr('class'), 'hide', 365);
+			to_collapse.slideUp('slow', function () {
+				button.html('&#9654;')
+			});
+		}
+		e.preventDefault();
+	});
+
 });
 <?php
 }

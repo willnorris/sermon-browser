@@ -115,7 +115,7 @@ class mbsb_spss_template {
 			$class = "sermon_{$div_type} mbsb_collapsible_heading";
 		else
 			$class = "{$class} mbsb_collapsible_heading";
-		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('&#9660;', "{$div_type}_pointer", 'alignright');
+		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('<a id="heading_pointer_link_'.$div_type.'" class="heading_pointer" href="#">&#9660;</a>', "{$div_type}_pointer", 'alignright');
 		return $this->do_div ($content, $div_type, $class);
 	}
 
