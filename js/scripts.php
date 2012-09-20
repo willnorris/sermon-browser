@@ -264,6 +264,19 @@ jQuery(document).ready(function($) {
 		}
 		e.preventDefault();
 	});
+	$('div.sermon_sermon').on('click', 'a.read_more', function (e) {
+		var section_type = $(this).attr('id').substr(10);
+		var data = {
+			action: 'mbsb_get_'+section_type+'_details',
+			post_id: <?php echo esc_js($_GET['post_id'])?>
+		};
+		$.post(mbsb_ajaxurl, data, function(response) {
+			$('div.'+section_type+'_'+section_type).fadeOut('slow', function() {
+				$(this).html(response);
+			}).fadeIn('slow');
+		});
+		e.preventDefault();
+	});
 
 });
 <?php

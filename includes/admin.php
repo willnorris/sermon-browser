@@ -34,6 +34,12 @@ function mbsb_admin_init () {
 	add_action ('wp_ajax_mbsb_remove_attachment', 'mbsb_ajax_mbsb_remove_attachment');
 	add_action ('wp_ajax_mbsb_get_bible_text', 'mbsb_ajax_mbsb_get_bible_text');
 	add_action ('wp_ajax_nopriv_mbsb_get_bible_text', 'mbsb_ajax_mbsb_get_bible_text');
+	add_action ('wp_ajax_mbsb_get_preacher_details', 'mbsb_ajax_mbsb_get_preacher_details');
+	add_action ('wp_ajax_nopriv_mbsb_get_preacher_details', 'mbsb_ajax_mbsb_get_preacher_details');
+	add_action ('wp_ajax_mbsb_get_service_details', 'mbsb_ajax_mbsb_get_service_details');
+	add_action ('wp_ajax_nopriv_mbsb_get_service_details', 'mbsb_ajax_mbsb_get_service_details');
+	add_action ('wp_ajax_mbsb_get_series_details', 'mbsb_ajax_mbsb_get_series_details');
+	add_action ('wp_ajax_nopriv_mbsb_get_series_details', 'mbsb_ajax_mbsb_get_series_details');
 	// Quick editing a custom post_type?
 	if (isset($_POST['action']) && $_POST['action'] == 'inline-save' && substr($_POST['post_type'], 0, 5) == 'mbsb_') {
 		$mbsb_post_type = substr($_POST['post_type'], 5);
@@ -815,4 +821,26 @@ function mbsb_ajax_mbsb_get_bible_text() {
 	echo $text;
 	die();
 }
+
+function mbsb_ajax_mbsb_get_preacher_details() {
+	$sermon = new mbsb_sermon ($_POST['post_id']);
+	if ($sermon->preacher->present)
+		echo $sermon->preacher->get_output();
+	die();
+}
+
+function mbsb_ajax_mbsb_get_series_details() {
+	$sermon = new mbsb_sermon ($_POST['post_id']);
+	if ($sermon->series->present)
+		echo $sermon->series->get_output();
+	die();
+}
+
+function mbsb_ajax_mbsb_get_service_details() {
+	$sermon = new mbsb_sermon ($_POST['post_id']);
+	if ($sermon->service->present)
+		echo $sermon->service->get_output();
+	die();
+}
+
 ?>

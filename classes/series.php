@@ -51,7 +51,7 @@ class mbsb_series extends mbsb_pss_template {
 		$description = ($excerpt_length == 0) ? $this->get_description() : '<p>'.$this->get_excerpt($excerpt_length).'</p>';
 		$output .= $this->do_div ($description, 'description');
 		if (mbsb_get_option('show_statistics_on_sermon_page')) {
-			if ($post->post_type == 'mbsb_sermon') {
+			if (defined('DOING_AJAX') || $post->post_type == 'mbsb_sermon') {
 				$next_previous = '';
 				$next = $this->get_next();
 				if ($next)

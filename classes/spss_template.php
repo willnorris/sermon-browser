@@ -76,7 +76,7 @@ class mbsb_spss_template {
 		if ($this->excerpt)
 			return $this->excerpt;
 		else {
-			return wp_trim_words($this->get_description(), $excerpt_length, '&hellip; (<a href="'.$this->get_url()."\" id=\"read_more_{$this->type}\">".__('read more', MBSB).')</a>');
+			return wp_trim_words($this->get_description(), $excerpt_length, '&hellip; (<a class="read_more" href="'.$this->get_url()."\" id=\"read_more_{$this->type}\">".__('read more', MBSB).')</a>');
 		}
 	}
 	

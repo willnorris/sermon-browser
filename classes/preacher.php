@@ -50,20 +50,19 @@ class mbsb_preacher extends mbsb_pss_template {
 			$output .= $this->do_div (get_the_post_thumbnail($this->id, 'mbsb_preacher', array ('class' => mbsb_get_option('preacher_image'))), 'preacher_image');
 		$description = ($excerpt_length == 0) ? $this->get_description() : '<p>'.$this->get_excerpt($excerpt_length).'</p>';
 		$output .= $this->do_div ($description, 'description');
-		if (mbsb_get_option('show_statistics_on_sermon_page')) {
+		if (mbsb_get_option('show_statistics_on_sermon_page') && !$showing_preacher_page) {
 			$num_sermons = $this->get_sermon_count();
 			if ($num_sermons > 1) {
 				$output .= '<p class="preacher_statistics"><strong>'.__('See more', MBSB).'</strong>: ';
 				$stats = sprintf(__('%1s sermons by %2s in %3s series ', MBSB), $num_sermons, esc_html($this->get_name()), $this->get_series_count());
-				if ($showing_preacher_page)
-					$output .= $stats;
-				else
-					$output .= '<a href="'.$this->get_url().'">'.$stats.'</a>';
+				$output .= '<a href="'.$this->get_url().'">'.$stats.'</a>';
 				$output .= '</p>';
 			}
-			
 		}
-		return $this->do_div ($output, 'preacher');
+		if (defined('DOING_AJAX'))
+			return $output;
+		else
+			return $this->do_div ($output, 'preacher');
 	}
 }
 ?>
