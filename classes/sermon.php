@@ -319,18 +319,16 @@ class mbsb_sermon extends mbsb_spss_template {
 	public function edit_php_cell ($post_type, $column) {
 		if (substr($post_type, 0, 5) != 'mbsb_')
 			$post_type = 'mbsb_'.$post_type;
-		if ($column == 'preacher')
+		if ($column == 'preacher' && $this->preacher->present)
 			return '<a href="'.get_edit_post_link($this->preacher->id).'">'.esc_html($this->preacher->name).'</a>';
-		elseif ($column == 'service')
+		elseif ($column == 'service' && $this->service->present)
 			return '<a href="'.get_edit_post_link($this->service->id).'">'.esc_html($this->service->name).'</a>';
-		elseif ($column == 'series')
+		elseif ($column == 'series' && $this->series->present)
 			return '<a href="'.get_edit_post_link($this->series->id).'">'.esc_html($this->series->name).'</a>';
 		elseif ($column == 'passages')
 			return $this->get_formatted_passages('admin_link');
 		elseif ($column == 'media')
 			return $this->get_simple_media_list(true);
-		else
-			return 'Unknown type';
 	}
 	
 	/**

@@ -90,6 +90,7 @@ function mbsb_init () {
 	mbsb_register_image_sizes();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
+	add_action ('admin_bar_menu', 'mbsb_admin_bar_menu');
 	add_filter ('user_has_cap', 'mbsb_prevent_cpt_deletions', 10, 3);
 }
 
@@ -204,5 +205,22 @@ function mbsb_plugin_dir_path ($relative_path = '') {
 */
 function mbsb_plugins_url ($path = '') {
 	return plugins_url($path, __FILE__);
+}
+
+function mbsb_admin_bar_menu() {
+	global $wp_admin_bar;
+	if (current_user_can ('edit_pages')) {
+		if (mbsb_get_option('add_all_types_to_admin_bar')) {
+			$wp_admin_bar->add_node(array('id' => 'mbsb-menu', 'title'=> __('Sermons', MBSB)));
+			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-sermon', 'title' => __('Sermons', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_sermon')));
+			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-series', 'title' => __('Series', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_series')));
+			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-preacher', 'title' => __('Preachers', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_preacher')));
+			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-services', 'title' => __('Services', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_service')));
+		} else {
+			$wp_admin_bar->add_node(array('parent' => 'site-name', 'id' => 'mbsb-sermons', 'title' => __('Sermons', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_sermon')));
+			if (is_admin())
+				$wp_admin_bar->add_node(array('parent' => 'new-content', 'id' => 'mbsb-add-sermon', 'title' => __('Sermon', MBSB), 'href' => admin_url('post-new.php?post_type=mbsb_sermon')));
+		}
+	}
 }
 ?>

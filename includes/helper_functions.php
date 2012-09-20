@@ -10,6 +10,7 @@
 
 // Temporary filter whilst the Options Page is being built.
 add_filter ('option_sermon_browser_2', 'mbsb_default_options');
+add_filter ('default_option_sermon_browser_2', 'mbsb_default_options');
 
 function mbsb_default_options($all_options) {
 	//Standard options
@@ -23,6 +24,7 @@ function mbsb_default_options($all_options) {
 	$all_options ['ignored_biblesearch_bibles'] = array('KJV', 'KJVA');
 	$all_options ['hide_other_language_bibles'] = false;
 	$all_options ['append_passage_to_title_in_feed'] = true;
+	$all_options ['add_all_types_to_admin_bar'] = true;
 	//Standard template options
 	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;
