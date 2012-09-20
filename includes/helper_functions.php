@@ -24,7 +24,7 @@ function mbsb_default_options($all_options) {
 	$all_options ['hide_other_language_bibles'] = false;
 	$all_options ['append_passage_to_title_in_feed'] = true;
 	//Standard template options
-	$all_options ['frontend_sections'] = array ('main', 'preacher', 'series', 'passages');
+	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;
 	$all_options ['sermon_image'] = 'alignright';
 	$all_options ['preacher_image'] = 'alignright';

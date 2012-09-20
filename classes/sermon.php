@@ -147,26 +147,32 @@ class mbsb_sermon extends mbsb_spss_template {
 	* @return string
 	*/
 	public function get_frontend_output() {
-		$sections = mbsb_get_option('frontend_sections');
-		$output = $this->get_main_output();
-		if ($this->get_attachments()) {
+		$sections = mbsb_get_option('frontend_sermon_sections');
+		$output = '';
+		foreach ($sections as $section)
+			$output .= $this->get_frontend_section ($section);
+		return $this->do_div($output, 'sermon');
+	}
+	
+	private function get_frontend_section ($section) {
+		$output = '';
+		if ($section == 'main')
+			$output = $this->get_main_output();
+		elseif ($section == 'media' && $this->get_attachments()) {
 			if (!mbsb_get_option('hide_media_heading'))
 				$output .= $this->do_heading (__('Media', MBSB).':', 'media_attachments');
 			$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
-		}
-		if ($this->preacher->present) {
-			$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->preacher->get_url().'">'.esc_html($this->preacher->get_name()).'</a>', 'preacher_name');
+		}elseif ($section == 'preacher' && $this->preacher->present) {
+			$output = $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->preacher->get_url().'">'.esc_html($this->preacher->get_name()).'</a>', 'preacher_name');
 			$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
-		}
-		if ($this->series->present) {
-			$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
+		}elseif ($section == 'series' && $this->series->present) {
+			$output = $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
 			$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
-		}
-		if ($this->passages->present) {
-			$output .= $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
+		}elseif ($section == 'passages' && $this->passages->present) {
+			$output = $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
 			$output .= $this->passages->get_output();
 		}
-		return $this->do_div($output, 'sermon');
+		return $output;
 	}
 	
 	/**
