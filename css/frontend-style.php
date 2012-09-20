@@ -74,3 +74,13 @@ div.passage_heading {
 	float:right;
 	margin-bottom: 0.5em;
 }
+#passages_text div.biblesearch {
+	margin-bottom: 1em;
+}
+#passages_text div.biblesearch span.divineName {
+	text-transform: lowercase;
+	font-variant: small-caps;
+}
+#passages_text div.biblesearch span.divineName span.divineCaps {
+	text-transform: none;
+}

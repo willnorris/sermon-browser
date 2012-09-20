@@ -162,13 +162,16 @@ function mbsb_join_book ($join) {
 * @param mixed $url
 * @param mixed $cached_time
 */
-function mbsb_cached_download ($url, $cached_time = 604800) { // 1 week
-	$option_name = 'mbsb_cache_'.md5($url);
+function mbsb_cached_download ($url, $cached_time = 604800, $user_name = '', $password = '') { // 1 week
+	$option_name = 'mbsb_cache_'.md5($url.$user_name.$password);
 	$cached = get_option ($option_name);
 	if ($cached && (($cached['time']+$cached_time) > time()))
 		return $cached ['data'];
 	else {
-		$download = wp_remote_get ($url);
+		$args = array();
+		if ($user_name || $password)
+			$args['headers'] = array ('Authorization' => 'Basic '.base64_encode ("{$user_name}:{$password}"));
+		$download = wp_remote_get ($url, $args);
 		if (is_wp_error ($download) || $download['response']['code'] != 200) {
 			if ($cached) {
 				$cached ['time'] = time() - $cached_time + min($cached_time, 21600); // Use out-of-date cache for no more than 6 more hours, or the specified cache time
@@ -215,30 +218,56 @@ function mbsb_get_bible_list_dropdown($preferred_version = '') {
 
 function mbsb_get_bible_list() {
 	$bibles = get_transient ('mbsb_bible_list_'.get_locale());
-	$bibles = false;
+	$bibles = array(); // Remove this line before production
 	if (!$bibles) {
-		$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_api_key('biblia'));
-		$biblia_bibles = json_decode($biblia_bibles['body']);
-		if (isset($biblia_bibles->bibles)) {
-			$biblia_ignore = mbsb_get_option ('ignored_biblia_bibles');
-			$biblia_bibles = $biblia_bibles->bibles;
-			foreach ($biblia_bibles as $bible) {
-				$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
-				if (strtolower(substr($bible->title, 0, 4)) == 'the ')
-					$bible->title = substr($bible->title, 4);
-				if (!in_array($bible->bible, $biblia_ignore))
-					$bibles[$bible->bible] = array ('name' => $bible->title, 'language_code' => $bible->languages[0], 'language_name' => mbsb_bible_language_from_code($bible->languages[0]), 'service' => 'biblia');
+		//api.biblia.com
+		if ($api_key = mbsb_get_api_key('biblia')) {
+			$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_api_key('biblia'));
+			if ($biblia_bibles['response']['code'] == 200) {
+				$biblia_bibles = json_decode($biblia_bibles['body']);
+				if (isset($biblia_bibles->bibles)) {
+					$biblia_ignore = (array)mbsb_get_option ('ignored_biblia_bibles');
+					$biblia_bibles = $biblia_bibles->bibles;
+					foreach ($biblia_bibles as $bible) {
+						$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
+						if (strtolower(substr($bible->title, 0, 4)) == 'the ')
+							$bible->title = substr($bible->title, 4);
+						if (!in_array($bible->bible, $biblia_ignore) && !isset($bibles[$bible->bible]))
+							$bibles[$bible->bible] = array ('name' => $bible->title, 'language_code' => $bible->languages[0], 'language_name' => mbsb_bible_language_from_code($bible->languages[0]), 'service' => 'biblia');
+					}
+				}
 			}
 		}
-		uasort($bibles, 'mbsb_bible_sort');
+		//biblesearch.americanbible.org
+		$biblesearch_bibles = mbsb_cached_download('http://bibles.org/versions.xml', 604800, mbsb_get_api_key('biblesearch'));
+		if ($biblesearch_bibles['response']['code'] == 200) {
+			$biblesearch_bibles = new SimpleXMLElement($biblesearch_bibles['body']);
+			if (isset($biblesearch_bibles->version)) {
+				$biblesearch_ignore = (array)mbsb_get_option ('ignored_biblesearch_bibles');
+				$biblesearch_bibles = $biblesearch_bibles->version;
+				foreach ($biblesearch_bibles as $bible) {
+					$required_vars = array ('id', 'name', 'lang', 'lang_code');
+					if (!in_array((string)$bible->id, $biblesearch_ignore) && !isset($bibles[(string)$bible->id]))
+						$bibles[(string)$bible->id] = array ('name' => (string)$bible->name, 'language_code' => mbsb_get_bible_search_lang((string)$bible->lang, (string)$bible->lang_code), 'language_name' => mbsb_bible_language_from_code(mbsb_get_bible_search_lang($bible->lang, $bible->lang_code)), 'service' => 'biblesearch');
+				}
+				//Some Bibles are missing from the list, and need to be added manually
+				$additional_bibles ['BCN'] = array ('name' => 'Beibl Cymraeg Newydd (Argraffiad Diwygiedig)', 'language_code' => 'cy');
+				$additional_bibles ['BNET'] = array ('name' => 'Beibl.net', 'language_code' => 'cy');
+				$additional_bibles ['BWM'] = array ('name' => 'William Morgan Bible', 'language_code' => 'cy');
+				foreach ($additional_bibles as $id => $bible)
+					if (!in_array($id, $biblesearch_ignore) && !isset($bibles[$id]))
+						$bibles[$id] = array ('name' => $bible['name'], 'language_code' => $bible['language_code'], 'language_name' => mbsb_bible_language_from_code($bible['language_code']), 'service' => 'biblesearch');
+				
+			}
+		}
+		uasort ($bibles, 'mbsb_bible_sort');
 		set_transient ('mbsb_bible_list_'.get_locale(), $bibles, 604800);
 	}
 	return $bibles;
 }
 
 function mbsb_get_api_key($service) {
-	if ($service == 'biblia')
-		return mbsb_get_option('biblia_api_key');
+	return mbsb_get_option("{$service}_api_key");
 }
 
 function mbsb_get_bible_details($version) {
@@ -259,10 +288,14 @@ function mbsb_bible_sort ($a, $b) {
 }
 	
 function mbsb_bible_language_from_code ($code) {
-	$languages = array ('ar' => __('Arabic', MBSB), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish'), 'fr' => __('French', MBSB), 'it' => 'Italian', 'nl' => __('Dutch'), 'pt' => 'Portuguese', 'ru' => 'Russian');
+	$languages = array ('ar' => __('Arabic', MBSB), 'cy' => __('Welsh'), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish', MBSB), 'fr' => __('French', MBSB), 'gl' => __('Gaelic'), 'it' => __('Italian', MBSB), 'nl' => __('Dutch', MBSB), 'pt' => __('Portuguese', MBSB), 'ru' => __('Russian', MBSB), 'sp' => __('Spanish', MBSB));
 	if (isset($languages[$code]))
 		return $languages[$code];
 	else
 		return $code;
+}
+
+function mbsb_get_bible_search_lang($lang, $lang_code) {
+	return substr($lang, 0, 2);
 }
 ?>

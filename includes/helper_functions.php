@@ -18,10 +18,11 @@ function mbsb_default_options($all_options) {
 	$all_options ['bible_version_en_US'] = 'asv';
 	$all_options ['allow_user_to_change_bible'] = true;
 	//Advanced options
-	$all_options ['biblia_api_key'] = '4738f84c62c4ce50f5b838b73d01806f';
-	$all_options ['esv_api_key'] = '';
+	require ('api_keys.php');
 	$all_options ['ignored_biblia_bibles'] = array ('emphbbl', 'kjv', 'KJVAPOC', 'scrmorph', 'wh1881mr');
+	$all_options ['ignored_biblesearch_bibles'] = array('KJV', 'KJVA');
 	$all_options ['hide_other_language_bibles'] = false;
+	$all_options ['append_passage_to_title_in_feed'] = true;
 	//Standard template options
 	$all_options ['frontend_sections'] = array ('main', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;

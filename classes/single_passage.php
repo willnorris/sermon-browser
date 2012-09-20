@@ -62,7 +62,26 @@ class mbsb_single_passage {
 			if ($bible['service'] == 'biblia') {
 				$url = "http://api.biblia.com/v1/bible/content/{$preferred_version}.html?fulltext=false&redLetter=false&formatting=character&key=".mbsb_get_api_key('biblia')."&passage=".urlencode($this->formatted);
 				$bible_text = mbsb_cached_download ($url);
-				return $bible_text['body'];
+				if ($bible_text['response']['code'] == '200')
+					return $bible_text['body'];
+			} elseif ($bible['service'] == 'biblesearch') {
+				$url = "http://bibles.org/passages.xml?q[]=".urlencode($this->formatted)."&version=".$preferred_version;
+				$response = mbsb_cached_download ($url, 604800, mbsb_get_api_key('biblesearch'));
+				if ($response['response']['code'] != '200')
+					return false;
+				$response = new SimpleXMLElement($response['body']);
+				if (!isset($response->result->passages->passage->path))
+					return false;
+				$bible_text = mbsb_cached_download ('http://bibles.org/'.$response->result->passages->passage->path, 604800, mbsb_get_api_key('biblesearch'));
+				if ($bible_text['response']['code'] == '200') {
+					$bible_text = new SimpleXMLElement($bible_text['body']);
+					if (isset($bible_text->verse)) {
+						$output = '';
+						foreach ($bible_text->verse as $verse)
+							$output .= $verse->text;
+					}
+					return $output;
+				}
 			}
 		}
 	}
