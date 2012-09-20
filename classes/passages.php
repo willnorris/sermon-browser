@@ -8,6 +8,12 @@
 */
 class mbsb_passages extends mbsb_spss_template {
 	
+	/**
+	* True if the object contains passages, false otherwise
+	* 
+	* @var boolean
+	*/
+	public $present;
 	private $formatted, $passages;
 
 	/**
@@ -39,10 +45,11 @@ class mbsb_passages extends mbsb_spss_template {
 				if (isset($v['start']) && isset($v['end']))
 					$passages[] = new mbsb_single_passage ($v['start'], $v['end']);
 		}
-		if (isset($passages))
+		if (isset($passages)) {
 			$this->passages = $passages;
-		else
-			$this->passages = false;
+			$this->present = true;
+		} else
+			$this->present = false;
 		$this->formatted = $this->get_formatted();
 		$this->type = 'passages';
 		$this->id = '';
@@ -345,12 +352,15 @@ class mbsb_passages extends mbsb_spss_template {
 	}
 	
 	public function get_text_output($version = '') {
+		if ($version == '')
+			$version = mbsb_get_preferred_version();
+		$bible = mbsb_get_bible_details($version);
 		$output = '';
 		$c = count ($this->passages);
 		foreach ($this->passages as $index => $p) {
 			if ($c > 1)
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
-			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", 'passage_body');
+			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}-{$version}");
 		}
 		return $output;
 	}

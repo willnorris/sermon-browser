@@ -9,6 +9,13 @@
 class mbsb_series extends mbsb_pss_template {
 
 	/**
+	* True if the object contains a series, false otherwise
+	* 
+	* @var boolean
+	*/
+	public $present;
+
+	/**
 	* Initiates the object and populates its properties
 	* 
 	* @param integer $post_id
@@ -16,13 +23,17 @@ class mbsb_series extends mbsb_pss_template {
 	*/
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
-		$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name', 'post_excerpt' => 'excerpt');
-		foreach ($properties as $k => $v)
-			if (empty($post) || $post->post_type != 'mbsb_series')
-				$this->$v = null;
-			else
-				$this->$v = $post->$k;
-		$this->type = substr($post->post_type, 5);
+		if ($post && $post_id !== false && $post->post_type == 'mbsb_series') {
+			$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name', 'post_excerpt' => 'excerpt');
+			foreach ($properties as $k => $v)
+				if (empty($post) || $post->post_type != 'mbsb_series')
+					$this->$v = null;
+				else
+					$this->$v = $post->$k;
+			$this->type = substr($post->post_type, 5);
+			$this->present = true;
+		} else
+			$this->present = false;
 	}
 
 	/**

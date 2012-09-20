@@ -6,8 +6,14 @@
 * @subpackage preacher
 * @author Mark Barnes
 */
-class mbsb_service {
+class mbsb_service extends mbsb_pss_template {
 	
+	/**
+	* True if the object contains a service, false otherwise
+	* 
+	* @var boolean
+	*/
+	public $present;
 	private $time;
 	
 	/**
@@ -18,14 +24,18 @@ class mbsb_service {
 	*/
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
-		$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name');
-		foreach ($properties as $k => $v)
-			if (empty($post) || $post->post_type != 'mbsb_service')
-				$this->$v = null;
-			else
-				$this->$v = $post->$k;
-		$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
-    	$this->type = substr($post->post_type, 5);
+		if ($post && $post_id !== false && $post->post_type == 'mbsb_service') {
+			$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name');
+			foreach ($properties as $k => $v)
+				if (empty($post) || $post->post_type != 'mbsb_service')
+					$this->$v = null;
+				else
+					$this->$v = $post->$k;
+			$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
+    		$this->type = substr($post->post_type, 5);
+    		$this->present = true;
+		} else
+			$this->present = false;
 	}
 	
 	/**

@@ -9,6 +9,13 @@
 class mbsb_sermon extends mbsb_spss_template {
 	
 	/**
+	* True if the object contains a sermon, false otherwise
+	* 
+	* @var boolean
+	*/
+	public $present;
+
+	/**
 	* Initiates the object and populates its properties
 	* 
 	* @param integer $post_id
@@ -19,19 +26,22 @@ class mbsb_sermon extends mbsb_spss_template {
 			$post_id == get_the_ID();
 		$post = get_post ($post_id);
 		if (empty($post) || $post->post_type != 'mbsb_sermon')
-			return new WP_Error('NO_SERMON_WITH_THAT_ID');
-		$properties = array ('ID' => 'id', 'comment_count' => 'comment_count', 'comment_status' => 'comment_status', 'ping_status' => 'ping_status', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'title');
-		foreach ($properties as $k => $v)
-			$this->$v = $post->$k;
-		$this->timestamp = strtotime($post->post_date);
-		$this->date = date ('Y-m-d', $this->timestamp);
-		$this->time = date ('H:i', $this->timestamp);
-		$this->preacher = new mbsb_preacher (get_post_meta ($this->id, 'preacher', true));
-		$this->service = new mbsb_service (get_post_meta ($this->id, 'service', true));
-		$this->series = new mbsb_series (get_post_meta ($this->id, 'series', true));
-		$this->override_time = $this->get_misc_meta ('override_time');
-		$this->passages = new mbsb_passages(get_post_meta ($this->id, 'passage_start'), get_post_meta ($this->id, 'passage_end'));
-		$this->type = 'sermon';
+			$this->present = false;
+		else {
+			$properties = array ('ID' => 'id', 'comment_count' => 'comment_count', 'comment_status' => 'comment_status', 'ping_status' => 'ping_status', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'title');
+			foreach ($properties as $k => $v)
+				$this->$v = $post->$k;
+			$this->timestamp = strtotime($post->post_date);
+			$this->date = date ('Y-m-d', $this->timestamp);
+			$this->time = date ('H:i', $this->timestamp);
+			$this->preacher = new mbsb_preacher (get_post_meta ($this->id, 'preacher', true));
+			$this->service = new mbsb_service (get_post_meta ($this->id, 'service', true));
+			$this->series = new mbsb_series (get_post_meta ($this->id, 'series', true));
+			$this->override_time = $this->get_misc_meta ('override_time');
+			$this->passages = new mbsb_passages(get_post_meta ($this->id, 'passage_start'), get_post_meta ($this->id, 'passage_end'));
+			$this->type = 'sermon';
+			$this->present = true;
+		}
 	}
 	
 	/**
@@ -139,14 +149,20 @@ class mbsb_sermon extends mbsb_spss_template {
 	public function get_frontend_output() {
 		$sections = mbsb_get_option('frontend_sections');
 		$output = $this->get_main_output();
-		if (!mbsb_get_option('hide_media_heading'))
-			$output .= $this->do_heading (__('Media', MBSB).':', 'media_attachments');
-		$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
-		$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->preacher->get_url().'">'.esc_html($this->preacher->get_name()).'</a>', 'preacher_name');
-		$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
-		$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
-		$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
-		if ($this->get_formatted_passages()) {
+		if ($this->get_attachments()) {
+			if (!mbsb_get_option('hide_media_heading'))
+				$output .= $this->do_heading (__('Media', MBSB).':', 'media_attachments');
+			$output .= $this->do_div ($this->get_frontend_media_list(), 'media_list');
+		}
+		if ($this->preacher->present) {
+			$output .= $this->do_heading (__('Preacher', MBSB).': <a href="'.$this->preacher->get_url().'">'.esc_html($this->preacher->get_name()).'</a>', 'preacher_name');
+			$output .= $this->preacher->get_output(mbsb_get_option('excerpt_length'));
+		}
+		if ($this->series->present) {
+			$output .= $this->do_heading (__('Series', MBSB).': <a href="'.$this->series->get_url().'">'.esc_html($this->series->get_name()).'</a>', 'series_name');
+			$output .= $this->series->get_output(mbsb_get_option('excerpt_length'));
+		}
+		if ($this->passages->present) {
 			$output .= $this->do_heading (__('Bible Passages', MBSB).': '.$this->get_formatted_passages(), 'passages_title');
 			$output .= $this->passages->get_output();
 		}
@@ -406,7 +422,7 @@ class mbsb_sermon extends mbsb_spss_template {
 	* @todo Look for image attachments
 	*/
 	private function has_thumbnail() {
-		return (has_post_thumbnail() || has_post_thumbnail($this->series->id) || has_post_thumbnail($this->preacher->id) || has_post_thumbnail($this->service->id));
+		return (has_post_thumbnail() || ($this->series->present && has_post_thumbnail($this->series->id)) || ($this->preacher->present && has_post_thumbnail($this->preacher->id)) || ($this->service->present && has_post_thumbnail($this->service->id)));
 	}
 	
 	/**
