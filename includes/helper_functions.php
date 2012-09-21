@@ -45,10 +45,16 @@ function mbsb_default_options($all_options) {
 	return $all_options;
 	
 	/*
-	Filters also available:
+	Filters available:
 	=======================
 	mbsb_attachment_row_actions
 	mbsb_get_option_*
+	mbsb_add_media_types
+	
+	Actions available:
+	==================
+	mbsb_admin_javascript
+	mbsb_admin_jQuery_document_ready
 	*/
 }
 

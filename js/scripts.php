@@ -101,6 +101,7 @@ function mbsb_handle_url_embed (type) {
 		jQuery('#row_'+row_id).show(1200);
 	});
 }
+<?php do_action ('mbsb_admin_javascript'); ?>
 
 /**
 * The main jQuery function that runs when the document is ready
@@ -187,6 +188,7 @@ jQuery(document).ready(function($) {
 	});
 <?php
 		}
+		do_action ('mbsb_admin_jQuery_document_ready');
 ?>
 });
 <?php

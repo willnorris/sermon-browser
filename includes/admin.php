@@ -603,14 +603,18 @@ function mbsb_sermon_media_meta_box() {
 	wp_nonce_field (__FUNCTION__, 'media_nonce', true);
 	echo '<table class="sermon_media">';
 	echo '<tr><th scope="row"><label for="mbsb_new_media_type">'.__('Add media', MBSB).':</label></th><td><select id="mbsb_new_media_type" name="mbsb_new_media_type">';
-	$types = array ('none' => '', 'upload' => __('Upload a new file', MBSB), 'insert' => __('Insert from the Media Library', MBSB), 'url' => __('Enter an external URL', MBSB), 'embed' => __('Enter an embed code'));
-	foreach ($types as $type => $label)
-		echo "<option ".($type == 'none' ? 'selected="selected" ' : '')."value=\"{$type}\">{$label}&nbsp;</option>";
+	$types = array ('none' => array ('label' => '', 'div' => ''),
+					'upload' => array ('label' => __('Upload a new file', MBSB), 'div' => '<div id="upload-select" style="display:none"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>'),
+					'insert' => array ('label' => __('Insert from the Media Library', MBSB), 'div' => '<div id="insert-select" style="display:none"><input type="button" value="'.__('Insert item', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>'),
+					'url' => array ('label' => __('Enter an external URL', MBSB), 'div' => '<div id="url-select" style="display:none"><input type="text" name="mbsb_input_url" id="mbsb_input_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url_button" name="mbsb_attach_url_button"></div>'),
+					'embed' => array ('label' => __('Enter an embed code', MBSB), 'div' => '<div id="embed-select" style="display:none"><input type="text" name="mbsb_input_embed" id="mbsb_input_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed_button" name="mbsb_attach_embed_button"></div>')
+					);
+	$types = apply_filters ('mbsb_add_media_types', $types);
+	foreach ($types as $type => $data)
+		echo "<option ".($type == 'none' ? 'selected="selected" ' : '')."value=\"{$type}\">{$data['label']}&nbsp;</option>";
 	echo '</select></td><td>';
-	echo '<div id="upload-select" style="display:none"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>';
-	echo '<div id="insert-select" style="display:none"><input type="button" value="'.__('Insert item', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>';
-	echo '<div id="url-select" style="display:none"><input type="text" name="mbsb_input_url" id="mbsb_input_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url_button" name="mbsb_attach_url_button"></div>';
-	echo '<div id="embed-select" style="display:none"><input type="text" name="mbsb_input_embed" id="mbsb_input_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed_button" name="mbsb_attach_embed_button"></div>';
+	foreach ($types as $type => $data)
+		echo $data ['div'];
 	echo '</td></tr>';
 	echo '</table>';
 	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
