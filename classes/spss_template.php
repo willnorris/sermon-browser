@@ -10,17 +10,85 @@
 */
 
 class mbsb_spss_template {
+
+	/**
+	* True if the object is populated, false otherwise
+	* 
+	* @var boolean
+	*/
+	public $present;
+	
+	/**
+	* The post_id of this post
+	* 
+	* @var integer
+	*/
+	protected $id;
+	
+	/**
+	* The post_status of the post (e.g. publish, pending, draft, auto-draft, future, private, inherit or trash)
+	* 
+	* @var string
+	*/
+	protected $status;
+	
+	/**
+	* The description of the preacher/series/sermon
+	* 
+	* @var string
+	*/
+	protected $description;
+	
+	/**
+	* The slug of the preacher/series/sermon
+	* 
+	* @var string
+	*/
+	protected $slug;
+	
+	/**
+	* The name of the preacher/series/sermon
+	* 
+	* @var string
+	*/
+	protected $name;
+	
+	/**
+	* The type of object this is (e.g. 'sermon', 'series', etc.)
+	* 
+	* @var string
+	*/
+	protected $type;
+	
 	/**
 	* Warning function to prevent the class being called directly
 	*/
 	public function __construct() {
-		wp_die ('The '.get_class($this).' should not be called directly, but only extended by other classes.');
+		wp_die ('The mbsb_spss_template class should not be called directly, but only extended by other classes.');
+	}
+	
+	/**
+	* Populates the initial properties for all objects
+	* 
+	* @param stdClass $post
+	*/
+	protected function populate_initial_properties($post) {
+		if (empty($post) || $post->post_type != get_class($this)) {
+			$this->present = false;
+		} else {
+			$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name', 'post_excerpt' => 'excerpt');
+			foreach ($properties as $k => $v)
+				$this->$v = $post->$k;
+			$this->type = substr($post->post_type, 5);
+			$this->present = true;
+		}
 	}
 
 	/**
-	* Returns the preacher/series/service description
+	* Returns the post's description
 	* 
 	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
+	* @return string
 	*/
 	public function get_description($raw = false) {
 		if ($raw)
@@ -35,11 +103,27 @@ class mbsb_spss_template {
 		}
 	}
 	
+	/**
+	* Returns the post id
+	* 
+	* @return boolean|integer - false on failure, the id on success
+	*/
 	public function get_id() {
 		if (isset($this->id) && $this->id !== null)
 			return $this->id;
 		else
 			return false;
+	}
+	
+	/**
+	* Returns the type of object
+	* 
+	* e.g. sermon, preacher, media_attachment, etc.
+	* 
+	* @return string
+	*/
+	public function get_type() {
+		return substr(get_class(), 5);
 	}
 
 	/**
@@ -58,18 +142,6 @@ class mbsb_spss_template {
 	*/
 	public function get_name() {
 		return get_the_title ($this->id);
-	}
-
-	public function get_linked_name($add_detail_to_title_attr = false) {
-		if ($add_detail_to_title_attr) {
-			$passages = $this->get_formatted_passages();
-			if ($passages)
-				$detail = esc_html(sprintf(__('%1s on %2s'), $this->preacher->get_name(), $passages));
-			else
-				$detail = $this->preacher->get_name();
-			return '<a title="'.$detail.'" href="'.$this->get_url().'">'.esc_html($this->title).'</a>';
-		} else
-			return '<a href="'.$this->get_url().'">'.esc_html($this->get_name()).'</a>';
 	}
 
 	/**
@@ -126,6 +198,11 @@ class mbsb_spss_template {
 		return $this->do_div ($content, $div_type, $class);
 	}
 
+	/**
+	* Gets the previous sermon
+	* 
+	* @return stdClass
+	*/
 	public function get_previous () {
 		$previous = $this->get_adjacent (true);
 		if ($previous)
@@ -134,6 +211,11 @@ class mbsb_spss_template {
 			return false;
 	}
 	
+	/**
+	* Gets the next sermon
+	* 
+	* @return stdClass
+	*/
 	public function get_next () {
 		$next = $this->get_adjacent (false);
 		if ($next)
@@ -142,6 +224,11 @@ class mbsb_spss_template {
 			return false;
 	}
 
+	/**
+	* Gets the adjacent sermon
+	* 
+	* @param string $direction
+	*/
 	protected function get_adjacent ($direction) {
 		$next_previous = $direction ? 'previous' : 'next';
 		$adjacent = get_adjacent_post(false, '', $direction);
@@ -149,6 +236,4 @@ class mbsb_spss_template {
 	}
 	
 }
-
 ?>
-

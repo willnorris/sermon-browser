@@ -14,7 +14,21 @@ class mbsb_passages extends mbsb_spss_template {
 	* @var boolean
 	*/
 	public $present;
-	private $formatted, $passages;
+	
+	/**
+	* The passages in a human-friendly format
+	* 
+	* (e.g. "Matthew 5:1-12, Genes 3:16, 25")
+	* @var string
+	*/
+	private $formatted;
+	
+	/**
+	* An array of the individual passage objects that make up this group of passages
+	* 
+	* @var array
+	*/
+	private $passages;
 
 	/**
 	* Constructs the object
@@ -33,10 +47,10 @@ class mbsb_passages extends mbsb_spss_template {
 		else {
 			// This is in a machine readable format (e.g '44003016')
 			foreach ($start as $s)
-				if ($result = $this->check_raw_format ($s))
+				if ($result = $this->convert_raw_format_to_array ($s))
 					$verses [$result['index']]['start'] = $result ['result'];
 			foreach ($end as $s)
-				if ($result = $this->check_raw_format ($s))
+				if ($result = $this->convert_raw_format_to_array ($s))
 					$verses [$result['index']]['end'] = $result ['result'];
 		}
 		if (isset ($verses) && !is_wp_error($verses)) {
@@ -55,14 +69,14 @@ class mbsb_passages extends mbsb_spss_template {
 		$this->id = '';
 	}
 	
-	public function __get($name) {
-		if (isset($this->$name) && ($name == 'formatted' || $name == 'passages'))
-			return $this->$name;
-		else
-			trigger_error ('Invalid property '.$name.' requested', E_USER_ERROR);
-	}
-	
-	private function check_raw_format ($s){
+	/**
+	* Converts the raw passage data into an associative array
+	* 
+	* The array has two keys, 'index' (its order), and 'result'. 'result' is an array with the keys 'book', 'chapter', and 'verse'
+	* 
+	* @param boolean|array - false on failure, the array on success
+	*/
+	private function convert_raw_format_to_array ($s) {
 		if (strlen($s) === 13 && substr($s, 8, 1) == '.' && ($left = substr($s, 0, 7)) && ((integer)$left == $left) && ($right = substr($s, 9, 4)) && ((integer)$right == $right))
 			return array ('index' => (integer)$right, 'result' => array ('book' => (integer)substr($s, 0, 2), 'chapter' => (integer)substr ($s, 2, 3), 'verse' => (integer)substr ($s, 5, 3)));
 		else
@@ -340,6 +354,11 @@ class mbsb_passages extends mbsb_spss_template {
 		return $a;
 	}
 
+	/**
+	* Returns the frontend output for all the passages
+	* 
+	* @return atring
+	*/
 	public function get_output () {
 		if ($this->passages) {
 			if (mbsb_get_option('allow_user_to_change_bible')) {
@@ -351,6 +370,12 @@ class mbsb_passages extends mbsb_spss_template {
 		}
 	}
 	
+	/**
+	* Returns the Bible text output for all the passages
+	* 
+	* @param string $version - the Bible version to use (optional, defaults to the version specified in options)
+	* @return string
+	*/
 	public function get_text_output($version = '') {
 		if ($version == '')
 			$version = mbsb_get_preferred_version();

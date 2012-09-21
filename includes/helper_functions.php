@@ -23,8 +23,7 @@ function mbsb_default_options($all_options) {
 	$all_options ['ignored_biblia_bibles'] = array ('emphbbl', 'kjv', 'KJVAPOC', 'scrmorph', 'wh1881mr');
 	$all_options ['ignored_biblesearch_bibles'] = array('KJV', 'KJVA');
 	$all_options ['hide_other_language_bibles'] = false;
-	$all_options ['append_passage_to_title_in_feed'] = true;
-	$all_options ['add_all_types_to_admin_bar'] = true;
+	$all_options ['add_all_types_to_admin_bar'] = false;
 	//Standard template options
 	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;
@@ -32,13 +31,17 @@ function mbsb_default_options($all_options) {
 	$all_options ['preacher_image'] = 'alignright';
 	$all_options ['series_image'] = 'alignright';
 	$all_options ['service_image'] = 'alignright';
+	$all_options ['color_bar'] = 'black';
+	$all_options ['add_download_links'] = true;
 	//Advanced template options
+	$all_options ['sermon_image_size'] = array ('width' => '230', 'height' => '129', 'crop' => false);
 	$all_options ['preacher_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['series_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
-	$all_options ['sermon_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['excerpt_length'] = 55;
 	$all_options ['show_statistics_on_sermon_page'] = true;
+	//Options still to be implemented
+	$all_options ['append_passage_to_title_in_feed'] = true;
 	return $all_options;
 	
 	/*

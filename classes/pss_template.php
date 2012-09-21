@@ -11,6 +11,13 @@
 class mbsb_pss_template extends mbsb_spss_template {
 
 	/**
+	* The excerpt of the preacher/series/sermon
+	* 
+	* @var string
+	*/
+	private $excerpt;
+
+	/**
 	* Returns the number of sermons preached by the current preacher/in the current series/at the current service
 	* 
 	* @uses WP_Query
@@ -36,8 +43,17 @@ class mbsb_pss_template extends mbsb_spss_template {
 		return $posts;
 	}
 	
+	/**
+	* Returns the HTML of the name of the current series/service/preacher, linked to their frontend page
+	* 
+	* @return string
+	*/
+	public function get_linked_name() {
+		return '<a href="'.$this->get_url().'">'.esc_html($this->get_name()).'</a>';
+	}
+
     /**
-    * Adds SQL for the GROUP BY when querying on series
+    * Returns the SQL for the GROUP BY when querying on series
     * 
     * Filters posts_groupby
     * 
@@ -48,11 +64,25 @@ class mbsb_pss_template extends mbsb_spss_template {
 		return "series_postmeta.meta_value";
     }
     
+	/**
+	* Returns the SQL for the JOIN when querying on a series
+	* 
+	* Filters get_previous_post_join and get_next_post_join
+	* 
+	* @param string $join
+	* @return string
+	*/
 	public function adjacent_join_series ($join) {
 		global $wpdb;
 		return $join." INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON (p.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
 	}
 	
+	/**
+	* Gets the adjacent post for the current series/preacher/service
+	* 
+	* @param string $direction = 'previous' or 'next
+	* return stdClass - the post object
+	*/
 	protected function get_adjacent ($direction) {
 		$next_previous = $direction ? 'previous' : 'next';
 		if ($a = method_exists($this, "adjacent_join_{$this->type}"))

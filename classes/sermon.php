@@ -25,22 +25,16 @@ class mbsb_sermon extends mbsb_spss_template {
 		if ($post_id === null)
 			$post_id == get_the_ID();
 		$post = get_post ($post_id);
-		if (empty($post) || $post->post_type != 'mbsb_sermon')
-			$this->present = false;
-		else {
-			$properties = array ('ID' => 'id', 'comment_count' => 'comment_count', 'comment_status' => 'comment_status', 'ping_status' => 'ping_status', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'title');
-			foreach ($properties as $k => $v)
-				$this->$v = $post->$k;
+		$this->populate_initial_properties($post);
+		if ($this->present) {
 			$this->timestamp = strtotime($post->post_date);
 			$this->date = date ('Y-m-d', $this->timestamp);
 			$this->time = date ('H:i', $this->timestamp);
+			$this->override_time = $this->get_misc_meta ('override_time');
 			$this->preacher = new mbsb_preacher (get_post_meta ($this->id, 'preacher', true));
 			$this->service = new mbsb_service (get_post_meta ($this->id, 'service', true));
 			$this->series = new mbsb_series (get_post_meta ($this->id, 'series', true));
-			$this->override_time = $this->get_misc_meta ('override_time');
 			$this->passages = new mbsb_passages(get_post_meta ($this->id, 'passage_start'), get_post_meta ($this->id, 'passage_end'));
-			$this->type = 'sermon';
-			$this->present = true;
 		}
 	}
 	
@@ -154,6 +148,11 @@ class mbsb_sermon extends mbsb_spss_template {
 		return $this->do_div($output, 'sermon');
 	}
 	
+	/**
+	* Returns a single frontend section
+	* 
+	* @param string $section - the section type (i.e. 'media', 'preacher', 'series', 'passages')
+	*/
 	private function get_frontend_section ($section) {
 		$output = '';
 		if ($section == 'main')
@@ -175,6 +174,20 @@ class mbsb_sermon extends mbsb_spss_template {
 		return $output;
 	}
 	
+	/**
+	* Returns the HTML of the name of the current sermon, linked to its frontend page
+	* 
+	* @return string
+	*/
+	public function get_linked_name() {
+		$passages = $this->get_formatted_passages();
+		if ($passages)
+			$detail = esc_html(sprintf(__('%1s on %2s'), $this->preacher->get_name(), $passages));
+		else
+			$detail = $this->preacher->get_name();
+		return '<a title="'.$detail.'" href="'.$this->get_url().'">'.esc_html($this->name).'</a>';
+	}
+
 	/**
 	* Adds an attachment to a sermon
 	* 
@@ -320,11 +333,11 @@ class mbsb_sermon extends mbsb_spss_template {
 		if (substr($post_type, 0, 5) != 'mbsb_')
 			$post_type = 'mbsb_'.$post_type;
 		if ($column == 'preacher' && $this->preacher->present)
-			return '<a href="'.get_edit_post_link($this->preacher->id).'">'.esc_html($this->preacher->name).'</a>';
+			return '<a href="'.get_edit_post_link($this->preacher->id).'">'.esc_html($this->preacher->get_name()).'</a>';
 		elseif ($column == 'service' && $this->service->present)
-			return '<a href="'.get_edit_post_link($this->service->id).'">'.esc_html($this->service->name).'</a>';
+			return '<a href="'.get_edit_post_link($this->service->id).'">'.esc_html($this->service->get_name()).'</a>';
 		elseif ($column == 'series' && $this->series->present)
-			return '<a href="'.get_edit_post_link($this->series->id).'">'.esc_html($this->series->name).'</a>';
+			return '<a href="'.get_edit_post_link($this->series->id).'">'.esc_html($this->series->get_name()).'</a>';
 		elseif ($column == 'passages')
 			return $this->get_formatted_passages('admin_link');
 		elseif ($column == 'media')

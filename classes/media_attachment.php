@@ -8,7 +8,26 @@
 */
 class mbsb_media_attachment {
 	
-	private $type, $meta_id, $data;
+	/**
+	* The type of attachment this is, i.e. 'library', 'url', or 'embed'
+	* 
+	* @var string
+	*/
+	private $attachment_type;
+	
+	/**
+	* The metadata id of this attachment
+	* 
+	* @var integer
+	*/
+	private $meta_id;
+	
+	/**
+	* The data returned by the get_metadata() function
+	* 
+	* @var object stdClass
+	*/
+	private $data;
 
 	/**
 	* Initiates the object and populates its properties
@@ -19,9 +38,9 @@ class mbsb_media_attachment {
 	public function __construct ($meta_id) {
 		$data = get_metadata_by_mid('post', $meta_id);
 		$data = $data->meta_value;
-		$this->type = $data ['type'];
+		$this->attachment_type = $data ['type'];
 		unset ($data['type']);
-		if ($this->type == 'library') {
+		if ($this->attachment_type == 'library') {
 			$this->data = get_post ($data['post_id']);
 			if (!$this->data)
 				delete_metadata_by_mid ('post', $meta_id);
@@ -35,7 +54,7 @@ class mbsb_media_attachment {
 	* 
 	*/
 	public function get_type() {
-		return $this->type;
+		return $this->attachment_type;
 	}
 	
 	/**
@@ -67,7 +86,7 @@ class mbsb_media_attachment {
 	* @return string
 	*/
 	public function get_admin_attachment_row ($class = '') {
-		$function_name = "add_admin_{$this->type}_attachment_row";
+		$function_name = "add_admin_{$this->attachment_type}_attachment_row";
 		return $this->{$function_name} ($class);
 	}
 	
@@ -77,7 +96,7 @@ class mbsb_media_attachment {
 	* @return boolean|string - False on failure, the embed code on success.
 	*/
 	public function get_embed_code () {
-		if ($this->type != 'embed')
+		if ($this->attachment_type != 'embed')
 			return false;
 		else
 			return $this->data['code'];
@@ -89,9 +108,9 @@ class mbsb_media_attachment {
 	* @return boolean|string - False on failure, the URL on success
 	*/
 	public function get_url() {
-		if ($this->type == 'url')
+		if ($this->attachment_type == 'url')
 			return $this->data['url'];
-		elseif ($this->type == 'library')
+		elseif ($this->attachment_type == 'library')
 			return $this->data->guid;
 		else
 			return false;
@@ -105,7 +124,7 @@ class mbsb_media_attachment {
 	* @return string
 	*/
 	public function get_media_player() {
-		if ($this->type == 'embed')
+		if ($this->attachment_type == 'embed')
 			return $this->get_embed_code();
 		else {
 			$mime_type = substr($this->get_mime_type(), 0, 5);
@@ -116,8 +135,13 @@ class mbsb_media_attachment {
 		}
 	}
 	
+	/**
+	* Returns a HTML link to this attachment
+	* 
+	* @return boolean|string - false on failure, the link on success
+	*/
 	public function get_attachment_link() {
-		if ($this->type == 'embed')
+		if ($this->attachment_type == 'embed')
 			return false;
 		else
 			return '<a href="'.$this->get_url().'">'.esc_html($this->get_title()).'</a>';
@@ -130,7 +154,7 @@ class mbsb_media_attachment {
 	* @return boolean|integer - False on failure, the post_id on success.
 	*/
 	public function get_library_id () {
-		if ($this->type != 'library')
+		if ($this->attachment_type != 'library')
 			return false;
 		else
 			return $this->data->ID;
@@ -144,13 +168,13 @@ class mbsb_media_attachment {
 	* @return string
 	*/
 	public function get_title () {
-		if ($this->type == 'library')
+		if ($this->attachment_type == 'library')
 			return $this->data->post_title;
-		elseif ($this->type == 'url') {
+		elseif ($this->attachment_type == 'url') {
 			$title = rtrim($this->data['url'], '/');
 			$title = substr($title, strrpos($title, '/')+1);
 			return mbsb_shorten_string($title, 30);
-		} elseif ($this->type == 'embed') {
+		} elseif ($this->attachment_type == 'embed') {
 			$parse = new DOMDocument('4.0', 'utf-8');
 			@$parse->loadHTML ($this->get_embed_code());
 			$elements = array('iframe' => 'src', 'embed' => 'src', 'params' => 'value');
@@ -186,7 +210,7 @@ class mbsb_media_attachment {
 	* @return string
 	*/
 	public function get_short_url () {
-		if ($this->type == 'url') {
+		if ($this->attachment_type == 'url') {
 			$address = substr($this->data['url'], strpos($this->data['url'], '//')+2);
 			$short_address = substr($address, 0, strpos($address, '/')+1).'…/'.basename($this->data['url']);
 			return (strlen($short_address) > strlen($address)) ? $address : $short_address;
@@ -198,11 +222,11 @@ class mbsb_media_attachment {
 	* Returns the mime type of the attachment
 	*/
 	public function get_mime_type() {
-		if ($this->type == 'url')
+		if ($this->attachment_type == 'url')
 			return $this->data['mime_type'];
-		elseif ($this->type == 'library')
+		elseif ($this->attachment_type == 'library')
 			return $this->data->post_mime_type;
-		elseif ($this->type == 'embed')
+		elseif ($this->attachment_type == 'embed')
 			return __('embed', MBSB);
 	}
 	

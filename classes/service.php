@@ -9,11 +9,10 @@
 class mbsb_service extends mbsb_pss_template {
 	
 	/**
-	* True if the object contains a service, false otherwise
+	* The time of the service (stored as the number of seconds past midnight)
 	* 
-	* @var boolean
+	* @var integer
 	*/
-	public $present;
 	private $time;
 	
 	/**
@@ -24,18 +23,9 @@ class mbsb_service extends mbsb_pss_template {
 	*/
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
-		if ($post && $post_id !== false && $post->post_type == 'mbsb_service') {
-			$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name');
-			foreach ($properties as $k => $v)
-				if (empty($post) || $post->post_type != 'mbsb_service')
-					$this->$v = null;
-				else
-					$this->$v = $post->$k;
+		$this->populate_initial_properties($post);
+		if ($this->present)
 			$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
-    		$this->type = substr($post->post_type, 5);
-    		$this->present = true;
-		} else
-			$this->present = false;
 	}
 	
 	/**

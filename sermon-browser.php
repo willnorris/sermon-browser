@@ -217,9 +217,9 @@ function mbsb_admin_bar_menu() {
 			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-preacher', 'title' => __('Preachers', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_preacher')));
 			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-services', 'title' => __('Services', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_service')));
 		} else {
-			$wp_admin_bar->add_node(array('parent' => 'site-name', 'id' => 'mbsb-sermons', 'title' => __('Sermons', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_sermon')));
-			if (is_admin())
-				$wp_admin_bar->add_node(array('parent' => 'new-content', 'id' => 'mbsb-add-sermon', 'title' => __('Sermon', MBSB), 'href' => admin_url('post-new.php?post_type=mbsb_sermon')));
+			$wp_admin_bar->add_node(array('parent' => 'new-content', 'id' => 'mbsb-add-sermon', 'title' => __('Sermon', MBSB), 'href' => admin_url('post-new.php?post_type=mbsb_sermon')));
+			if (!is_admin())
+				$wp_admin_bar->add_node(array('parent' => 'site-name', 'id' => 'mbsb-sermons', 'title' => __('Sermons', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_sermon')));
 		}
 	}
 }

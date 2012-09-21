@@ -10,6 +10,12 @@
 
 class mbsb_single_passage {
 	
+	/**
+	* Initiates the object and populates its properties
+	* 
+	* @param array $start - an associative array (with the keys 'book', 'chapter' and 'verse'
+	* @param array $end - as above
+	*/
 	public function __construct ($start, $end) {
 		$this->start = $start;
 		$this->end = $end;
@@ -52,6 +58,12 @@ class mbsb_single_passage {
 		return trim($reference);
 	}
 	
+	/**
+	* Returns the Bible text for this passage
+	* 
+	* @param string $preferred_version
+	* @return boolean|string - false on failure, the text on success
+	*/
 	public function get_bible_text($preferred_version = '') {
 		if ($preferred_version == '')
 			$preferred_version = mbsb_get_preferred_version();
