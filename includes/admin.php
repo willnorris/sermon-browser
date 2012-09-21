@@ -98,6 +98,8 @@ function mbsb_onload_post_page () {
 	if (substr($screen->post_type, 0, 5) == 'mbsb_')
 		add_filter ("get_user_option_meta-box-order_{$screen->post_type}", 'mbsb_set_default_metabox_sort_order', 10, 3);
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
+	if (isset($_GET['message']))
+		add_filter ('post_updated_messages', 'mbsb_post_updated_messages');
 }
 
 /**
@@ -205,7 +207,7 @@ function mbsb_add_javascript_and_styles_to_admin_pages() {
 	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon')
 		wp_enqueue_style ('thickbox');
 	if ($screen->base == 'post' && substr($screen->id, 0, 5) == 'mbsb_') {
-		wp_enqueue_script('mbsb_script_main_admin_script', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=main_admin_script&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+		wp_enqueue_script('mbsb_script_main_admin_script', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=main_admin_script&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery', 'thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 		if (isset($_GET['iframe']) && $_GET['iframe'] == 'true')
 			wp_enqueue_script('mbsb_script_add_new_option', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=add_new_option&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 	}
@@ -841,6 +843,68 @@ function mbsb_ajax_mbsb_get_service_details() {
 	if ($sermon->service->present)
 		echo $sermon->service->get_output();
 	die();
+}
+
+function mbsb_post_updated_messages($messages) {
+	$post_ID = (int)$_GET['post'];
+	$post = get_post ($post_id);
+	if ($post->post_type == 'mbsb_sermon')
+		$messages['mbsb_sermon'] = array(
+			 0 => '', // Unused. Messages start at index 1.
+			 1 => sprintf (__('Sermon updated. <a href="%s">View sermon</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 2 => __('Custom field updated.'),
+			 3 => __('Custom field deleted.'),
+			 4 => __('Sermon updated.', MBSB),
+			 5 => isset($_GET['revision']) ? sprintf( __('Sermon restored to revision from %s', MBSB), wp_post_revision_title ((int) $_GET['revision'], false)) : false,
+			 6 => sprintf( __('Sermon published. <a href="%s">View sermon</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 7 => __('Sermon saved.', MBSB),
+			 8 => sprintf( __('Sermon submitted. <a target="_blank" href="%s">Preview sermon</a>', MBSB), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+			 9 => sprintf( __('Sermon scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview sermon</a>'), date_i18n (__('M j, Y @ G:i'), strtotime ($post->post_date)), esc_url (get_permalink($post_ID))),
+			10 => sprintf( __('Sermon draft updated. <a target="_blank" href="%s">Preview sermon</a>'), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+		);
+	elseif ($post->post_type == 'mbsb_series')
+		$messages['mbsb_series'] = array(
+			 0 => '', // Unused. Messages start at index 1.
+			 1 => sprintf (__('Series updated. <a href="%s">View series</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 2 => __('Custom field updated.'),
+			 3 => __('Custom field deleted.'),
+			 4 => __('Series updated.', MBSB),
+			 5 => isset($_GET['revision']) ? sprintf( __('Series restored to revision from %s', MBSB), wp_post_revision_title ((int) $_GET['revision'], false)) : false,
+			 6 => sprintf( __('Series published. <a href="%s">View series</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 7 => __('Series saved.', MBSB),
+			 8 => sprintf( __('Series submitted. <a target="_blank" href="%s">Preview series</a>', MBSB), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+			 9 => sprintf( __('Series scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview series</a>'), date_i18n (__('M j, Y @ G:i'), strtotime ($post->post_date)), esc_url (get_permalink($post_ID))),
+			10 => sprintf( __('Series draft updated. <a target="_blank" href="%s">Preview series</a>'), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+		);
+	elseif ($post->post_type == 'mbsb_preacher')
+		$messages['mbsb_preacher'] = array(
+			 0 => '', // Unused. Messages start at index 1.
+			 1 => sprintf (__('Preacher updated. <a href="%s">View series</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 2 => __('Custom field updated.'),
+			 3 => __('Custom field deleted.'),
+			 4 => __('Preacher updated.', MBSB),
+			 5 => isset($_GET['revision']) ? sprintf( __('Preacher restored to revision from %s', MBSB), wp_post_revision_title ((int) $_GET['revision'], false)) : false,
+			 6 => sprintf( __('Preacher published. <a href="%s">View preacher</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 7 => __('Preacher saved.', MBSB),
+			 8 => sprintf( __('Preacher submitted. <a target="_blank" href="%s">Preview preacher</a>', MBSB), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+			 9 => sprintf( __('Preacher scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview preacher</a>'), date_i18n (__('M j, Y @ G:i'), strtotime ($post->post_date)), esc_url (get_permalink($post_ID))),
+			10 => sprintf( __('Preacher draft updated. <a target="_blank" href="%s">Preview preacher</a>'), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+		);
+	elseif ($post->post_type == 'mbsb_service')
+		$messages['mbsb_service'] = array(
+			 0 => '', // Unused. Messages start at index 1.
+			 1 => sprintf (__('Service updated. <a href="%s">View series</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 2 => __('Custom field updated.'),
+			 3 => __('Custom field deleted.'),
+			 4 => __('Service updated.', MBSB),
+			 5 => isset($_GET['revision']) ? sprintf( __('Service restored to revision from %s', MBSB), wp_post_revision_title ((int) $_GET['revision'], false)) : false,
+			 6 => sprintf( __('Service published. <a href="%s">View service</a>', MBSB), esc_url (get_permalink ($post_ID))),
+			 7 => __('Service saved.', MBSB),
+			 8 => sprintf( __('Service submitted. <a target="_blank" href="%s">Preview service</a>', MBSB), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+			 9 => sprintf( __('Service scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview service</a>'), date_i18n (__('M j, Y @ G:i'), strtotime ($post->post_date)), esc_url (get_permalink($post_ID))),
+			10 => sprintf( __('Service draft updated. <a target="_blank" href="%s">Preview service</a>'), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
+		);
+	return $messages;
 }
 
 ?>
