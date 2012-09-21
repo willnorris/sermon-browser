@@ -82,6 +82,7 @@ function mbsb_onload_edit_page () {
 		add_filter ('posts_where_paged', 'mbsb_edit_posts_where');
 		add_filter ('posts_groupby', 'mbsb_edit_posts_groupby');
 		add_action ('manage_posts_custom_column', 'mbsb_output_custom_columns', 10, 2);
+		add_action ('manage_pages_custom_column', 'mbsb_output_custom_columns', 10, 2);
 		if (isset($_GET['s']))
 			add_filter ('posts_search', 'mbsb_edit_posts_search');
 		add_action ('admin_head', create_function ('', "echo '<style type=\"text/css\">table.fixed {table-layout:auto;} table.fixed th.column-tags, table.fixed td.column-tags {width:auto;}</style>';"));
@@ -129,13 +130,18 @@ function mbsb_output_custom_columns($column, $post_id) {
 		else
 			echo str_replace(', ', '<br/>', $sermon->edit_php_cell ($post_type, $column));
 	}
-	if ($column == 'image' && substr($post_type, 0, 5) == 'mbsb_') {
-		if (current_user_can('edit_post', $post_id)) {
-			$thumbnail = get_post_thumbnail_id($post_id);
-			if ($thumbnail)
-				echo "<a href=\"".get_edit_post_link ($thumbnail)."\">".wp_get_attachment_image ($thumbnail, array(100, 100)).'</a>';
-		} else
-			echo get_the_post_thumbnail($post_id, array(100, 100));
+	if (substr($post_type, 0, 5) == 'mbsb_') {
+		if ($column == 'image')
+			if (current_user_can('edit_post', $post_id)) {
+				$thumbnail = get_post_thumbnail_id($post_id);
+				if ($thumbnail)
+					echo "<a href=\"".get_edit_post_link ($thumbnail)."\">".wp_get_attachment_image ($thumbnail, array(100, 100)).'</a>';
+			} else
+				echo get_the_post_thumbnail($post_id, array(100, 100));
+		elseif ($column == 'num_sermons') {
+			$object = new $post_type ($post_id);
+			echo $object->get_sermon_count();
+		}
 	}
 }
 
@@ -306,6 +312,7 @@ function mbsb_make_sermon_columns_sortable ($columns) {
 function mbsb_add_series_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
+	$new_columns ['num_sermons'] = __('Sermons', MBSB);
 	$new_columns ['image'] = __('Image', MBSB);
 	if (post_type_supports ('mbsb_series', 'comments'))
 		$new_columns ['comments'] = $columns ['comments'];
@@ -323,6 +330,7 @@ function mbsb_add_series_columns($columns) {
 function mbsb_add_preacher_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
+	$new_columns ['num_sermons'] = __('Sermons', MBSB);
 	$new_columns ['image'] = __('Image', MBSB);
 	if (post_type_supports ('mbsb_preacher', 'comments'))
 		$new_columns ['comments'] = $columns ['comments'];
@@ -340,6 +348,7 @@ function mbsb_add_preacher_columns($columns) {
 function mbsb_add_service_columns($columns) {
 	$new_columns ['cb'] = $columns['cb'];
 	$new_columns ['title'] = $columns ['title'];
+	$new_columns ['num_sermons'] = __('Sermons', MBSB);
 	$new_columns ['image'] = __('Image', MBSB);
 	if (post_type_supports ('mbsb_service', 'comments'))
 		$new_columns ['comments'] = $columns ['comments'];
