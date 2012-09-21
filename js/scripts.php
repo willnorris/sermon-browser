@@ -25,31 +25,31 @@ var orig_send_to_editor;
 * Enable/Disable time field as required
 */
 function lock_time_field() {
-	if ($('#mbsb_override_time').prop('checked')) {
-		$('#mbsb_time').removeAttr('disabled');
-		$('#mbsb_time').css('background-color', 'white');
-		$('#mbsb_time').val(mbsb_orig_time);
+	if (jQuery('#mbsb_override_time').prop('checked')) {
+		jQuery('#mbsb_time').removeAttr('disabled');
+		jQuery('#mbsb_time').css('background-color', 'white');
+		jQuery('#mbsb_time').val(mbsb_orig_time);
 	} else {
-		$('#mbsb_time').attr('disabled', 'disabled');
-		$('#mbsb_time').css('background-color', '#F5F5F5');
-		mbsb_orig_time = $('#mbsb_time').val();
-		$('#mbsb_time').val('');
+		jQuery('#mbsb_time').attr('disabled', 'disabled');
+		jQuery('#mbsb_time').css('background-color', '#F5F5F5');
+		mbsb_orig_time = jQuery('#mbsb_time').val();
+		jQuery('#mbsb_time').val('');
 	}
 }
 /**
 * Hide all attach inputs until required
 */
 function mbsb_hide_all() {
-	$('#upload-select').hide();
-	$('#insert-select').hide();
-	$('#url-select').hide();
-	$('#embed-select').hide();
+	jQuery('#upload-select').hide();
+	jQuery('#insert-select').hide();
+	jQuery('#url-select').hide();
+	jQuery('#embed-select').hide();
 }
 
 function add_new_select (post_type, option_name, option_id) {
 	var addition = '<option selected="selected" value="'+option_id+'">'+option_name+'</option>';
-	$('#mbsb_'+post_type).append(addition);
-	$('#mbsb_'+post_type).val(option_id);
+	jQuery('#mbsb_'+post_type).append(addition);
+	jQuery('#mbsb_'+post_type).val(option_id);
 	tb_remove();
 }
 
@@ -59,9 +59,9 @@ function add_new_select (post_type, option_name, option_id) {
 function mbsb_handle_upload_insert_click() {
 	orig_send_to_editor = window.send_to_editor;
 	window.send_to_editor = function(html) {
-		var attachment_url = $('img',html).attr('src');
-		if($(attachment_url).length == 0) {
-			attachment_url = $(html).attr('href');
+		var attachment_url = jQuery('img',html).attr('src');
+		if(jQuery(attachment_url).length == 0) {
+			attachment_url = jQuery(html).attr('href');
 		};
 		var data = {
 			action: 'mbsb_attachment_insert',
@@ -69,11 +69,11 @@ function mbsb_handle_upload_insert_click() {
 			_wpnonce: '<?php echo wp_create_nonce("mbsb_attachment_insert_{$_GET['post_id']}") ?>',
 			post_id: <?php echo $_GET['post_id']; ?>
 		};
-		$.post(ajaxurl, data, function(response) {
+		jQuery.post(ajaxurl, data, function(response) {
 			response = JSON.parse (response);
 			row_id = response.row_id; 
-			$('#mbsb_attached_files').prepend(response.code);
-			$('#row_'+row_id).show(1200);
+			jQuery('#mbsb_attached_files').prepend(response.code);
+			jQuery('#row_'+row_id).show(1200);
 		});
 		tb_remove();
 		window.send_to_editor = orig_send_to_editor;
@@ -86,19 +86,19 @@ function mbsb_handle_url_embed (type) {
 	var data = {
 		action: 'mbsb_attach_url_embed',
 		type: type,
-		attachment: $('#mbsb_input_'+type).val(),
+		attachment: jQuery('#mbsb_input_'+type).val(),
 		_wpnonce: '<?php echo wp_create_nonce("mbsb_handle_url_embed_{$_GET['post_id']}") ?>',
 		post_id: <?php echo $_GET['post_id']; ?>
 	};
-	$.post(ajaxurl, data, function(response) {
+	jQuery.post(ajaxurl, data, function(response) {
 		if (type == 'url') {
-			$('#mbsb_attach_url_button').val('<?php _e ('Attach', MBSB)?>');
-			$('#mbsb_attach_url_button').removeAttr('disabled');
+			jQuery('#mbsb_attach_url_button').val('<?php _e ('Attach', MBSB)?>');
+			jQuery('#mbsb_attach_url_button').removeAttr('disabled');
 		};
 		response = JSON.parse (response);
 		row_id = response.row_id; 
-		$('#mbsb_attached_files').prepend(response.code);
-		$('#row_'+row_id).show(1200);
+		jQuery('#mbsb_attached_files').prepend(response.code);
+		jQuery('#row_'+row_id).show(1200);
 	});
 }
 
