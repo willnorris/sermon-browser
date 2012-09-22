@@ -52,6 +52,7 @@ class mbsb_media_attachment {
 	/**
 	* Returns the type of attachment ('library', 'url' or 'embed')
 	* 
+	* @return string
 	*/
 	public function get_type() {
 		return $this->attachment_type;
@@ -60,6 +61,7 @@ class mbsb_media_attachment {
 	/**
 	* Returns the id of the attachment
 	* 
+	* @return string
 	*/
 	public function get_id() {
 		return $this->meta_id;
@@ -128,10 +130,14 @@ class mbsb_media_attachment {
 			return $this->get_embed_code();
 		else {
 			$mime_type = substr($this->get_mime_type(), 0, 5);
-			if ($mime_type == 'audio' || $mime_type == 'video')
-				return do_shortcode (str_replace('%URL%', $this->get_url(), mbsb_get_option("{$mime_type}_shortcode")));
-			else
-				return $this->get_attachment_link();
+			if ($mime_type == 'audio' || $mime_type == 'video') {
+				if (($mime_type == 'video' || $mime_type == 'audio') && mbsb_get_option('add_download_links'))
+					$insert = $this->get_name().' (<a href="'.$this->get_url().'" title="'.esc_html(__('Right-click and choose "Save as" to download', MBSB)).'">'.__('download', MBSB).'</a>)'.'</br>';
+				else
+					$insert = '';
+				return $insert.do_shortcode (str_replace('%URL%', $this->get_url(), mbsb_get_option("{$mime_type}_shortcode")));
+			} else
+				return $this->get_attachment_link().' ('.$this->get_friendly_mime_type().', '.$this->get_friendly_filesize().')';
 		}
 	}
 	
@@ -144,7 +150,7 @@ class mbsb_media_attachment {
 		if ($this->attachment_type == 'embed')
 			return false;
 		else
-			return '<a href="'.$this->get_url().'">'.esc_html($this->get_title()).'</a>';
+			return '<a title="'.esc_html(__('Right-click and choose "Save as" to download', MBSB)).'" href="'.$this->get_url().'">'.esc_html($this->get_name()).'</a>';
 			
 	}
 	
@@ -160,14 +166,27 @@ class mbsb_media_attachment {
 			return $this->data->ID;
 	}
 	
+	public function get_filesize() {
+		if ($this->attachment_type != 'library')
+			return false;
+		else {
+			$filename = get_attached_file ($this->get_id());
+			return filesize($filename);
+		}
+	}
+	
+	public function get_friendly_filesize() {
+		return mbsb_format_bytes($this->get_filesize());
+	}
+	
 	/**
-	* Returns an appropriate title for the attachment
+	* Returns an appropriate name for the attachment
 	* 
 	* Returns the attachment's post_title for library items, or uses the URL or embed code to calculate an appropriate title.
 	* 
 	* @return string
 	*/
-	public function get_title () {
+	public function get_name () {
 		if ($this->attachment_type == 'library')
 			return $this->data->post_title;
 		elseif ($this->attachment_type == 'url') {
@@ -281,7 +300,7 @@ class mbsb_media_attachment {
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
 		$short_address = $this->get_short_url();
-		$title = $this->get_title();
+		$title = $this->get_name();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
 		if ($actions)
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
@@ -304,7 +323,7 @@ class mbsb_media_attachment {
 		$embed_array = $this->data;
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
-		$title = $this->get_title();
+		$title = $this->get_name();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
 		if ($actions)
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";

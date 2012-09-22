@@ -79,7 +79,7 @@ class mbsb_single_passage {
 			} elseif ($bible['service'] == 'biblesearch') {
 				$url = "http://bibles.org/passages.xml?q[]=".urlencode($this->formatted)."&version=".$preferred_version;
 				$response = mbsb_cached_download ($url, 604800, mbsb_get_api_key('biblesearch'));
-				if ($response['response']['code'] != '200')
+				if (is_wp_error($response) || $response['response']['code'] != '200')
 					return false;
 				$response = new SimpleXMLElement($response['body']);
 				if (!isset($response->result->passages->passage->path))

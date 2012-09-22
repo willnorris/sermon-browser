@@ -19,7 +19,7 @@ function mbsb_default_options($all_options) {
 	$all_options ['bible_version_en_US'] = 'asv';
 	$all_options ['allow_user_to_change_bible'] = true;
 	//Advanced options
-	require ('api_keys.php');
+	include ('api_keys.php');
 	$all_options ['ignored_biblia_bibles'] = array ('emphbbl', 'kjv', 'KJVAPOC', 'scrmorph', 'wh1881mr');
 	$all_options ['ignored_biblesearch_bibles'] = array('KJV', 'KJVA');
 	$all_options ['hide_other_language_bibles'] = false;

@@ -61,7 +61,7 @@ class mbsb_sermon extends mbsb_spss_template {
 	* Returns an array of media attachments (i.e. post objects) of the current sermon
 	* 
 	* @param bool $most_recent_first
-	* @return mixed - false on failure, array on success
+	* @return boolean|array - false on failure, array on success
 	*/
 	public function get_attachments($most_recent_first = false) {
 		global $wpdb;
@@ -105,12 +105,12 @@ class mbsb_sermon extends mbsb_spss_template {
 		if ($attachments) {
 			$output = array();
 			foreach ($attachments as $attachment)
-				if ($admin && ($library_id = $attachment->get_library_id()))
-					$output[] = '<strong>'.(current_user_can ('edit_post', $library_id) ? ("<a href=\"".get_edit_post_link ($library_id)."\">{$attachment->get_title()}</a>") : $attachment->get_title()).'</strong> ('.$attachment->get_friendly_mime_type().')';
-				elseif ($attachment->get_type() != 'embed')
-					$output[] = $attachment->get_title().' ('.$attachment->get_friendly_mime_type().')';
+				if ($admin && ($library_id = $attachment->get_library_id())) {
+					$output[] = '<strong>'.(current_user_can ('edit_post', $library_id) ? ("<a href=\"".get_edit_post_link ($library_id)."\">{$attachment->get_name()}</a>") : $attachment->get_name()).'</strong> ('.$attachment->get_friendly_mime_type().')';
+				} elseif ($attachment->get_type() != 'embed')
+					$output[] = $attachment->get_name().' ('.$attachment->get_friendly_mime_type().')';
 				else
-					$output[] = $attachment->get_title();
+					$output[] = $attachment->get_name();
 			return implode('</br>', $output);
 		}
 		else
@@ -118,9 +118,8 @@ class mbsb_sermon extends mbsb_spss_template {
 	}
 	
 	/**
-	* Returns a simple list of the media items (titles separated by <br/> tags)
+	* Returns a simple list of the media items for the frontend
 	* 
-	* @param bool $admin - true if edit links to be added
 	* @return string
 	*/
 	public function get_frontend_media_list() {
@@ -316,10 +315,12 @@ class mbsb_sermon extends mbsb_spss_template {
 		$type = array ('start', 'end');
 		foreach ($type as $t)
 			delete_post_meta($this->id, "passage_{$t}");
-		if ($new_passages->get_formatted())
-			foreach ($new_passages->passages as $index => $p)
+		if ($new_passages->get_formatted()) {
+			$passage_objects = $new_passages->get_passage_objects();
+			foreach ($passage_objects as $index => $p)
 				foreach ($type as $t)
 					add_post_meta ($this->id, "passage_{$t}", $this->passage_array_to_metadata_string($p->$t, $index));
+		}
 	}
 	
 	/**

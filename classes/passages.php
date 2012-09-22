@@ -116,6 +116,10 @@ class mbsb_passages extends mbsb_spss_template {
 		return '<a href="'.admin_url('edit.php?post_type=mbsb_sermon&book=').'">'.esc_html($this->get_formatted()).'</a>';
 	}
 	
+	public function get_passage_objects() {
+		return $this->passages;
+	}
+	
 	/**
 	* Parses a string that could contain one or more Bible References
 	* 
