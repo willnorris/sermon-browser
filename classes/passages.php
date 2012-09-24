@@ -6,7 +6,7 @@
 * @subpackage passage
 * @author Mark Barnes
 */
-class mbsb_passages extends mbsb_spss_template {
+class mbsb_passages extends mbsb_mpspss_template {
 	
 	/**
 	* True if the object contains passages, false otherwise

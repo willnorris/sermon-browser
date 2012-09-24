@@ -1,0 +1,154 @@
+<?php
+/**
+* Class that handles media attachments
+* 
+* @package SermonBrowser
+* @subpackage media_attachments
+* @author Mark Barnes
+*/
+class mbsb_media_attachments extends mbsb_mpspss_template {
+	
+	public $present;
+	private $attachments, $sermon_id;
+	
+	function __construct($post_id) {
+		global $wpdb;
+		$meta_ids = $wpdb->get_col($wpdb->prepare("SELECT meta_id FROM {$wpdb->prefix}postmeta WHERE post_id=%s AND meta_key='attachments' ORDER BY meta_id", $post_id));
+		if ($meta_ids) {
+			$attachments = array();
+			foreach ($meta_ids as $meta_id) {
+				$single = new mbsb_single_media_attachment($meta_id);
+				if ($single->present)
+					$attachments[] = $single;
+			}
+			$this->present = !empty($attachments);
+		}
+		else
+			$this->present = false;
+		if ($this->present) {
+			$this->attachments = $attachments;
+			$this->sermon_id = $post_id;
+			$this->id = 0;
+			$this->type = 'attachments';
+		}
+	}
+	
+	public function get_attachments($most_recent_first = false) {
+		if ($this->present) {
+			if ($most_recent_first && is_array($this->attachments))
+				return array_reverse ($this->attachments);
+			else
+				return $this->attachments;
+		} else
+			return false;
+	}
+
+	/**
+	* Returns a simple list of the media items for the frontend
+	* 
+	* @return string
+	*/
+	public function get_frontend_list() {
+		$attachments = $this->get_attachments();
+		if ($attachments) {
+			$output = '';
+			foreach ($attachments as $attachment)
+				$output .= $this->do_div($attachment->get_media_player(), $attachment->get_type().'_'.$attachment->get_id(), 'sermon_media_item sermon_media_item_'.$attachment->get_type());
+			return $output;
+		}
+		else
+			return __('No media attached', MBSB);
+	}
+
+	/**
+	* Returns a simple list of the media items (titles separated by <br/> tags), with admin edit links
+	* 
+	* @return string
+	*/
+	public function get_admin_cell() {
+		$attachments = $this->get_attachments();
+		if ($attachments) {
+			$output = array();
+			foreach ($attachments as $attachment)
+				if ($library_id = $attachment->get_library_id()) {
+					$output[] = '<strong>'.(current_user_can ('edit_post', $library_id) ? ("<a href=\"".get_edit_post_link ($library_id)."\">{$attachment->get_name()}</a>") : $attachment->get_name()).'</strong> ('.$attachment->get_friendly_mime_type().')';
+				} elseif ($attachment->get_type() != 'embed')
+					$output[] = $attachment->get_name().' ('.$attachment->get_friendly_mime_type().')';
+				else
+					$output[] = $attachment->get_name();
+			return implode('</br>', $output);
+		}
+		else
+			return __('No media attached', MBSB);
+	}
+	
+	/**
+	* Adds a library attachment to a sermon
+	* @var mbsb_single_media_attachment
+	* 
+	* @param integer $attachment_id - the post ID of the library attachment
+	* @return mixed False for failure. Null if the file is already attached. The media_attachment object if successful. 
+	*/
+	public function add_library_attachment ($library_id) {
+		$existing_meta = get_post_meta ($this->sermon_id, 'attachments');
+		foreach ($existing_meta as $em)
+			if ($em['type'] == 'library' && $em['post_id'] == $library_id)
+				return null;
+		$metadata = array ('type' => 'library', 'post_id' => $library_id);
+		if ($meta_id = add_post_meta ($this->sermon_id, 'attachments', $metadata))
+			return new mbsb_single_media_attachment($meta_id);
+		else
+			return false;
+	}
+	
+	/**
+	* Adds a URL attachment to a sermon
+	*  
+	* @param string $url
+	* @return mixed False for failure. Null if the URL is not valid. The media_attachment object if successful.
+	*/
+	public function add_url_attachment ($url) {
+		$headers = wp_remote_head ($url, array ('redirection' => 5));
+		if (is_wp_error($headers) || $headers['response']['code'] != 200)
+			return null;
+		else {
+			$content_type = isset($headers['headers']['content-type']) ? $headers['headers']['content-type'] : '';
+			if (($a = strpos($content_type, ';')) !== FALSE)
+				$content_type = substr($content_type, 0, $a);
+			$metadata = array ('type' => 'url', 'url' => $url, 'size' => (isset($headers['headers']['content-length']) ? $headers['headers']['content-length'] : 0), 'mime_type' => $content_type, 'date_time' => time());
+			if ($meta_id = add_post_meta ($this->sermon_id, 'attachments', $metadata))
+				return new mbsb_single_media_attachment($meta_id);
+			else
+				return false;
+		}
+	}
+	
+	/**
+	* Adds an embed to a sermon
+	*  
+	* @param string $embed
+	* @return mixed Null for invalid code. False for failure. The media_attachment object if successful. 
+	*/
+	public function add_embed_attachment ($embed) {
+		global $allowedposttags;
+		$old_allowedposttags = $allowedposttags;
+		$allowedposttags['object'] = array('height' => array(), 'width' => array(), 'classid' => array(), 'codebase' => array());
+		$allowedposttags['param'] = array('name' => array(), 'value' => array());
+		$allowedposttags['embed'] = array('src' => array(), 'type' => array(), 'allowfullscreen' => array(), 'allowscriptaccess' => array(), 'height' => array(), 'width' => array(), 'allowfullscreen' => array());
+		$allowedposttags['iframe'] = array('height' => array(), 'width' => array(), 'src' => array(), 'frameborder' => array(), 'allowfullscreen' => array());
+		$embed = wp_kses_post($embed);
+		$allowedposttags = $old_allowedposttags;
+		if (trim($embed) == '')
+			return null;
+		$metadata = array ('type' => 'embed', 'code' => $embed, 'date_time' => time());
+		if ($meta_id = add_post_meta ($this->sermon_id, 'attachments', $metadata))
+			return new mbsb_single_media_attachment($meta_id);
+		else
+			return false;
+	}
+
+
+
+}
+?>
+

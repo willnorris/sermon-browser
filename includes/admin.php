@@ -498,12 +498,13 @@ function mbsb_ajax_attachment_insert() {
 	$attachment = $attachment[0];
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
-	if ($result = $sermon->add_library_attachment ($attachment->ID))
+	//@var mbsb_single_media_attachment
+	if ($result = $sermon->attachments->add_library_attachment ($attachment->ID))
 		echo $result->get_json_attachment_row();
 	elseif ($result === NULL)
-		echo mbsb_media_attachment::get_json_attachment_row(false, sprintf(__('%s is already attached to this sermon.', MBSB), $attachment->post_title));
+		echo mbsb_single_media_attachment::get_json_attachment_row(false, sprintf(__('%s is already attached to this sermon.', MBSB), $attachment->post_title));
 	else
-		echo mbsb_media_attachment::get_json_attachment_row(false, sprintf(__('There was an error attaching %s to the sermon.', MBSB), $attachment->post_title));
+		echo mbsb_single_media_attachment::get_json_attachment_row(false, sprintf(__('There was an error attaching %s to the sermon.', MBSB), $attachment->post_title));
 	die();
 }
 
@@ -527,21 +528,21 @@ function mbsb_ajax_attach_url_embed() {
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
 	if ($_POST['type'] == 'embed') {
-		$result = $sermon->add_embed_attachment ($_POST['attachment']);
+		$result = $sermon->attachments->add_embed_attachment ($_POST['attachment']);
 		if ($result === null)
-			echo mbsb_media_attachment::get_json_attachment_row(false, __('That code is not acceptable.', MBSB));
+			echo mbsb_single_media_attachment::get_json_attachment_row(false, __('That code is not acceptable.', MBSB));
 		elseif ($result === FALSE)
-			echo mbsb_media_attachment::get_json_attachment_row(false, __('There was an error attaching that embed code to the sermon.', MBSB));
+			echo mbsb_single_media_attachment::get_json_attachment_row(false, __('There was an error attaching that embed code to the sermon.', MBSB));
 		else
 			echo $result->get_json_attachment_row();
 	} elseif ($_POST['type'] == 'url') {
 		if (strtolower(substr($_POST['attachment'], 0, 4)) != 'http')
 			$_POST['attachment'] = "http://{$_POST['attachment']}";
-		$result = $sermon->add_url_attachment ($_POST['attachment']);
+		$result = $sermon->attachments->add_url_attachment ($_POST['attachment']);
 		if ($result === null)
-			echo mbsb_media_attachment::get_json_attachment_row(false, __('That does not appear to be a valid URL.', MBSB));
+			echo mbsb_single_media_attachment::get_json_attachment_row(false, __('That does not appear to be a valid URL.', MBSB));
 		elseif ($result === FALSE)
-			echo mbsb_media_attachment::get_json_attachment_row(false, __('There was an error attaching that URL to the sermon.', MBSB));
+			echo mbsb_single_media_attachment::get_json_attachment_row(false, __('There was an error attaching that URL to the sermon.', MBSB));
 		else
 			echo $result->get_json_attachment_row();
 	}
@@ -619,7 +620,7 @@ function mbsb_sermon_media_meta_box() {
 	echo '</table>';
 	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
 	$sermon = new mbsb_sermon($post->ID);
-	$attachments = $sermon->get_attachments(true);
+	$attachments = $sermon->attachments->get_attachments(true);
 	if ($attachments)
 		foreach ($attachments as $attachment)
 			echo $attachment->get_admin_attachment_row ();

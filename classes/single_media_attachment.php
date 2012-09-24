@@ -6,7 +6,7 @@
 * @subpackage media_attachments
 * @author Mark Barnes
 */
-class mbsb_media_attachment {
+class mbsb_single_media_attachment {
 	
 	/**
 	* The type of attachment this is, i.e. 'library', 'url', or 'embed'
@@ -33,20 +33,28 @@ class mbsb_media_attachment {
 	* Initiates the object and populates its properties
 	* 
 	* @param integer - the meta_id
-	* @return mbsb_media_attachment
+	* @return mbsb_single_media_attachment
 	*/
 	public function __construct ($meta_id) {
 		$data = get_metadata_by_mid('post', $meta_id);
-		$data = $data->meta_value;
-		$this->attachment_type = $data ['type'];
-		unset ($data['type']);
-		if ($this->attachment_type == 'library') {
-			$this->data = get_post ($data['post_id']);
-			if (!$this->data)
-				delete_metadata_by_mid ('post', $meta_id);
-		} else
-			$this->data = $data;
-		$this->meta_id = $meta_id;
+		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'object')))
+			$this->present = false;
+		else {
+			$this->attachment_type = $data->meta_value ['type'];
+			unset ($data->meta_value['type']);
+			if ($this->attachment_type == 'library') {
+				$this->data = get_post ($data->meta_value['post_id']);
+				if (!$this->data) {
+					delete_metadata_by_mid ('post', $meta_id);
+					$this->present = false;
+				}
+			} else
+				$this->data = $data->meta_value;
+			if (!isset($this->present)) {
+				$this->meta_id = $meta_id;
+				$this->present = true;
+			}
+		}
 	}
 	
 	/**

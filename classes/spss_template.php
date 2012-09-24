@@ -8,8 +8,7 @@
 * @subpackage spss_template
 * @author Mark Barnes
 */
-
-class mbsb_spss_template {
+class mbsb_spss_template extends mbsb_mpspss_template {
 
 	/**
 	* True if the object is populated, false otherwise
@@ -59,13 +58,6 @@ class mbsb_spss_template {
 	* @var string
 	*/
 	protected $type;
-	
-	/**
-	* Warning function to prevent the class being called directly
-	*/
-	public function __construct() {
-		wp_die ('The mbsb_spss_template class should not be called directly, but only extended by other classes.');
-	}
 	
 	/**
 	* Populates the initial properties for all objects
@@ -159,45 +151,6 @@ class mbsb_spss_template {
 		}
 	}
 	
-	/**
-	* Helper function, that wraps text in a div
-	* 
-	* Used when creating the major sections of the frontend
-	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
-	* @param string $content - the HTML to be wrapped in the div
-	* @param string $div_type - a descriptor that is used in the class and id
-	* @return string
-	*/
-	protected function do_div ($content, $div_type, $class='') {
-		if ($class == '')
-			$class = "{$this->type}_{$div_type}";
-		if ($this->id)
-			$id = "{$this->id}_";
-		else
-			$id = '';
-		return "<div id=\"{$this->type}_{$id}{$div_type}\" class=\"{$class}\">{$content}</div>";
-	}
-
-	/**
-	* Helper function, that wraps text in a heading div, adding a triangle on the right
-	* 
-	* Used when creating the major sections of the frontend
-	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
-	* @param string $content - the HTML to be wrapped in the div
-	* @param string $div_type - a descriptor that is used in the class and id
-	* @return string
-	*/
-	protected function do_heading ($content, $div_type, $class='') {
-		if ($class == '')
-			$class = "sermon_{$div_type} mbsb_collapsible_heading";
-		else
-			$class = "{$class} mbsb_collapsible_heading";
-		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('<a id="heading_pointer_link_'.$div_type.'" class="heading_pointer" href="#">&#9660;</a>', "{$div_type}_pointer", 'alignright');
-		return $this->do_div ($content, $div_type, $class);
-	}
-
 	/**
 	* Gets the previous sermon
 	* 
