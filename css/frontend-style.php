@@ -66,6 +66,18 @@ div.passage_heading {
 	font-family: <?php echo $font_headings; ?>;
 	font-weight: bold;
 }
+#passages_bible_loader {
+	margin: 0 10px 0 0;
+	padding: 0;
+	border: none;
+	height: 16px;
+	float: left;
+}
+#passages_bible_loader img {
+	margin: 0 10px 0 0;
+	padding: 0;
+	border: none;
+}
 #passages_bible_dropdown {
 	display:table;
 	width:100%;

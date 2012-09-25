@@ -212,7 +212,7 @@ function mbsb_get_bible_list_dropdown($preferred_version = '') {
 		$bibles = $local_bibles;
 	else
 		$bibles = array_merge ($local_bibles, $other_bibles);
-	return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select>';
+	return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select><div id="passages_bible_loader"></div>';
 }
 
 

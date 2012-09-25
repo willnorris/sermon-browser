@@ -239,6 +239,7 @@ jQuery(document).ready(function($) {
 	$('#bible_dropdown').change(function() {
 		var version = $(this).val();
 		mbsbSetCookie('sermon_browser_bible', version, 365);
+		$('#passages_bible_loader').html('<img src="<?php echo admin_url('images/loading.gif');?>" alt="<?php _e('Loading', MBSB);?>&hellip;"/><?php _e('Requesting', MBSB);?>&hellip;');
 		var data = {
 			action: 'mbsb_get_bible_text',
 			version: version,
@@ -248,6 +249,10 @@ jQuery(document).ready(function($) {
 			$('#passages_text').fadeOut('slow', function() {
 				$(this).html(response)
 			}).fadeIn('slow');
+			$('#passages_bible_loader').fadeOut('slow', function () {
+				$(this).html('');
+				$(this).show();
+			});
 		});
 	});
 	$('div.mbsb_collapsible_heading').on('click', 'a.heading_pointer', function (e) {
