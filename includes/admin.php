@@ -501,13 +501,12 @@ function mbsb_ajax_attachment_insert() {
 	$attachment = $attachment[0];
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
-	//@var mbsb_single_media_attachment
 	if ($result = $sermon->attachments->add_library_attachment ($attachment->ID))
 		echo $result->get_json_attachment_row();
 	elseif ($result === NULL)
 		echo mbsb_single_media_attachment::get_json_attachment_row(false, sprintf(__('%s is already attached to this sermon.', MBSB), $attachment->post_title));
 	else
-		echo mbsb_single_media_attachment::get_json_attachment_row(false, sprintf(__('There was an error attaching %s to the sermon.', MBSB), $attachment->post_title));
+		echo mbsb_single_media_attachment::get_json_attachment_row(false, sprintf(__('There was an error attaching %s to the sermon.', MBSB), "<strong>{$attachment->post_title}</strong>"));
 	die();
 }
 

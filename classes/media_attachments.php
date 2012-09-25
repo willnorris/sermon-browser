@@ -27,10 +27,10 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 			$this->present = false;
 		if ($this->present) {
 			$this->attachments = $attachments;
-			$this->sermon_id = $post_id;
 			$this->id = 0;
 			$this->type = 'attachments';
 		}
+		$this->sermon_id = $post_id;
 	}
 	
 	public function get_attachments($most_recent_first = false) {
@@ -91,9 +91,10 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 	*/
 	public function add_library_attachment ($library_id) {
 		$existing_meta = get_post_meta ($this->sermon_id, 'attachments');
-		foreach ($existing_meta as $em)
-			if ($em['type'] == 'library' && $em['post_id'] == $library_id)
-				return null;
+		if ($existing_meta)
+			foreach ($existing_meta as $em)
+				if ($em['type'] == 'library' && $em['post_id'] == $library_id)
+					return null;
 		$metadata = array ('type' => 'library', 'post_id' => $library_id);
 		if ($meta_id = add_post_meta ($this->sermon_id, 'attachments', $metadata))
 			return new mbsb_single_media_attachment($meta_id);
