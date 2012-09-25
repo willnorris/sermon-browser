@@ -92,6 +92,8 @@ class mbsb_single_passage {
 						foreach ($bible_text->verse as $verse)
 							$output .= $verse->text;
 					}
+					if (isset($bible_text->meta->fums))
+						$output .= (string)$bible_text->meta->fums;
 					return $output;
 				}
 			}

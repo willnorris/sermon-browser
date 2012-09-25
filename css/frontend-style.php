@@ -98,3 +98,14 @@ div.passage_heading {
 #passages_text div.biblesearch_BCN span.divineName span.divineCaps {
 	text-transform: none;
 }
+#passages_powered_by {
+	margin: 0;
+	padding: 0;
+	border: none;
+	float:right;
+}
+#passages_powered_by img {
+	margin: 0;
+	padding: 0;
+	border: none;
+}

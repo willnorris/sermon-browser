@@ -391,6 +391,10 @@ class mbsb_passages extends mbsb_mpspss_template {
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
 			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version}");
 		}
+		if ($bible['service'] == 'biblia') 
+			$output .= $this->do_div('<a href="http://biblia.com/"><img src="http://api.biblia.com/docs/media/PoweredByBiblia.png" alt="'.sprintf(__('Powered by %s', MBSB), 'Biblia.com').'"/><a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.sprintf(__('Powered by %s', MBSB), 'SermonBrowser').'"/>', 'powered_by', 'powered_by sermonbrowser');
+		elseif ($bible['service'] == 'biblesearch') 
+			$output .= $this->do_div(sprintf(__('Powered by %s and %s', MBSB), '<a href="http://bibles.org/">BibleSearch</a>', '<a href="http://www.sermonbrowser.com">SermonBrowser</a>'), 'powered_by', 'powered_by '.$bible['service']);
 		return $output;
 	}
 }
