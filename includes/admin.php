@@ -256,8 +256,8 @@ function mbsb_force_insert_post_on_media_popup ($args) {
 * @return array
 */
 function mbsb_filter_media_upload_tabs ($tabs) {
-	if (isset($_GET['tab']))
-		return array ($_GET['tab'] => $tabs[$_GET['tab']]);
+	if (isset($_GET['showtab']))
+		return array ($_GET['showtab'] => $tabs[$_GET['showtab']]);
 	else
 		return $tabs;
 }
