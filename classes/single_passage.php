@@ -50,10 +50,10 @@ class mbsb_single_passage {
 					$reference = "{$start_book} {$start_chapter}{$this->start['verse']}-{$this->end['verse']}";
 				}
 			} else {
-				 $reference = "{$start_book} {$start_chapter}{$this->start['verse']}-{$this->end['chapter']}:{$this->end['verse']}";
+				 $reference = "{$start_book} {$start_chapter}{$this->start['verse']}-{$this->end['chapter']}".__(':', MBSB)."{$this->end['verse']}";
 			}
 		} else {
-			$reference =  "{$start_book} {$start_chapter}{$this->start['verse']} - {$end_book} {$this->end['chapter']}:{$this->end['verse']}";
+			$reference =  "{$start_book} {$start_chapter}{$this->start['verse']} - {$end_book} {$this->end['chapter']}".__(':', MBSB)."{$this->end['verse']}";
 		}
 		return trim($reference);
 	}

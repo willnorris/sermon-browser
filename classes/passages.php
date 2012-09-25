@@ -235,7 +235,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 	*/
 	private function parse_chapter_verse ($passage, $previous) {
 		$period = strpos($passage, '.');
-		$colon = strpos($passage, ':');
+		$colon = strpos($passage, __(':', MBSB));
 		if ($period === FALSE && $colon === FALSE)
 			if ($previous)
 				if ($previous['verse'] == '')
