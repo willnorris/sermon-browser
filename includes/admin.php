@@ -493,7 +493,7 @@ function mbsb_edit_posts_search ($search) {
 */
 function mbsb_ajax_attachment_insert() {
 	global $wpdb;
-	if (!check_ajax_referer ("mbsb_attachment_insert_{$_POST['post_id']}"))
+	if (!check_ajax_referer ("mbsb_attachment_insert"))
 		die ('Suspicious behaviour blocked');
 	add_filter ('posts_where_paged', 'mbsb_add_guid_to_where');
 	$attachment = get_posts (array ('numberposts' => 1, 'post_type' => 'attachment', 'post_status' => null, 'suppress_filters' => false));
@@ -526,7 +526,7 @@ function mbsb_add_guid_to_where ($where) {
 * Handles the mbsb_ajax_attach_url_embed AJAX request, which adds a URL or embed attachment
 */
 function mbsb_ajax_attach_url_embed() {
-	if (!check_ajax_referer ("mbsb_handle_url_embed_{$_POST['post_id']}"))
+	if (!check_ajax_referer ("mbsb_handle_url_embed"))
 		die ('Suspicious behaviour blocked');
 	$sermon = new mbsb_sermon($_POST['post_id']);
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
@@ -556,7 +556,7 @@ function mbsb_ajax_attach_url_embed() {
 * Handles the AJAX request for unattaching a media attachment
 */
 function mbsb_ajax_mbsb_remove_attachment() {
-	if (!check_ajax_referer ("mbsb_remove_attachment_{$_POST['post_id']}"))
+	if (!check_ajax_referer ("mbsb_remove_attachment"))
 		die ('Suspicious behaviour blocked');
 	$result = delete_metadata_by_mid('post', $_POST['attachment_id']);
 	if ($result)
