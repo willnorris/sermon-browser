@@ -60,6 +60,9 @@ function mbsb_admin_init () {
 * Enqueues the mbsb_admin_style stylesheet 
 */
 function mbsb_admin_print_styles () {
+	global $post;
+	if (isset ($post->ID) && isset ($post->post_type) && $post->post_type == 'mbsb_sermon')
+		echo "<script type=\"text/javascript\">var mbsb_sermon_id=".esc_html($post->ID).";</script>\r\n";
 	wp_enqueue_style ('mbsb_admin_style');	
 }
 
@@ -920,5 +923,4 @@ function mbsb_post_updated_messages($messages) {
 		);
 	return $messages;
 }
-
 ?>

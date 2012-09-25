@@ -16,7 +16,7 @@ add_action ('init', 'mbsb_frontend_init');
 * 
 */
 function mbsb_frontend_init() {
-	add_action ('wp_enqueue_scripts', 'mbsb_enqueue_frontend_scripts');
+	add_action ('wp_head', 'mbsb_enqueue_frontend_scripts_and_styles');
 	add_filter ('the_content', 'mbsb_provide_content');
 	add_filter ('the_title', 'mbsb_filter_titles', 10, 2);
 	add_filter ('the_author', 'mbsb_filter_author');
@@ -82,12 +82,14 @@ function mbsb_filter_author_link ($link, $author_id, $author_nicename) {
 	return $link;
 }
 
-function mbsb_enqueue_frontend_scripts() {
+function mbsb_enqueue_frontend_scripts_and_styles() {
 	global $post;
+	if (isset ($post->ID) && isset ($post->post_type) && $post->post_type == 'mbsb_sermon')
+		echo "<script type=\"text/javascript\">var mbsb_sermon_id=".esc_html($post->ID).";</script>\r\n";
 	$date = @filemtime(mbsb_plugin_dir_path('css/frontend-style.php'));
 	wp_register_style ('mbsb_frontend_style', mbsb_plugins_url('css/frontend-style.php'), array(), $date);
 	wp_enqueue_style ('mbsb_frontend_style');
-	wp_register_script ('mbsb_frontend_script', home_url("?mbsb_script&locale=".get_locale()."&name=frontend_script&post_id={$post->ID}"), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+	wp_register_script ('mbsb_frontend_script', home_url("?mbsb_script&locale=".get_locale()."&name=frontend_script"), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
 	wp_enqueue_script ('mbsb_frontend_script');
 }
 ?>

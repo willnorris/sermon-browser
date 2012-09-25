@@ -66,8 +66,8 @@ function mbsb_handle_upload_insert_click() {
 		var data = {
 			action: 'mbsb_attachment_insert',
 			url: attachment_url,
-			_wpnonce: '<?php echo wp_create_nonce("mbsb_attachment_insert_{$_GET['post_id']}") ?>',
-			post_id: <?php echo $_GET['post_id']; ?>
+			_wpnonce: '<?php echo wp_create_nonce('mbsb_attachment_insert') ?>',
+			post_id: mbsb_sermon_id
 		};
 		jQuery.post(ajaxurl, data, function(response) {
 			response = JSON.parse (response);
@@ -87,8 +87,8 @@ function mbsb_handle_url_embed (type) {
 		action: 'mbsb_attach_url_embed',
 		type: type,
 		attachment: jQuery('#mbsb_input_'+type).val(),
-		_wpnonce: '<?php echo wp_create_nonce("mbsb_handle_url_embed_{$_GET['post_id']}") ?>',
-		post_id: <?php echo $_GET['post_id']; ?>
+		_wpnonce: '<?php echo wp_create_nonce("mbsb_handle_url_embed") ?>',
+		post_id: mbsb_sermon_id
 	};
 	jQuery.post(ajaxurl, data, function(response) {
 		if (type == 'url') {
@@ -122,13 +122,13 @@ jQuery(document).ready(function($) {
 	//Watch for the upload button being clicked
 	$('#mbsb_upload_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
-		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermon&post_id=<?php echo $_GET['post_id']; ?>&tab=type&TB_iframe=true', false);
+		tb_show('<?php _e('Upload a file for this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermon&post_id='+mbsb_sermon_id+'&tab=type&TB_iframe=true', false);
 		return false;
 	});
 	//Watch for the library button being clicked
 	$('#mbsb_insert_media_button').click(function() {
 		mbsb_handle_upload_insert_click();
-		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermon&post_id=<?php echo $_GET['post_id']; ?>&tab=library&TB_iframe=true', false);
+		tb_show('<?php _e('Attach an existing file to this sermon', MBSB);?>', 'media-upload.php?referer=mbsb_sermon&post_id='+mbsb_sermon_id+'&tab=library&TB_iframe=true', false);
 		return false;
 	});
 	//Watch for the URL button being clicked
@@ -148,8 +148,8 @@ jQuery(document).ready(function($) {
 		var data = {
 			action: 'mbsb_remove_attachment',
 			attachment_id:  $(this).parent().attr('id').slice(13),
-			_wpnonce: '<?php echo wp_create_nonce("mbsb_remove_attachment_{$_GET['post_id']}") ?>',
-			post_id: <?php echo $_GET['post_id']; ?>
+			_wpnonce: '<?php echo wp_create_nonce("mbsb_remove_attachment") ?>',
+			post_id: mbsb_sermon_id
 		};
 		$.post(ajaxurl, data, function(response) {
 			response = JSON.parse (response);
@@ -198,7 +198,7 @@ jQuery(document).ready(function($) {
 jQuery(document).ready(function($) {
 	$('#publish').click(function() {
 		var name = $('#title').val();
-		parent.add_new_select('<?php echo esc_js($_GET['post_type'])?>', name, <?php echo esc_js($_GET['post_id']); ?>);
+		parent.add_new_select(mbsb_post_type, name, mbsb_sermon_id);
 	});
 });
 <?php
@@ -242,7 +242,7 @@ jQuery(document).ready(function($) {
 		var data = {
 			action: 'mbsb_get_bible_text',
 			version: version,
-			post_id: <?php echo esc_js($_GET['post_id'])?>
+			post_id: mbsb_sermon_id
 		};
 		$.post(mbsb_ajaxurl, data, function(response) {
 			$('#passages_text').fadeOut('slow', function() {
@@ -270,7 +270,7 @@ jQuery(document).ready(function($) {
 		var section_type = $(this).attr('id').substr(10);
 		var data = {
 			action: 'mbsb_get_'+section_type+'_details',
-			post_id: <?php echo esc_js($_GET['post_id'])?>
+			post_id: mbsb_sermon_id
 		};
 		$.post(mbsb_ajaxurl, data, function(response) {
 			$('div.'+section_type+'_'+section_type).fadeOut('slow', function() {
