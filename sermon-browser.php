@@ -65,6 +65,7 @@ function mbsb_autoload_classes ($class_name) {
 * Runs when the plugin is activated
 */
 function mbsb_activate () {
+	mbsb_register_custom_post_types();
 	global $wp_rewrite;
 	$wp_rewrite->flush_rules();
 }
