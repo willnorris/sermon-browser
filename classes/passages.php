@@ -99,9 +99,9 @@ class mbsb_passages extends mbsb_mpspss_template {
 						$output .= '; ';
 					$output .= $p->get_formatted();
 				} elseif ($this->passages[$index-1]->start['chapter'] != $p->start['chapter'])
-					$output .= ', '.$p->get_formatted(true, false);
+					$output .= __(',', MBSB).' '.$p->get_formatted(true, false);
 				else
-					$output .= ', '.$p->get_formatted(true, true);
+					$output .= __(',', MBSB).' '.$p->get_formatted(true, true);
 			}
 			return $output;
 		}
@@ -127,8 +127,8 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* @return array - A indexed array of references. Each reference is an associative array (keys are 'raw', 'start' and 'end'). 'raw' is the raw input for one reference. 'start' and 'end' are associative arrays with the keys 'book', 'chapter' and 'verse'
 	*/
 	private function parse_passages($raw_passages) {
-		$passage = str_replace (',', ';', $raw_passages);
-		$passages = explode(';', $passage);
+		$passage = str_replace (__(',', MBSB), __(';', MBSB), $raw_passages);
+		$passages = explode(__(';', MBSB), $passage);
 		$processed = array();
 		$count = 0;
 		if (is_array($passages)) {

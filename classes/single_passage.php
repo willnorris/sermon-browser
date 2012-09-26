@@ -40,7 +40,7 @@ class mbsb_single_passage {
 		if ($ignore_first_chapter)
 			$start_chapter = '';
 		else
-			$start_chapter = "{$this->start['chapter']}:";
+			$start_chapter = "{$this->start['chapter']}".__(':', MBSB);
 		$end_book = $bible_books['mbsb_index'][$this->end['book']];
 		if ($this->start['book'] == $this->end['book']) {
 			if ($this->start['chapter'] == $this->end['chapter']) {
