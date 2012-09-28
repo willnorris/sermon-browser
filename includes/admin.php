@@ -187,8 +187,8 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 		if ($sermons) {
 			$output = array();
 			foreach ($sermons as $sermon) {
-				$title =_draft_or_post_title ($sermon->id);
-				$output[] = '<strong>'.(current_user_can ('edit_post', $sermon->id) ? ("<a href=\"".get_edit_post_link ($sermon->id)."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $sermon->id);
+				$title =_draft_or_post_title ($sermon->get_id());
+				$output[] = '<strong>'.(current_user_can ('edit_post', $sermon->get_id()) ? ("<a href=\"".get_edit_post_link ($sermon->get_id())."\">{$title}</a>") : $title).'</strong>, '.get_the_time (__('Y/m/d'), $sermon->get_id());
 			}
 		}
 		$post = get_post($post_id);
