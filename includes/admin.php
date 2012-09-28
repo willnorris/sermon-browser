@@ -815,6 +815,7 @@ function mbsb_tb_iframe_admin_head() {
 	echo "<style type=\"text/css\">";
 	echo "#adminmenuback, #adminmenuwrap, #screen-meta-links, #wpadminbar, #footer {display:none}";
 	echo "#wpcontent {margin-left:15px}";
+	echo "#wpbody-content {padding-bottom:0}";
 	echo "html.wp-toolbar {padding-top:0}";
 	echo "</style>\r\n";
     echo "<script type=\"text/javascript\">jQuery(document).ready(function(\$) { \$('#publish').click(function() {var name = \$('#title').val(); parent.add_new_select('{$_GET['post_type']}', name, '{$post->ID}'); });});</script>";
