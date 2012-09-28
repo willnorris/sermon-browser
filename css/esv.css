@@ -1,0 +1,91 @@
+#passages_text div.esv h3 {
+	text-align: left;
+}
+#passages_text div.esv span.verse-num {
+	font-size: 80%;
+	font-weight: bold;
+	padding-right: .15em;
+	padding-left: .25em;
+	vertical-align: text-top;
+	}
+#passages_text div.esv span.chapter-num {
+	font-weight: bold;
+	padding-right: .5em;
+}
+#passages_text div.esv div.esv-text p {
+	text-indent: 2em;
+}
+#passages_text div.esv div.esv-text p.same-paragraph {
+	text-indent: 0;
+}
+#passages_text div.esv div.block-indent p {
+	text-indent: 0;
+	padding-left: 2.5em;
+	margin-left: 0;
+}
+#passages_text div.esv span.indent {
+	padding-left: 2em;
+}
+#passages_text div.esv span.indent-2, #passages_text div.esv span.psalm-doxology-line {
+	padding-left: 4em;
+}
+#passages_text div.esv span.declares-line {
+	padding-left: 6em;
+}
+#passages_text div.esv span.small-caps {
+	font-variant: small-caps;
+}
+#passages_text div.esv span.selah {
+	font-style: italic;
+	margin-left: 1em;
+}
+#passages_text div.esv p.extra-space {
+	margin-top: 2em;
+}
+#passages_text div.esv div.block-indent span.verse-num, #passages_text div.esv div.block-indent span.woc  {
+	padding-left: 0;
+}
+#passages_text div.esv h4 {
+	font-weight: normal;
+}
+#passages_text div.esv h4.speaker {
+	padding-left: 10em;
+	font-variant: small-caps;
+	margin-bottom: -1em;
+}
+#passages_text div.esv h4.textual-note {
+	font-variant: small-caps;	
+}
+#passages_text div.esv h4.psalm-acrostic-title {
+	font-variant: small-caps;
+}
+#passages_text div.esv span.footnote {
+	font-size: 80%;
+	padding-right: .5em;
+	padding-left: 0em;
+	vertical-align: text-top;
+}
+#passages_text div.esv div.footnotes h3 {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+#passages_text div.esv div.footnotes p {
+	text-indent: 0;
+}
+#passages_text div.esv span.footnote-ref {
+	font-weight: bold;
+}
+#passages_text div.esv p.copyright {
+	text-indent: 0;
+}
+#passages_text div.esv object.audio {
+	margin: 0 0 0 10px;
+	padding: 0;
+}
+/* SermonBrowser modification */
+#passages_text div.esv h2 {
+	font-size: 0;
+}
+#passages_text div.esv h2 object.audio {
+	margin-left: 0;
+}

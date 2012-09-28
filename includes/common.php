@@ -220,6 +220,8 @@ function mbsb_get_bible_list() {
 	$bibles = get_transient ('mbsb_bible_list_'.get_locale());
 	$bibles = array(); // Remove this line before production
 	if (!$bibles) {
+		///esvapi.org
+		$bibles['esv'] = array ('name' => 'English Standard Version', 'language_code' => 'en', 'language_name' => mbsb_bible_language_from_code('en'), 'service' => 'esv');
 		//api.biblia.com
 		if ($api_key = mbsb_get_api_key('biblia')) {
 			$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_api_key('biblia'));
@@ -232,7 +234,7 @@ function mbsb_get_bible_list() {
 						$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
 						if (strtolower(substr($bible->title, 0, 4)) == 'the ')
 							$bible->title = substr($bible->title, 4);
-						if (!in_array($bible->bible, $biblia_ignore) && !isset($bibles[$bible->bible]))
+						if (!in_array($bible->bible, $biblia_ignore) && !array_key_exists(strtolower($bible->bible), array_change_key_case($bibles)))
 							$bibles[$bible->bible] = array ('name' => $bible->title, 'language_code' => $bible->languages[0], 'language_name' => mbsb_bible_language_from_code($bible->languages[0]), 'service' => 'biblia');
 					}
 				}
@@ -247,7 +249,7 @@ function mbsb_get_bible_list() {
 				$biblesearch_bibles = $biblesearch_bibles->version;
 				foreach ($biblesearch_bibles as $bible) {
 					$required_vars = array ('id', 'name', 'lang', 'lang_code');
-					if (!in_array((string)$bible->id, $biblesearch_ignore) && !isset($bibles[(string)$bible->id]))
+					if (!in_array((string)$bible->id, $biblesearch_ignore) && !array_key_exists(strtolower($bible->id), array_change_key_case($bibles)))
 						$bibles[(string)$bible->id] = array ('name' => (string)$bible->name, 'language_code' => mbsb_get_bible_search_lang((string)$bible->lang, (string)$bible->lang_code), 'language_name' => mbsb_bible_language_from_code(mbsb_get_bible_search_lang($bible->lang, $bible->lang_code)), 'service' => 'biblesearch');
 				}
 				//Some Bibles are missing from the list, and need to be added manually

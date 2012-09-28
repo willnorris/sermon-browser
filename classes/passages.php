@@ -394,7 +394,9 @@ class mbsb_passages extends mbsb_mpspss_template {
 		if ($bible['service'] == 'biblia') 
 			$output .= $this->do_div('<a href="http://biblia.com/"><img src="http://api.biblia.com/docs/media/PoweredByBiblia.png" alt="'.sprintf(__('Powered by %s', MBSB), 'Biblia.com').'"/><a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.sprintf(__('Powered by %s', MBSB), 'SermonBrowser').'"/>', 'powered_by', 'powered_by sermonbrowser');
 		elseif ($bible['service'] == 'biblesearch') 
-			$output .= $this->do_div(sprintf(__('Powered by %s and %s', MBSB), '<a href="http://bibles.org/">BibleSearch</a>', '<a href="http://www.sermonbrowser.com">SermonBrowser</a>'), 'powered_by', 'powered_by '.$bible['service']);
+			$output .= $this->do_div(sprintf(__('Powered by %s and %s.', MBSB), '<a href="http://bibles.org/">BibleSearch</a>', '<a href="http://www.sermonbrowser.com">SermonBrowser</a>'), 'powered_by', 'powered_by '.$bible['service']);
+		elseif ($bible ['service'] == 'esv')
+			$output .= $this->do_div (sprintf(__('Powered by %s and the %s API.', MBSB), '<a href="http://www.sermonbrowser.com">SermonBrowser</a>', '<a href="http://www.esv.org/">ESV</a>'), 'powered_by', 'powered_by esv');
 		return $output;
 	}
 }

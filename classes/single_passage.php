@@ -76,6 +76,11 @@ class mbsb_single_passage {
 				$bible_text = mbsb_cached_download ($url);
 				if ($bible_text['response']['code'] == '200')
 					return $bible_text['body'];
+			} elseif ($bible['service'] == 'esv') {
+				$url = "http://www.esvapi.org/v2/rest/passageQuery?include-footnotes=false&include-headings=false&include-short-copyright=false&key=".mbsb_get_api_key('esv')."&passage=".urlencode($this->formatted);
+				$bible_text = mbsb_cached_download ($url);
+				if ($bible_text['response']['code'] == '200')
+					return $bible_text['body'];
 			} elseif ($bible['service'] == 'biblesearch') {
 				$url = "http://bibles.org/passages.xml?q[]=".urlencode($this->formatted)."&version=".$preferred_version;
 				$response = mbsb_cached_download ($url, 604800, mbsb_get_api_key('biblesearch'));

@@ -16,7 +16,7 @@ function mbsb_default_options($all_options) {
 	//Standard options
 	$all_options ['audio_shortcode'] = '[mejsaudio src="%URL%"]';
 	$all_options ['video_shortcode'] = '[mejsvideo src="%URL%"]';
-	$all_options ['bible_version_en_US'] = 'asv';
+	$all_options ['bible_version_en_US'] = 'esv';
 	$all_options ['allow_user_to_change_bible'] = true;
 	//Advanced options
 	include ('api_keys.php');
