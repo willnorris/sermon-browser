@@ -52,6 +52,8 @@ function mbsb_admin_init () {
 	//Displaying in a thickbox?
 	if (isset($_GET['iframe']) && $_GET['iframe'] == 'true' && isset($_GET['post_type']) && substr($_GET['post_type'], 0, 5) == 'mbsb_')
 		add_action ('admin_head', 'mbsb_tb_iframe_admin_head');
+	if (isset($_GET['showtab']))
+		$_GET['tab'] = $_GET['showtab'];
 }
 
 /**
@@ -247,7 +249,7 @@ function mbsb_force_insert_post_on_media_popup ($args) {
 /**
 * Optionally removes all but one tab from the media uploader
 * 
-* Triggered by adding a 'tab=xxxx' parameter when calling the media uploader
+* Triggered by adding a 'showtab=xxxx' parameter when calling the media uploader
 * 
 * @param array $tabs
 * @return array
@@ -813,8 +815,8 @@ function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 function mbsb_tb_iframe_admin_head() {
 	global $post;
 	echo "<style type=\"text/css\">";
-	echo "#adminmenuback, #adminmenuwrap, #screen-meta-links, #wpadminbar, #footer {display:none}";
-	echo "#wpcontent {margin-left:15px}";
+	echo "#adminmenuback, #adminmenuwrap, #screen-meta-links, #wpadminbar, #footer, #wpfooter {display:none}";
+	echo "#wpcontent, .auto-fold #wpcontent {margin-left:15px}";
 	echo "#wpbody-content {padding-bottom:0}";
 	echo "html.wp-toolbar {padding-top:0}";
 	echo "</style>\r\n";
