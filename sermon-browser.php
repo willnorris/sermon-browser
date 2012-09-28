@@ -76,8 +76,10 @@ function mbsb_activate () {
 * Contains functions that for performance or other reasons need to be run as soon as possible.
 */
 function mbsb_plugins_loaded() {
-	if (isset ($_GET['mbsb_script']))
-		require ('js/scripts.php');
+	if (isset ($_GET['mbsb_script'])) {
+		require ("js/{$_GET['mbsb_script']}.php");
+		die();
+	}
 }
 
 /**

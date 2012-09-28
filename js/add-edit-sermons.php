@@ -2,22 +2,19 @@
 /**
 * Include file called when requested on the plugins_loaded action
 * 
-* Outputs customised javascript, then dies.
+* Outputs javascript for the add/edit sermons page, then dies.
+* It's a PHP file so that we can internationalise it and add nonces
 * 
 * @package SermonBrowser
 * @subpackage scripts
 * @author Mark Barnes
 */
-header ('Cache-Control: max-age=290304000, public');
-header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+290304000));
+header ('Cache-Control: max-age=43200, public'); // 12 hours, to make sure that nonces remain current
+header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+43200)); 
 header ('Content-type: text/javascript; charset=utf-8');
 $date = @filemtime(__FILE__);
 if ($date)
 	header ('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', $date));
-if (!isset($_GET['name']))
-	wp_die ('Script name not specified');
-if ($_GET['name'] == 'main_admin_script') {
-	if ($_GET['post_type'] == 'sermon') {
 ?>
 var mbsb_orig_time;
 var orig_send_to_editor;
@@ -48,8 +45,8 @@ function mbsb_hide_all() {
 
 function add_new_select (post_type, option_name, option_id) {
 	var addition = '<option selected="selected" value="'+option_id+'">'+option_name+'</option>';
-	jQuery('#mbsb_'+post_type).append(addition);
-	jQuery('#mbsb_'+post_type).val(option_id);
+	jQuery('#'+post_type).append(addition);
+	jQuery('#'+post_type).val(option_id);
 	tb_remove();
 }
 
@@ -101,7 +98,7 @@ function mbsb_handle_url_embed (type) {
 		jQuery('#row_'+row_id).show(1200);
 	});
 }
-<?php do_action ('mbsb_admin_javascript'); ?>
+<?php do_action ('mbsb_add_edit_sermon_javascript'); ?>
 
 /**
 * The main jQuery function that runs when the document is ready
@@ -188,105 +185,6 @@ jQuery(document).ready(function($) {
 	});
 <?php
 		}
-		do_action ('mbsb_admin_jQuery_document_ready');
+		do_action ('mbsb_add_edit_sermon_jQuery');
 ?>
 });
-<?php
-	}
-} elseif ($_GET['name'] == 'add_new_option') {
-?>
-jQuery(document).ready(function($) {
-	$('#publish').click(function() {
-		var name = $('#title').val();
-		parent.add_new_select(mbsb_post_type, name, mbsb_sermon_id);
-	});
-});
-<?php
-} elseif ($_GET['name'] == 'frontend_script') {
-?>
-var mbsb_ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>';
-
-function mbsbSetCookie(cookieName, value, numDays) {
-	var expiryDate = new Date();
-	expiryDate.setDate(expiryDate.getDate() + numDays);
-	var cookieValue = cookieName + "=" + escape(value) + ((numDays==null) ? "" : "; expires=" + expiryDate.toUTCString()) + "; path=<?php echo esc_js(COOKIEPATH) ?>";
-	document.cookie = cookieValue;
-}
-function mbsbGetCookie(cookieName) {
-    var nameEQ = cookieName + "=";
-    var ca = document.cookie.split(';');
-    for(var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ')
-        	c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0)
-        	return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
-/**
-* The main jQuery function that runs when the document is ready
-*/
-jQuery(document).ready(function($) {
-	hideableSections = new Array("sermon_media_list", "preacher_preacher", "series_series", "service_service", "passages_wrap");
-	$.each (hideableSections, function (key, value) {
-		var display = mbsbGetCookie('sermon_browser_section_'+value);
-		if (display == 'hide') {
-			$('div.'+value).hide();
-			var a = $('div.'+value).prev().find('a.heading_pointer').html('&#9654;');
-		}
-	});
-	$('#bible_dropdown').change(function() {
-		var version = $(this).val();
-		mbsbSetCookie('sermon_browser_bible', version, 365);
-		$('#passages_bible_loader').html('<img src="<?php echo admin_url('images/loading.gif');?>" alt="<?php _e('Loading', MBSB);?>&hellip;"/><?php _e('Requesting', MBSB);?>&hellip;');
-		var data = {
-			action: 'mbsb_get_bible_text',
-			version: version,
-			post_id: mbsb_sermon_id
-		};
-		$.post(mbsb_ajaxurl, data, function(response) {
-			$('#passages_text').fadeOut('slow', function() {
-				$(this).html(response)
-			}).fadeIn('slow');
-			$('#passages_bible_loader').fadeOut('slow', function () {
-				$(this).html('');
-				$(this).show();
-			});
-		});
-	});
-	$('div.mbsb_collapsible_heading').on('click', 'a.heading_pointer', function (e) {
-		var button = $(this);
-		var to_collapse = $(this).parents('div.mbsb_collapsible_heading').next();
-		if (to_collapse.is(':hidden')) {
-			mbsbSetCookie('sermon_browser_section_'+to_collapse.attr('class'), 'show', 365);
-			to_collapse.slideDown('slow', function () {
-				button.html('&#9660;');
-			});
-		} else {
-			mbsbSetCookie('sermon_browser_section_'+to_collapse.attr('class'), 'hide', 365);
-			to_collapse.slideUp('slow', function () {
-				button.html('&#9654;')
-			});
-		}
-		e.preventDefault();
-	});
-	$('div.sermon_sermon').on('click', 'a.read_more', function (e) {
-		var section_type = $(this).attr('id').substr(10);
-		var data = {
-			action: 'mbsb_get_'+section_type+'_details',
-			post_id: mbsb_sermon_id
-		};
-		$.post(mbsb_ajaxurl, data, function(response) {
-			$('div.'+section_type+'_'+section_type).fadeOut('slow', function() {
-				$(this).html(response);
-			}).fadeIn('slow');
-		});
-		e.preventDefault();
-	});
-
-});
-<?php
-}
-die();
-?>

@@ -53,8 +53,8 @@ function mbsb_default_options($all_options) {
 	
 	Actions available:
 	==================
-	mbsb_admin_javascript
-	mbsb_admin_jQuery_document_ready
+	mbsb_add_edit_sermon_javascript
+	mbsb_add_edit_sermon_jQuery
 	*/
 }
 

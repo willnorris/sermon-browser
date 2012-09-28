@@ -213,12 +213,9 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 function mbsb_add_javascript_and_styles_to_admin_pages() {
 	global $post;
 	$screen = get_current_screen();
-	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon')
+	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon') {
 		wp_enqueue_style ('thickbox');
-	if ($screen->base == 'post' && substr($screen->id, 0, 5) == 'mbsb_') {
-		wp_enqueue_script('mbsb_script_main_admin_script', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=main_admin_script&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery', 'thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
-		if (isset($_GET['iframe']) && $_GET['iframe'] == 'true')
-			wp_enqueue_script('mbsb_script_add_new_option', home_url("?mbsb_script&amplocal=".get_locale()."&amp;name=add_new_option&amp;post_id={$post->ID}&amp;post_type=".substr($screen->id,5)), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+		wp_enqueue_script('mbsb_add_edit_sermon', home_url("?mbsb_script=add-edit-sermons&locale=".get_locale()), array ('jquery', 'thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/add-edit-sermons.php')));
 	}
 }
 /**
@@ -814,11 +811,13 @@ function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 * 
 */
 function mbsb_tb_iframe_admin_head() {
+	global $post;
 	echo "<style type=\"text/css\">";
 	echo "#adminmenuback, #adminmenuwrap, #screen-meta-links, #wpadminbar, #footer {display:none}";
 	echo "#wpcontent {margin-left:15px}";
 	echo "html.wp-toolbar {padding-top:0}";
 	echo "</style>\r\n";
+    echo "<script type=\"text/javascript\">jQuery(document).ready(function(\$) { \$('#publish').click(function() {var name = \$('#title').val(); parent.add_new_select('{$_GET['post_type']}', name, '{$post->ID}'); });});</script>";
 }
 
 /**

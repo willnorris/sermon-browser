@@ -89,7 +89,7 @@ function mbsb_enqueue_frontend_scripts_and_styles() {
 	$date = @filemtime(mbsb_plugin_dir_path('css/frontend-style.php'));
 	wp_register_style ('mbsb_frontend_style', mbsb_plugins_url('css/frontend-style.php'), array(), $date);
 	wp_enqueue_style ('mbsb_frontend_style');
-	wp_register_script ('mbsb_frontend_script', home_url("?mbsb_script&locale=".get_locale()."&name=frontend_script"), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/scripts.php')));
+	wp_register_script ('mbsb_frontend_script', home_url("?mbsb_script=frontend&locale=".get_locale()), array ('jquery'), @filemtime(mbsb_plugin_dir_path('js/frontend.php')));
 	wp_enqueue_script ('mbsb_frontend_script');
 }
 ?>
