@@ -78,3 +78,6 @@ body.post_mbsb_sermon #minor-publishing, body.post_mbsb_series #minor-publishing
 	border-bottom: none;
 	box-shadow: none;
 }
+table.sermon_media input.button-secondary {
+	padding: 3px 9px 4px;
+}
