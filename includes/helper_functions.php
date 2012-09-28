@@ -16,7 +16,8 @@ function mbsb_default_options($all_options) {
 	//Standard options
 	$all_options ['audio_shortcode'] = '[mejsaudio src="%URL%"]';
 	$all_options ['video_shortcode'] = '[mejsvideo src="%URL%"]';
-	$all_options ['bible_version_en_US'] = 'esv';
+	$all_options ['bible_version_'.get_locale()] = 'esv';
+	$all_options ['use_embedded_bible_'.get_locale()] = true;
 	$all_options ['allow_user_to_change_bible'] = true;
 	//Advanced options
 	include ('api_keys.php');
@@ -40,6 +41,7 @@ function mbsb_default_options($all_options) {
 	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['excerpt_length'] = 55;
 	$all_options ['show_statistics_on_sermon_page'] = true;
+	$all_options ['embedded_bible_parameters'] = array ('width' => '100%', 'height' => '600', 'layout' => 'normal', 'historyButtons' => true, 'navigationBox' => true, 'resourcePicker' => true, 'shareButton' => true, 'textSizeButton' =>true);
 	//Options still to be implemented
 	$all_options ['append_passage_to_title_in_feed'] = true;
 	return $all_options;
@@ -55,6 +57,7 @@ function mbsb_default_options($all_options) {
 	==================
 	mbsb_add_edit_sermon_javascript
 	mbsb_add_edit_sermon_jQuery
+	mbsb_frontend_jQuery
 	*/
 }
 

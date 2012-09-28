@@ -67,42 +67,59 @@ class mbsb_single_passage {
 	public function get_bible_text($preferred_version = '') {
 		if ($preferred_version == '')
 			$preferred_version = mbsb_get_preferred_version();
-		$bible = mbsb_get_bible_details($preferred_version);
-		if (!$bible)
-			return false;
-		else {
-			if ($bible['service'] == 'biblia') {
-				$url = "http://api.biblia.com/v1/bible/content/{$preferred_version}.html?fulltext=false&redLetter=false&formatting=character&key=".mbsb_get_api_key('biblia')."&passage=".urlencode($this->formatted);
-				$bible_text = mbsb_cached_download ($url);
-				if ($bible_text['response']['code'] == '200')
-					return $bible_text['body'];
-			} elseif ($bible['service'] == 'esv') {
-				$url = "http://www.esvapi.org/v2/rest/passageQuery?include-footnotes=false&include-headings=false&include-short-copyright=false&key=".mbsb_get_api_key('esv')."&passage=".urlencode($this->formatted);
-				$bible_text = mbsb_cached_download ($url);
-				if ($bible_text['response']['code'] == '200')
-					return $bible_text['body'];
-			} elseif ($bible['service'] == 'biblesearch') {
-				$url = "http://bibles.org/passages.xml?q[]=".urlencode($this->formatted)."&version=".$preferred_version;
-				$response = mbsb_cached_download ($url, 604800, mbsb_get_api_key('biblesearch'));
-				if (is_wp_error($response) || $response['response']['code'] != '200')
-					return false;
-				$response = new SimpleXMLElement($response['body']);
-				if (!isset($response->result->passages->passage->path))
-					return false;
-				$bible_text = mbsb_cached_download ('http://bibles.org/'.$response->result->passages->passage->path, 604800, mbsb_get_api_key('biblesearch'));
-				if ($bible_text['response']['code'] == '200') {
-					$bible_text = new SimpleXMLElement($bible_text['body']);
-					if (isset($bible_text->verse)) {
-						$output = '';
-						foreach ($bible_text->verse as $verse)
-							$output .= $verse->text;
+		if (mbsb_get_option('use_embedded_bible_'.get_locale())) {
+			$biblia_book_num = ($this->start['book'] >= 39 ? $this->start['book']+21 : $this->start['book']);
+			$output = '<biblia:bible id="bible-'.rand(10000,99999)."\" resource=\"{$preferred_version}\" startingReference=\"bible.{$biblia_book_num}.{$this->start['chapter']}.{$this->start['verse']}\"";
+			foreach ((array)mbsb_get_option('embedded_bible_parameters') AS $param => $value) {
+				if ($value === false)
+					$output .= " {$param}=\"false\"";
+				elseif ($value !== true)
+					$output .= " {$param}=\"{$value}\"";
+			}
+			$output .= "></biblia:bible>";
+			return $output;
+		} else {
+			$bible = mbsb_get_bible_details($preferred_version);
+			if (!$bible)
+				return false;
+			else {
+				if ($bible['service'] == 'biblia') {
+					$url = "http://api.biblia.com/v1/bible/content/{$preferred_version}.html?fulltext=false&redLetter=false&formatting=character&key=".mbsb_get_api_key('biblia')."&passage=".urlencode($this->formatted);
+					$bible_text = mbsb_cached_download ($url);
+					if ($bible_text['response']['code'] == '200')
+						return $bible_text['body'];
+				} elseif ($bible['service'] == 'esv') {
+					$url = "http://www.esvapi.org/v2/rest/passageQuery?include-footnotes=false&include-headings=false&include-short-copyright=false&key=".mbsb_get_api_key('esv')."&passage=".urlencode($this->formatted);
+					$bible_text = mbsb_cached_download ($url);
+					if ($bible_text['response']['code'] == '200')
+						return $bible_text['body'];
+				} elseif ($bible['service'] == 'biblesearch') {
+					$url = "http://bibles.org/passages.xml?q[]=".urlencode($this->formatted)."&version=".$preferred_version;
+					$response = mbsb_cached_download ($url, 604800, mbsb_get_api_key('biblesearch'));
+					if (is_wp_error($response) || $response['response']['code'] != '200')
+						return false;
+					$response = new SimpleXMLElement($response['body']);
+					if (!isset($response->result->passages->passage->path))
+						return false;
+					$bible_text = mbsb_cached_download ('http://bibles.org/'.$response->result->passages->passage->path, 604800, mbsb_get_api_key('biblesearch'));
+					if ($bible_text['response']['code'] == '200') {
+						$bible_text = new SimpleXMLElement($bible_text['body']);
+						if (isset($bible_text->verse)) {
+							$output = '';
+							foreach ($bible_text->verse as $verse)
+								$output .= $verse->text;
+						}
+						if (isset($bible_text->meta->fums))
+							$output .= (string)$bible_text->meta->fums;
+						return $output;
 					}
-					if (isset($bible_text->meta->fums))
-						$output .= (string)$bible_text->meta->fums;
-					return $output;
 				}
 			}
 		}
+	}
+	
+	private function biblia_book_names() {
+		return array ('', 'Ge', 'Ex', 'Le', 'Nu', 'De', 'Jos', '');
 	}
 }
 ?>

@@ -77,6 +77,8 @@ function mbsb_activate () {
 */
 function mbsb_plugins_loaded() {
 	if (isset ($_GET['mbsb_script'])) {
+		if (mbsb_get_option('use_embedded_bible_'.get_locale()))
+			add_action ('mbsb_frontend_jQuery', 'mbsb_biblia_init');
 		require ("js/{$_GET['mbsb_script']}.php");
 		die();
 	}

@@ -185,7 +185,7 @@ function mbsb_cached_download ($url, $cached_time = 604800, $user_name = '', $pa
 } 
 
 function mbsb_get_preferred_version() {
-	if (mbsb_get_option ('allow_user_to_change_bible') && isset($_COOKIE['sermon_browser_bible']))
+	if (mbsb_get_option ('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale()) && isset($_COOKIE['sermon_browser_bible']))
 		return $_COOKIE['sermon_browser_bible'];
     else
 		return mbsb_get_option ('bible_version_'.get_locale());

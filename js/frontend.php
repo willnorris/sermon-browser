@@ -96,5 +96,5 @@ jQuery(document).ready(function($) {
 		});
 		e.preventDefault();
 	});
-
+	<?php do_action ('mbsb_frontend_jQuery'); ?>
 });

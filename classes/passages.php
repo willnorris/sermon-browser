@@ -365,9 +365,10 @@ class mbsb_passages extends mbsb_mpspss_template {
 	*/
 	public function get_output () {
 		if ($this->passages) {
-			if (mbsb_get_option('allow_user_to_change_bible')) {
+			if (mbsb_get_option('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale())) {
 				$output = $this->do_div (mbsb_get_bible_list_dropdown(), 'bible_dropdown');
-			}
+			} else
+				$output = '';
 			$preferred_version = mbsb_get_preferred_version();
 			$output .= $this->do_div ($this->get_text_output($preferred_version), 'text');
 			return $this->do_div ($output, 'wrap');
@@ -391,7 +392,10 @@ class mbsb_passages extends mbsb_mpspss_template {
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
 			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version}");
 		}
-		if ($bible['service'] == 'biblia') 
+		if (mbsb_get_option ('use_embedded_bible_'.get_locale())) {
+			$text = esc_html(sprintf(__('Powered by %s', MBSB), 'SermonBrowser'));
+			$output .= $this->do_div('<a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.$text.'" title="'.$text.'"/>', 'powered_by', 'powered_by sermonbrowser');
+		} elseif ($bible['service'] == 'biblia') 
 			$output .= $this->do_div('<a href="http://biblia.com/"><img src="http://api.biblia.com/docs/media/PoweredByBiblia.png" alt="'.sprintf(__('Powered by %s', MBSB), 'Biblia.com').'"/><a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.sprintf(__('Powered by %s', MBSB), 'SermonBrowser').'"/>', 'powered_by', 'powered_by sermonbrowser');
 		elseif ($bible['service'] == 'biblesearch') 
 			$output .= $this->do_div(sprintf(__('Powered by %s and %s.', MBSB), '<a href="http://bibles.org/">BibleSearch</a>', '<a href="http://www.sermonbrowser.com">SermonBrowser</a>'), 'powered_by', 'powered_by '.$bible['service']);
