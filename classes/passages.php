@@ -387,7 +387,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 		$output = '';
 		$c = count ($this->passages);
 		foreach ($this->passages as $index => $p) {
-			if ($c > 1)
+			if ($c > 1 && $version != 'esv')
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
 			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version}");
 		}

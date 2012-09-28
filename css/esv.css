@@ -82,10 +82,3 @@
 	margin: 0 0 0 10px;
 	padding: 0;
 }
-/* SermonBrowser modification */
-#passages_text div.esv h2 {
-	font-size: 0;
-}
-#passages_text div.esv h2 object.audio {
-	margin-left: 0;
-}
