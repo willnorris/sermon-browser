@@ -19,10 +19,12 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details: <http://www.gnu.org/licenses/>
 */
+
 /**
 * This file sets up SermonBrowser by adding core actions and including the required files.
 * 
 * @package SermonBrowser
+* @subpackage Common
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 
