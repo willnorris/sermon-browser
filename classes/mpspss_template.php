@@ -1,14 +1,32 @@
 <?php
 /**
+* classes/mpspss_templates.php
+* 
+* Contains the mbsb_mpspss_template class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Templates
+*/
+
+/**
 * Class that provides basic functionality to be extended by the media, passage, sermon, preacher, series and services classes
 * 
 * This class should never be called directly, but only extended
 * 
 * @package SermonBrowser
-* @subpackage spss_template
-* @author Mark Barnes
+* @subpackage Templates
 */
 class mbsb_mpspss_template {
+
+	/**
+	* True if the object contains passages, false otherwise
+	* 
+	* @var boolean
+	*/
+	public $present;
+
+
 	/**
 	* Warning function to prevent the class being called directly
 	*/
@@ -23,7 +41,8 @@ class mbsb_mpspss_template {
 	* A class is added, and the class name appended with the sermon id is used to provide a unique id
 	* 
 	* @param string $content - the HTML to be wrapped in the div
-	* @param string $div_type - a descriptor that is used in the class and id
+	* @param string $div_type - a descriptor that is used in the id (and optionally the class)
+	* @param string $class - the class of this div
 	* @return string
 	*/
 	protected function do_div ($content, $div_type, $class='') {
@@ -44,6 +63,7 @@ class mbsb_mpspss_template {
 	* 
 	* @param string $content - the HTML to be wrapped in the div
 	* @param string $div_type - a descriptor that is used in the class and id
+	* @param string $class - the class of this div
 	* @return string
 	*/
 	protected function do_heading ($content, $div_type, $class='') {

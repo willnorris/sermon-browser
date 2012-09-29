@@ -1,10 +1,20 @@
 <?php
 /**
+* classes/preacher.php
+* 
+* Contains the mbsb_preacher class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Preacher
+*/
+
+/**
 * Class that stores and processes the preacher custom post type
 * 
 * @package SermonBrowser
-* @subpackage preacher
-* @author Mark Barnes
+* @subpackage Preacher
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_preacher extends mbsb_pss_template {
 

@@ -1,19 +1,24 @@
 <?php
 /**
-* Class that stores and parses Bible passages
+* classes/passages.php
+* 
+* Contains the mbsb_passages class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Passages
+*/
+
+/**
+* Stores and parses Bible passages
+* 
+* Provides methods to access and update all passages (as a block), and an array of mbsb_single_passage objects so individual items can be accessed individually.
 * 
 * @package SermonBrowser
-* @subpackage passage
-* @author Mark Barnes
+* @subpackage Passages
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_passages extends mbsb_mpspss_template {
-	
-	/**
-	* True if the object contains passages, false otherwise
-	* 
-	* @var boolean
-	*/
-	public $present;
 	
 	/**
 	* The passages in a human-friendly format
@@ -116,6 +121,9 @@ class mbsb_passages extends mbsb_mpspss_template {
 		return '<a href="'.admin_url('edit.php?post_type=mbsb_sermon&book=').'">'.esc_html($this->get_formatted()).'</a>';
 	}
 	
+	/**
+	* Returns an array of mbsb_single_passage objects
+	*/
 	public function get_passage_objects() {
 		return $this->passages;
 	}
@@ -123,7 +131,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 	/**
 	* Parses a string that could contain one or more Bible References
 	* 
-	* @param string $passage
+	* @param string $raw_passages - the passages in their raw form (e.g. 'Rom 5:16, 1 Jn 3:6')
 	* @return array - A indexed array of references. Each reference is an associative array (keys are 'raw', 'start' and 'end'). 'raw' is the raw input for one reference. 'start' and 'end' are associative arrays with the keys 'book', 'chapter' and 'verse'
 	*/
 	private function parse_passages($raw_passages) {

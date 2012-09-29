@@ -4,8 +4,8 @@
 * that provide functionality specific to SermonBrowser.
 * 
 * @package SermonBrowser
-* @subpackage helper_functions
-* @author Mark Barnes
+* @subpackage Common
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 
 /**
@@ -159,8 +159,10 @@ function mbsb_join_book ($join) {
 * 
 * It does not use transient caching, as we will still use an out of date cache if the page is unreachable.
 * 
-* @param mixed $url
-* @param mixed $cached_time
+* @param string $url
+* @param integer $cached_time
+* @param string $user_name
+* @param string $password
 */
 function mbsb_cached_download ($url, $cached_time = 604800, $user_name = '', $password = '') { // 1 week
 	$option_name = 'mbsb_cache_'.md5($url.$user_name.$password);
@@ -184,6 +186,11 @@ function mbsb_cached_download ($url, $cached_time = 604800, $user_name = '', $pa
 	}
 } 
 
+/**
+* Returns the preferred Bible version
+* 
+* @return string
+*/
 function mbsb_get_preferred_version() {
 	if (mbsb_get_option ('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale()) && isset($_COOKIE['sermon_browser_bible']))
 		return $_COOKIE['sermon_browser_bible'];
@@ -191,14 +198,20 @@ function mbsb_get_preferred_version() {
 		return mbsb_get_option ('bible_version_'.get_locale());
 }
 
-function mbsb_get_bible_list_dropdown($preferred_version = '') {
+/**
+* Returns the HTML for the Bible dropdown list
+* 
+* @param string $selected_version - the Bible version currently selected
+* @return string
+*/
+function mbsb_get_bible_list_dropdown($selected_version = '') {
 	$bibles = mbsb_get_bible_list();
-	if ($preferred_version == '')
-		$preferred_version = mbsb_get_preferred_version();
+	if ($selected_version == '')
+		$selected_version = mbsb_get_preferred_version();
 	$local_bibles = array();
 	$other_bibles = array ('<optgroup label="'.__('Other languages', MBSB).'">');
 	foreach ($bibles as $code => $bible) {
-		if ($code == $preferred_version)
+		if ($code == $selected_version)
 			$insert = ' selected="selected"';
 		else
 			$insert = '';
@@ -216,6 +229,11 @@ function mbsb_get_bible_list_dropdown($preferred_version = '') {
 }
 
 
+/**
+* Returns an array of available Bibles
+* 
+* @return array
+*/
 function mbsb_get_bible_list() {
 	$bibles = get_transient ('mbsb_bible_list_'.get_locale());
 	$bibles = array(); // Remove this line before production
@@ -268,10 +286,22 @@ function mbsb_get_bible_list() {
 	return $bibles;
 }
 
+/**
+* Gets an Bible API key
+* 
+* @param string $service
+* @return string
+*/
 function mbsb_get_api_key($service) {
 	return mbsb_get_option("{$service}_api_key");
 }
 
+/**
+* Returns the details of a Bible version
+* 
+* @param string $version
+* @return array
+*/
 function mbsb_get_bible_details($version) {
 	$bibles = mbsb_get_bible_list();
 	if (isset($bibles[$version]))
@@ -280,6 +310,15 @@ function mbsb_get_bible_details($version) {
 		return false;
 }
 
+/**
+* Sorts a Bible list
+* 
+* Designed for use with the uasort function
+* 
+* @param array $a
+* @param array $b
+* @return integer
+*/
 function mbsb_bible_sort ($a, $b) {
 	if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
 		return 0;
@@ -289,6 +328,12 @@ function mbsb_bible_sort ($a, $b) {
 		return ($a['language_name'] > $b['language_name']) ? 1 : -1;
 }
 	
+/**
+* Returns a language given a language code
+* 
+* @param string $code
+* @return string
+*/
 function mbsb_bible_language_from_code ($code) {
 	$languages = array ('ar' => __('Arabic', MBSB), 'cy' => __('Welsh'), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish', MBSB), 'fr' => __('French', MBSB), 'gl' => __('Gaelic'), 'it' => __('Italian', MBSB), 'nl' => __('Dutch', MBSB), 'pt' => __('Portuguese', MBSB), 'ru' => __('Russian', MBSB), 'sp' => __('Spanish', MBSB));
 	if (isset($languages[$code]))
@@ -297,6 +342,13 @@ function mbsb_bible_language_from_code ($code) {
 		return $code;
 }
 
+/**
+* Ensures the language codes are consistent
+* 
+* @param string $lang
+* @param string $lang_code
+* @return string
+*/
 function mbsb_get_bible_search_lang($lang, $lang_code) {
 	return substr($lang, 0, 2);
 }

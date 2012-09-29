@@ -23,7 +23,7 @@ GNU General Public License for more details: <http://www.gnu.org/licenses/>
 * This file sets up SermonBrowser by adding core actions and including the required files.
 * 
 * @package SermonBrowser
-* @author Mark Barnes
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 
 /**
@@ -78,7 +78,7 @@ function mbsb_activate () {
 function mbsb_plugins_loaded() {
 	if (isset ($_GET['mbsb_script'])) {
 		if (mbsb_get_option('use_embedded_bible_'.get_locale()))
-			add_action ('mbsb_frontend_jQuery', 'mbsb_biblia_init');
+			add_action ('mbsb_frontend_jQuery', create_function ('', 'echo "logos.biblia.init();\r\n";'));
 		require ("js/{$_GET['mbsb_script']}.php");
 		die();
 	}
@@ -212,6 +212,9 @@ function mbsb_plugins_url ($path = '') {
 	return plugins_url($path, __FILE__);
 }
 
+/**
+* Adds various items to the admin menu bar
+*/
 function mbsb_admin_bar_menu() {
 	global $wp_admin_bar;
 	if (current_user_can ('edit_pages')) {

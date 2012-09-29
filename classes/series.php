@@ -1,10 +1,20 @@
 <?php
 /**
+* classes/series.php
+* 
+* Contains the mbsb_series class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Series
+*/
+
+/**
 * Class that stores and processes the series custom post type
 * 
 * @package SermonBrowser
-* @subpackage preacher
-* @author Mark Barnes
+* @subpackage Series
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_series extends mbsb_pss_template {
 

@@ -1,10 +1,20 @@
 <?php
 /**
+* classes/service.php
+* 
+* Contains the mbsb_service class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Service
+*/
+
+/**
 * Class that stores and processes the service custom post type
 * 
 * @package SermonBrowser
-* @subpackage preacher
-* @author Mark Barnes
+* @subpackage Service
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_service extends mbsb_pss_template {
 	

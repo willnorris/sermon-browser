@@ -1,10 +1,20 @@
 <?php
 /**
+* classes/single_media_attachment.php
+* 
+* Contains the mbsb_single_media_attachment class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage MediaAttachments
+*/
+
+/**
 * Class that handles media attachments
 * 
 * @package SermonBrowser
-* @subpackage media_attachments
-* @author Mark Barnes
+* @subpackage MediaAttachments
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_single_media_attachment {
 	
@@ -174,6 +184,11 @@ class mbsb_single_media_attachment {
 			return $this->data->ID;
 	}
 	
+	/**
+	* Returns the filesize of the attachment
+	* 
+	* @return integer
+	*/
 	public function get_filesize() {
 		if ($this->attachment_type != 'library')
 			return false;
@@ -183,6 +198,11 @@ class mbsb_single_media_attachment {
 		}
 	}
 	
+	/**
+	* Returns the filesize of the attachment as a human friendly string (e.g. 12345678 becomes 12.34MB)
+	* 
+	* @return string
+	*/
 	public function get_friendly_filesize() {
 		return mbsb_format_bytes($this->get_filesize());
 	}
@@ -324,7 +344,7 @@ class mbsb_single_media_attachment {
 	/**
 	* Returns an embed attachment row, ready to be inserted in a table displaying a list of media items
 	* 
-	* @param boolean $hide - hides the row using CSS classes
+	* @param string $class - a CSS class to be added to the row
 	* @return string
 	*/
 	private function add_admin_embed_attachment_row ($class = '') {

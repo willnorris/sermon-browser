@@ -1,10 +1,10 @@
 <?php
 /**
-* Include file, called when is_admin() is true
+* Include file, called when is_admin() is false
 * 
 * @package SermonBrowser
-* @subpackage frontend
-* @author Mark Barnes
+* @subpackage Frontend
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 
 add_action ('init', 'mbsb_frontend_init');
@@ -72,6 +72,14 @@ function mbsb_filter_author ($author) {
 	
 }
 
+/**
+* Filters the author link to make sure that sermon authors point to the preacher URL
+* 
+* @param string $link
+* @param integer $author_id
+* @param string $author_nicename
+* @return string
+*/
 function mbsb_filter_author_link ($link, $author_id, $author_nicename) {
 	global $post;
 	if (isset($post->post_type) && $post->post_type == 'mbsb_sermon') {
@@ -82,6 +90,9 @@ function mbsb_filter_author_link ($link, $author_id, $author_nicename) {
 	return $link;
 }
 
+/**
+* Enqueues scripts and styles for the frontend
+*/
 function mbsb_enqueue_frontend_scripts_and_styles() {
 	global $post;
 	if (isset ($post->ID) && isset ($post->post_type) && $post->post_type == 'mbsb_sermon') {
@@ -94,9 +105,5 @@ function mbsb_enqueue_frontend_scripts_and_styles() {
 		if (mbsb_get_option('use_embedded_bible_'.get_locale()))
 			wp_enqueue_script('mbsb_biblia_embedded', 'http://biblia.com/api/logos.biblia.js');
 	}
-}
-
-function mbsb_biblia_init() {
-	echo "logos.biblia.init();\r\n";
 }
 ?>

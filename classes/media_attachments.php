@@ -1,16 +1,46 @@
 <?php
 /**
-* Class that handles media attachments
+* classes/media_attachments.php
+* 
+* Contains the mbsb_media_attachments class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage MediaAttachments
+*/
+
+/**
+* mbsb_media_attachments class
+* 
+* Retrieves all media attachments from post metadata, provides methods used to access all media (as a block), and an array of mbsb_single_media_attachment objects so individual items can be accessed individually.
 * 
 * @package SermonBrowser
-* @subpackage media_attachments
-* @author Mark Barnes
+* @subpackage MediaAttachments
 */
 class mbsb_media_attachments extends mbsb_mpspss_template {
 	
-	public $present;
-	private $attachments, $sermon_id;
+	/**
+	* An array of mbsb_single_media_attachment objects
+	* 
+	* @var mbsb_single_media_attachment[]
+	*/
+	private $attachments;
 	
+	/**
+	* The post ID of the sermon the media is attached to
+	* 
+	* @var integer
+	*/
+	private $sermon_id;
+	
+	/**
+	* Creates the object
+	* 
+	* Queries the postmeta table for attachments
+	* 
+	* @param integer $post_id - the post_id of the sermon
+	* @return mbsb_media_attachments
+	*/
 	function __construct($post_id) {
 		global $wpdb;
 		$meta_ids = $wpdb->get_col($wpdb->prepare("SELECT meta_id FROM {$wpdb->prefix}postmeta WHERE post_id=%s AND meta_key='attachments' ORDER BY meta_id", $post_id));
@@ -33,6 +63,12 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 		$this->sermon_id = $post_id;
 	}
 	
+	/**
+	* Returns an array of attachments
+	* 
+	* @param boolean $most_recent_first - true if the attachments are to be ordered in descending meta ID order, false otherwise
+	* @return mbsb_single_media_attachment[]
+	*/
 	public function get_attachments($most_recent_first = false) {
 		if ($this->present) {
 			if ($most_recent_first && is_array($this->attachments))
@@ -86,7 +122,7 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 	* Adds a library attachment to a sermon
 	* @var mbsb_single_media_attachment
 	* 
-	* @param integer $attachment_id - the post ID of the library attachment
+	* @param integer $library_id - the post ID of the library attachment
 	* @return mixed False for failure. Null if the file is already attached. The media_attachment object if successful. 
 	*/
 	public function add_library_attachment ($library_id) {

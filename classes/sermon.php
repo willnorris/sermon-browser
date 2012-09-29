@@ -1,10 +1,20 @@
 <?php
 /**
+* classes/sermon.php
+* 
+* Contains the mbsb_sermon class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Sermon
+*/
+
+/**
 * Class that stores and processes the sermon custom post type
 * 
 * @package SermonBrowser
-* @subpackage preacher
-* @author Mark Barnes
+* @subpackage Sermon
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_sermon extends mbsb_spss_template {
 	
@@ -52,6 +62,7 @@ class mbsb_sermon extends mbsb_spss_template {
 	* Various HTML additions can specified via the $link_type paramenter. Accepted values of link_type are:
 	* 	'admin_link'
 	* 
+	* @param $link_type
 	* @return string
 	*/
 	public function get_formatted_passages($link_type = '') {

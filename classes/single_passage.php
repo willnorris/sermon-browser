@@ -1,11 +1,21 @@
 <?php
 /**
+* classes/single_passage.php
+* 
+* Contains the mbsb_single_passage class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Passages
+*/
+
+/**
 * Class that stores and handles a single passage
 * It should only be called by the mbsb_passages class
 * 
 * @package SermonBrowser
-* @subpackage passage
-* @author Mark Barnes
+* @subpackage Passages
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 
 class mbsb_single_passage {
@@ -26,7 +36,7 @@ class mbsb_single_passage {
 	* Returns a formatted Bible reference (e.g. John 3:1-16, not John 3:1-John 3:16)
 	* 
 	* @param boolean $ignore_first_book = true if the first book name should not be outputted
-	* @param boolean $ignore_first)chapter = true if the first chapter should not be outputted
+	* @param boolean $ignore_first_chapter = true if the first chapter should not be outputted
 	* @return string - the formatted reference
 	*/
 	public function get_formatted ($ignore_first_book = false, $ignore_first_chapter = false) {
@@ -116,10 +126,6 @@ class mbsb_single_passage {
 				}
 			}
 		}
-	}
-	
-	private function biblia_book_names() {
-		return array ('', 'Ge', 'Ex', 'Le', 'Nu', 'De', 'Jos', '');
 	}
 }
 ?>

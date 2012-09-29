@@ -6,8 +6,8 @@
 * It's a PHP file so that we can internationalise it, etc.
 * 
 * @package SermonBrowser
-* @subpackage scripts
-* @author Mark Barnes
+* @subpackage Javascript
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 header ('Cache-Control: max-age=31536000, public');
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+31536000)); 
@@ -18,12 +18,14 @@ if ($date)
 ?>
 var mbsb_ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>';
 
+// Sets a cookie
 function mbsbSetCookie(cookieName, value, numDays) {
 	var expiryDate = new Date();
 	expiryDate.setDate(expiryDate.getDate() + numDays);
 	var cookieValue = cookieName + "=" + escape(value) + ((numDays==null) ? "" : "; expires=" + expiryDate.toUTCString()) + "; path=<?php echo esc_js(COOKIEPATH) ?>";
 	document.cookie = cookieValue;
 }
+//Gets a cookie
 function mbsbGetCookie(cookieName) {
     var nameEQ = cookieName + "=";
     var ca = document.cookie.split(';');
@@ -40,6 +42,7 @@ function mbsbGetCookie(cookieName) {
 * The main jQuery function that runs when the document is ready
 */
 jQuery(document).ready(function($) {
+	// Hide hidden sections
 	hideableSections = new Array("sermon_media_list", "preacher_preacher", "series_series", "service_service", "passages_wrap");
 	$.each (hideableSections, function (key, value) {
 		var display = mbsbGetCookie('sermon_browser_section_'+value);
@@ -48,6 +51,7 @@ jQuery(document).ready(function($) {
 			var a = $('div.'+value).prev().find('a.heading_pointer').html('&#9654;');
 		}
 	});
+	//Listen for the Bible dropdown to be changed
 	$('#bible_dropdown').change(function() {
 		var version = $(this).val();
 		mbsbSetCookie('sermon_browser_bible', version, 365);
@@ -67,6 +71,7 @@ jQuery(document).ready(function($) {
 			});
 		});
 	});
+	// Listen for collapsible headings to be clicked
 	$('div.mbsb_collapsible_heading').on('click', 'a.heading_pointer', function (e) {
 		var button = $(this);
 		var to_collapse = $(this).parents('div.mbsb_collapsible_heading').next();
@@ -83,6 +88,7 @@ jQuery(document).ready(function($) {
 		}
 		e.preventDefault();
 	});
+	//Listen for a 'read more' to be clicked
 	$('div.sermon_sermon').on('click', 'a.read_more', function (e) {
 		var section_type = $(this).attr('id').substr(10);
 		var data = {

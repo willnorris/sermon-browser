@@ -6,8 +6,8 @@
 * It's a PHP file so that we can internationalise it and add nonces
 * 
 * @package SermonBrowser
-* @subpackage scripts
-* @author Mark Barnes
+* @subpackage Javascript
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 header ('Cache-Control: max-age=43200, public'); // 12 hours, to make sure that nonces remain current
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+43200)); 

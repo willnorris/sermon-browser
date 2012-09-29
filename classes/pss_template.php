@@ -1,21 +1,24 @@
 <?php
 /**
+* classes/pss_template.php
+* 
+* Contains the mbsb_pss_template class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Templates
+*/
+
+/**
 * Class that provides basic functionality to be extended by the preacher, series and services classes
 * 
 * This class should never be called directly, but only extended
 * 
 * @package SermonBrowser
-* @subpackage pss_template
-* @author Mark Barnes
+* @subpackage Templates
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_pss_template extends mbsb_spss_template {
-
-	/**
-	* The excerpt of the preacher/series/sermon
-	* 
-	* @var string
-	*/
-	private $excerpt;
 
 	/**
 	* Returns the number of sermons preached by the current preacher/in the current series/at the current service

@@ -1,12 +1,22 @@
 <?php
 /**
+* classes/spss_template.php
+* 
+* Contains the mbsb_spss_template class
+* 
+* @author Mark Barnes <mark@sermonbrowser.com>
+* @package SermonBrowser
+* @subpackage Templates
+*/
+
+/**
 * Class that provides basic functionality to be extended by the sermon, preacher, series and services classes
 * 
 * This class should never be called directly, but only extended
 * 
 * @package SermonBrowser
-* @subpackage spss_template
-* @author Mark Barnes
+* @subpackage Templates
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_spss_template extends mbsb_mpspss_template {
 
@@ -52,6 +62,13 @@ class mbsb_spss_template extends mbsb_mpspss_template {
 	*/
 	protected $name;
 	
+	/**
+	* The preacher/series/sermon excerpt
+	* 
+	* @var string
+	*/
+	protected $excerpt;
+
 	/**
 	* The type of object this is (e.g. 'sermon', 'series', etc.)
 	* 

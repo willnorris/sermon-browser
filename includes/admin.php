@@ -3,8 +3,8 @@
 * Include file called when is_admin() is true
 * 
 * @package SermonBrowser
-* @subpackage admin
-* @author Mark Barnes
+* @subpackage Admin
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 add_action ('admin_init', 'mbsb_admin_init');
 
@@ -726,7 +726,7 @@ function mbsb_get_sermons_from_media_id ($post_id) {
 /**
 * Returns an array of sermon objects that have a particular media item attached
 * 
-* @param integer $post_id - the post id of the media item
+* @param integer $media_post_id - the post id of the media item
 * @return boolean|array - False on failure, an array of sermon objects on success.
 */
 function mbsb_unattach_media_item_from_all_sermons ($media_post_id) {
@@ -828,13 +828,16 @@ function mbsb_tb_iframe_admin_head() {
 * 
 * Returns the HTML of the attachment link in the media library table on the edit sermons page.
 * 
-* @param string $actions
+* @param string $existing_actions
 * @return string
 */
 function mbsb_add_admin_attachment_row_actions($existing_actions) {
 	return '<a class="unattach" href="#">'.__('Unattach', MBSB).'</a>';
 }
 
+/**
+* Handles the AJAX call requesting Bible text
+*/
 function mbsb_ajax_mbsb_get_bible_text() {
 	$sermon = new mbsb_sermon ($_POST['post_id']);
 	$text = $sermon->passages->get_text_output($_POST['version']);
@@ -847,6 +850,9 @@ function mbsb_ajax_mbsb_get_bible_text() {
 	die();
 }
 
+/**
+* Handles the AJAX call requesting more details of the preacher
+*/
 function mbsb_ajax_mbsb_get_preacher_details() {
 	$sermon = new mbsb_sermon ($_POST['post_id']);
 	if ($sermon->preacher->present)
@@ -854,6 +860,9 @@ function mbsb_ajax_mbsb_get_preacher_details() {
 	die();
 }
 
+/**
+* Handles the AJAX call requesting more details of the series
+*/
 function mbsb_ajax_mbsb_get_series_details() {
 	$sermon = new mbsb_sermon ($_POST['post_id']);
 	if ($sermon->series->present)
@@ -861,6 +870,9 @@ function mbsb_ajax_mbsb_get_series_details() {
 	die();
 }
 
+/**
+* Handles the AJAX call requesting more details of the service
+*/
 function mbsb_ajax_mbsb_get_service_details() {
 	$sermon = new mbsb_sermon ($_POST['post_id']);
 	if ($sermon->service->present)
@@ -868,6 +880,14 @@ function mbsb_ajax_mbsb_get_service_details() {
 	die();
 }
 
+/**
+* Supplies updated messages when a custom post type is saved
+* 
+* Filters post_updated_messages
+* 
+* @param array - the existing messages
+* @return string
+*/
 function mbsb_post_updated_messages($messages) {
 	$post_ID = (int)$_GET['post'];
 	$post = get_post ($post_id);

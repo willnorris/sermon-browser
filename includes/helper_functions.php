@@ -4,14 +4,22 @@
 * that provide fairly generic funtionality, such as getting and setting WordPress options.
 * 
 * @package SermonBrowser
-* @subpackage helper_functions
-* @author Mark Barnes
+* @subpackage Common
+* @author Mark Barnes <mark@sermonbrowser.com>
 */
 
 // Temporary filter whilst the Options Page is being built.
 add_filter ('option_sermon_browser_2', 'mbsb_default_options');
 add_filter ('default_option_sermon_browser_2', 'mbsb_default_options');
 
+/**
+* Supplies the default SermonBrowser options
+* 
+* Temporarily filters option_sermon_browser_2 and default_option_sermon_browser_2
+* 
+* @param array $all_options
+* @return array
+*/
 function mbsb_default_options($all_options) {
 	//Standard options
 	$all_options ['audio_shortcode'] = '[mejsaudio src="%URL%"]';
@@ -20,16 +28,6 @@ function mbsb_default_options($all_options) {
 	$all_options ['use_embedded_bible_'.get_locale()] = false;
 	$all_options ['allow_user_to_change_bible'] = true;
 	//Advanced options
-	if (!file_exists(mbsb_plugin_dir_path('includes/api_keys.php'))) {
-		$message = "To test Bible API functionality you should create a file called api_keys.php in the includes folder.<br/><br/>";
-		$message .= "<code>&lt;?php<br/>&nbsp;&nbsp;&nbsp;\$all_options ['biblia_api_key'] = '{insert your API key here}';<br/>&nbsp;&nbsp;&nbsp;\$all_options ['biblesearch_api_key'] = '{insert your API key here}';<br/>&nbsp;&nbsp;&nbsp;\$all_options ['esv_api_key'] = 'IP';</br>?&gt;</code>";
-		$message .= "<ul>";
-		$message .= '<li><a href="http://api.biblia.com/docs/API_Keys">Biblia.com</a></li>';
-		$message .= '<li><a href="http://bibles.org/pages/api/signup">biblesearch.org</a></li>';
-		$message .= '</ul><p>If you cannot get an API key, you can create the file with empty strings, which will then ignore that API service.</p>';
-		wp_die($message);
-	}
-	require ('api_keys.php');
 	$all_options ['ignored_biblia_bibles'] = array ('emphbbl', 'kjv', 'KJVAPOC', 'scrmorph', 'wh1881mr');
 	$all_options ['ignored_biblesearch_bibles'] = array('KJV', 'KJVA');
 	$all_options ['hide_other_language_bibles'] = false;
@@ -53,6 +51,16 @@ function mbsb_default_options($all_options) {
 	$all_options ['embedded_bible_parameters'] = array ('width' => '100%', 'height' => '600', 'layout' => 'normal', 'historyButtons' => true, 'navigationBox' => true, 'resourcePicker' => true, 'shareButton' => true, 'textSizeButton' =>true);
 	//Options still to be implemented
 	$all_options ['append_passage_to_title_in_feed'] = true;
+	if (!file_exists(mbsb_plugin_dir_path('includes/api_keys.php'))) {
+		$message = "To test Bible API functionality you should create a file called api_keys.php in the includes folder.<br/><br/>";
+		$message .= "<code>&lt;?php<br/>&nbsp;&nbsp;&nbsp;\$all_options ['biblia_api_key'] = '{insert your API key here}';<br/>&nbsp;&nbsp;&nbsp;\$all_options ['biblesearch_api_key'] = '{insert your API key here}';<br/>&nbsp;&nbsp;&nbsp;\$all_options ['esv_api_key'] = 'IP';</br>?&gt;</code>";
+		$message .= "<ul>";
+		$message .= '<li><a href="http://api.biblia.com/docs/API_Keys">Biblia.com</a></li>';
+		$message .= '<li><a href="http://bibles.org/pages/api/signup">biblesearch.org</a></li>';
+		$message .= '</ul><p>If you cannot get an API key, you can create the file with empty strings, which will then ignore that API service.</p>';
+		wp_die($message);
+	}
+	require ('api_keys.php');
 	return $all_options;
 	
 	/*
@@ -73,9 +81,9 @@ function mbsb_default_options($all_options) {
 /**
 * Gets a SermonBrowser option
 * 
-* @param string $option_name - the name of the option
+* @param string $option - the name of the option
 * @param mixed $default - the default value if the option does not exist
-* @param return mixed
+* @return mixed
 */
 function mbsb_get_option ($option, $default = false) {
 	$all_options = get_option ('sermon_browser_2');
