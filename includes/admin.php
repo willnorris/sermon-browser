@@ -838,6 +838,11 @@ function mbsb_add_admin_attachment_row_actions($existing_actions) {
 function mbsb_ajax_mbsb_get_bible_text() {
 	$sermon = new mbsb_sermon ($_POST['post_id']);
 	$text = $sermon->passages->get_text_output($_POST['version']);
+	// Hack to avoid document.write after the page has loaded
+	$script_start = stripos($text, '<script>');
+	$script_end = stripos ($text, '</script>', $script_start);
+	if ($script_start && $script_end)
+		$text = str_replace(array('<noscript>', '</noscript>'), '', substr($text, 0, $script_start).substr($text, $script_end+9));
 	echo $text;
 	die();
 }
