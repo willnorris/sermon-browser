@@ -150,6 +150,8 @@ class mbsb_online_bibles {
 	/**
 	* Checks to see whether an equivalent Bible has already been added to the bibles array
 	* 
+	* @param string $code
+	* @param string $service
 	* @return boolean
 	*/
 	private function equivalent_bible_exists ($code, $service) {
@@ -263,7 +265,5 @@ class mbsb_online_bibles {
 		else
 			return $code;
 	}
-
-
 }
 ?>

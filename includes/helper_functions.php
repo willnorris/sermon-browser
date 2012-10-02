@@ -190,5 +190,4 @@ function in_array_ic ($needle, $haystack) {
 function array_key_exists_ic ($key, $search) {
 	return array_key_exists (strtolower($key), array_change_key_case($search));
 }
-
 ?>
