@@ -10,7 +10,6 @@ add_action ('admin_init', 'mbsb_admin_init');
 
 /**
 * Runs on the admin_init action.
-* 
 */
 function mbsb_admin_init () {
 	// All admin pages
@@ -514,7 +513,8 @@ function mbsb_ajax_attachment_insert() {
 * 
 * Designed to be used by the posts_where_paged filter
 * 
-* @param mixed $where
+* @param string $where
+* @return string
 */
 function mbsb_add_guid_to_where ($where) {
 	return "{$where} AND guid='{$_POST['url']}'";

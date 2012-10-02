@@ -79,7 +79,8 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* 
 	* The array has two keys, 'index' (its order), and 'result'. 'result' is an array with the keys 'book', 'chapter', and 'verse'
 	* 
-	* @param boolean|array - false on failure, the array on success
+	* @param string $s
+	* @return boolean|array - false on failure, the array on success
 	*/
 	private function convert_raw_format_to_array ($s) {
 		if (strlen($s) === 13 && substr($s, 8, 1) == '.' && ($left = substr($s, 0, 7)) && ((integer)$left == $left) && ($right = substr($s, 9, 4)) && ((integer)$right == $right))
@@ -123,6 +124,8 @@ class mbsb_passages extends mbsb_mpspss_template {
 	
 	/**
 	* Returns an array of mbsb_single_passage objects
+	* 
+	* return array
 	*/
 	public function get_passage_objects() {
 		return $this->passages;
@@ -369,12 +372,13 @@ class mbsb_passages extends mbsb_mpspss_template {
 	/**
 	* Returns the frontend output for all the passages
 	* 
-	* @return atring
+	* @return string
 	*/
 	public function get_output () {
 		if ($this->passages) {
+			$bibles = new mbsb_online_bibles();
 			if (mbsb_get_option('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale())) {
-				$output = $this->do_div (mbsb_get_bible_list_dropdown(), 'bible_dropdown');
+				$output = $this->do_div ($bibles->get_bible_list_dropdown(), 'bible_dropdown');
 			} else
 				$output = '';
 			$preferred_version = mbsb_get_preferred_version();
@@ -392,7 +396,8 @@ class mbsb_passages extends mbsb_mpspss_template {
 	public function get_text_output($version = '') {
 		if ($version == '')
 			$version = mbsb_get_preferred_version();
-		$bible = mbsb_get_bible_details($version);
+		$bibles = new mbsb_online_bibles();
+		$bible = $bibles->get_bible_details($version);
 		$output = '';
 		$c = count ($this->passages);
 		foreach ($this->passages as $index => $p) {

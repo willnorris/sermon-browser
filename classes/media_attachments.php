@@ -22,7 +22,7 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 	/**
 	* An array of mbsb_single_media_attachment objects
 	* 
-	* @var mbsb_single_media_attachment[]
+	* @var array
 	*/
 	private $attachments;
 	
@@ -39,7 +39,6 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 	* Queries the postmeta table for attachments
 	* 
 	* @param integer $post_id - the post_id of the sermon
-	* @return mbsb_media_attachments
 	*/
 	function __construct($post_id) {
 		global $wpdb;
@@ -67,7 +66,7 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 	* Returns an array of attachments
 	* 
 	* @param boolean $most_recent_first - true if the attachments are to be ordered in descending meta ID order, false otherwise
-	* @return mbsb_single_media_attachment[]
+	* @return array
 	*/
 	public function get_attachments($most_recent_first = false) {
 		if ($this->present) {
@@ -188,4 +187,3 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 
 }
 ?>
-

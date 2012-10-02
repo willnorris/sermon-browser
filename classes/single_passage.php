@@ -89,7 +89,8 @@ class mbsb_single_passage {
 			$output .= "></biblia:bible>";
 			return $output;
 		} else {
-			$bible = mbsb_get_bible_details($preferred_version);
+			$bibles = new mbsb_online_bibles();
+			$bible = $bibles->get_bible_details($preferred_version);
 			if (!$bible)
 				return false;
 			else {

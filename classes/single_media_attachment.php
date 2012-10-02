@@ -267,6 +267,8 @@ class mbsb_single_media_attachment {
 	
 	/**
 	* Returns the mime type of the attachment
+	* 
+	* @return string
 	*/
 	public function get_mime_type() {
 		if ($this->attachment_type == 'url')
@@ -279,6 +281,8 @@ class mbsb_single_media_attachment {
 	
 	/**
 	* Returns a friendly name for the mime type of the attachment
+	* 
+	* @return string
 	*/
 	public function get_friendly_mime_type() {
 		$mime_type = $this->get_mime_type();

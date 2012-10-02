@@ -28,8 +28,8 @@ function mbsb_default_options($all_options) {
 	$all_options ['use_embedded_bible_'.get_locale()] = false;
 	$all_options ['allow_user_to_change_bible'] = true;
 	//Advanced options
-	$all_options ['ignored_biblia_bibles'] = array ('emphbbl', 'kjv', 'KJVAPOC', 'scrmorph', 'wh1881mr');
-	$all_options ['ignored_biblesearch_bibles'] = array('KJV', 'KJVA');
+	$all_options ['inactive_bibles'] = array ('emphbbl', 'elberfelder', 'ostervald', 'bibelselskap', 'croatia', 'newvulgate', 'esperanto', 'manxgaelic', 'aleppo', 'turkish', 'afrikaans', 'amharic', 'scotsgaelic', 'bohairic', 'georgian', 'schlachter', 'rv1858', 'danish', 'tamajaq', 'peshitta', 'coptic', 'chamorro', 'kabyle', 'ukranian', 'turkish', 'martin', 'makarij', 'nkb', 'kms', 'bkr', 'vulgate', 'sagradas', 'modernhebrew', 'easternarmenian', 'estonian', 'albanian', 'wolof', 'pyharaamattu', 'finnish1776', 'zhuromsky', 'gothic', 'sahidic', 'moderngreek', 'breton', 'westernarmenian', 'uma', 'elberfelder1905', 'latvian', 'xhosa', 'swedish', 'riveduta', 'basque', 'judson', 'lithuanian', 'giovanni', 'thai', 'tischendorf', 'tagalog', 'pyharaamattu1933', 'vietnamese', 'web', 'hnv');
+	$all_options ['inactive_bible_languages'] = array('kor', 'rum');
 	$all_options ['hide_other_language_bibles'] = false;
 	$all_options ['add_all_types_to_admin_bar'] = false;
 	//Standard template options
@@ -69,6 +69,9 @@ function mbsb_default_options($all_options) {
 	mbsb_attachment_row_actions
 	mbsb_get_option_*
 	mbsb_add_media_types
+	mbsb_preaching_central_bibles
+	mbsb_language_code_table
+	mbsb_equivalent_bibles
 	
 	Actions available:
 	==================
@@ -165,4 +168,27 @@ function mbsb_format_bytes ($bytes) {
 	elseif ($bytes < 1024000000000)
 		return number_format($bytes/1000000000, 2).' '.__('GB', MBSB);
 }
+
+/**
+* Case insensitive version of in_array
+* 
+* @param mixed $needle
+* @param array $haystack
+* @return boolean
+*/
+function in_array_ic ($needle, $haystack) {
+	return in_array(strtolower($needle), array_change_key_case($haystack));
+}
+
+/**
+* Case insensitive version of array_key_exists
+* 
+* @param mixed $key
+* @param array $search
+* @return boolean
+*/
+function array_key_exists_ic ($key, $search) {
+	return array_key_exists (strtolower($key), array_change_key_case($search));
+}
+
 ?>

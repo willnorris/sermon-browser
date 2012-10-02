@@ -160,14 +160,14 @@ function mbsb_join_book ($join) {
 * It does not use transient caching, as we will still use an out of date cache if the page is unreachable.
 * 
 * @param string $url
-* @param integer $cached_time
+* @param integer $max_cached_time
 * @param string $user_name
 * @param string $password
 */
-function mbsb_cached_download ($url, $cached_time = 604800, $user_name = '', $password = '') { // 1 week
+function mbsb_cached_download ($url, $max_cached_time = 604800, $user_name = '', $password = '') { // 1 week
 	$option_name = 'mbsb_cache_'.md5($url.$user_name.$password);
 	$cached = get_option ($option_name);
-	if ($cached && (($cached['time']+$cached_time) > time()))
+	if ($cached && (($cached['time']+$max_cached_time) > time()))
 		return $cached ['data'];
 	else {
 		$args = array();
@@ -176,7 +176,7 @@ function mbsb_cached_download ($url, $cached_time = 604800, $user_name = '', $pa
 		$download = wp_remote_get ($url, $args);
 		if (is_wp_error ($download) || $download['response']['code'] != 200) {
 			if ($cached) {
-				$cached ['time'] = time() - $cached_time + min($cached_time, 21600); // Use out-of-date cache for no more than 6 more hours, or the specified cache time
+				$cached ['time'] = time() - $max_cached_time + min($max_cached_time, 21600); // Use out-of-date cache for no more than 6 more hours, or the specified cache time
 				update_option ($option_name, $cached);
 				return $cached ['data'];
 			}
@@ -199,94 +199,6 @@ function mbsb_get_preferred_version() {
 }
 
 /**
-* Returns the HTML for the Bible dropdown list
-* 
-* @param string $selected_version - the Bible version currently selected
-* @return string
-*/
-function mbsb_get_bible_list_dropdown($selected_version = '') {
-	$bibles = mbsb_get_bible_list();
-	if ($selected_version == '')
-		$selected_version = mbsb_get_preferred_version();
-	$local_bibles = array();
-	$other_bibles = array ('<optgroup label="'.__('Other languages', MBSB).'">');
-	foreach ($bibles as $code => $bible) {
-		if ($code == $selected_version)
-			$insert = ' selected="selected"';
-		else
-			$insert = '';
-		if (strpos(get_locale(), "{$bible['language_code']}_") === 0)
-			$local_bibles[] = "<option{$insert} value=\"{$code}\">{$bible['name']}</option>";
-		else
-			$other_bibles[] = "<option{$insert} value=\"{$code}\">{$bible['language_name']}: {$bible['name']}</option>";
-	}
-	$other_bibles[] = '</optgroup>';
-	if (mbsb_get_option('hide_other_language_bibles'))
-		$bibles = $local_bibles;
-	else
-		$bibles = array_merge ($local_bibles, $other_bibles);
-	return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select><div id="passages_bible_loader"></div>';
-}
-
-
-/**
-* Returns an array of available Bibles
-* 
-* @return array
-*/
-function mbsb_get_bible_list() {
-	$bibles = get_transient ('mbsb_bible_list_'.get_locale());
-	$bibles = array(); // Remove this line before production
-	if (!$bibles) {
-		///esvapi.org
-		$bibles['esv'] = array ('name' => 'English Standard Version', 'language_code' => 'en', 'language_name' => mbsb_bible_language_from_code('en'), 'service' => 'esv');
-		//api.biblia.com
-		if ($api_key = mbsb_get_api_key('biblia')) {
-			$biblia_bibles = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.mbsb_get_api_key('biblia'));
-			if ($biblia_bibles['response']['code'] == 200) {
-				$biblia_bibles = json_decode($biblia_bibles['body']);
-				if (isset($biblia_bibles->bibles)) {
-					$biblia_ignore = (array)mbsb_get_option ('ignored_biblia_bibles');
-					$biblia_bibles = $biblia_bibles->bibles;
-					foreach ($biblia_bibles as $bible) {
-						$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
-						if (strtolower(substr($bible->title, 0, 4)) == 'the ')
-							$bible->title = substr($bible->title, 4);
-						if (!in_array($bible->bible, $biblia_ignore) && !array_key_exists(strtolower($bible->bible), array_change_key_case($bibles)))
-							$bibles[$bible->bible] = array ('name' => $bible->title, 'language_code' => $bible->languages[0], 'language_name' => mbsb_bible_language_from_code($bible->languages[0]), 'service' => 'biblia');
-					}
-				}
-			}
-		}
-		//biblesearch.americanbible.org
-		$biblesearch_bibles = mbsb_cached_download('http://bibles.org/versions.xml', 604800, mbsb_get_api_key('biblesearch'));
-		if ($biblesearch_bibles['response']['code'] == 200) {
-			$biblesearch_bibles = new SimpleXMLElement($biblesearch_bibles['body']);
-			if (isset($biblesearch_bibles->version)) {
-				$biblesearch_ignore = (array)mbsb_get_option ('ignored_biblesearch_bibles');
-				$biblesearch_bibles = $biblesearch_bibles->version;
-				foreach ($biblesearch_bibles as $bible) {
-					$required_vars = array ('id', 'name', 'lang', 'lang_code');
-					if (!in_array((string)$bible->id, $biblesearch_ignore) && !array_key_exists(strtolower($bible->id), array_change_key_case($bibles)))
-						$bibles[(string)$bible->id] = array ('name' => (string)$bible->name, 'language_code' => mbsb_get_bible_search_lang((string)$bible->lang, (string)$bible->lang_code), 'language_name' => mbsb_bible_language_from_code(mbsb_get_bible_search_lang($bible->lang, $bible->lang_code)), 'service' => 'biblesearch');
-				}
-				//Some Bibles are missing from the list, and need to be added manually
-				$additional_bibles ['BCN'] = array ('name' => 'Beibl Cymraeg Newydd (Argraffiad Diwygiedig)', 'language_code' => 'cy');
-				$additional_bibles ['BNET'] = array ('name' => 'Beibl.net', 'language_code' => 'cy');
-				$additional_bibles ['BWM'] = array ('name' => 'William Morgan Bible', 'language_code' => 'cy');
-				foreach ($additional_bibles as $id => $bible)
-					if (!in_array($id, $biblesearch_ignore) && !isset($bibles[$id]))
-						$bibles[$id] = array ('name' => $bible['name'], 'language_code' => $bible['language_code'], 'language_name' => mbsb_bible_language_from_code($bible['language_code']), 'service' => 'biblesearch');
-				
-			}
-		}
-		uasort ($bibles, 'mbsb_bible_sort');
-		set_transient ('mbsb_bible_list_'.get_locale(), $bibles, 604800);
-	}
-	return $bibles;
-}
-
-/**
 * Gets an Bible API key
 * 
 * @param string $service
@@ -296,60 +208,4 @@ function mbsb_get_api_key($service) {
 	return mbsb_get_option("{$service}_api_key");
 }
 
-/**
-* Returns the details of a Bible version
-* 
-* @param string $version
-* @return array
-*/
-function mbsb_get_bible_details($version) {
-	$bibles = mbsb_get_bible_list();
-	if (isset($bibles[$version]))
-		return $bibles[$version];
-	else
-		return false;
-}
-
-/**
-* Sorts a Bible list
-* 
-* Designed for use with the uasort function
-* 
-* @param array $a
-* @param array $b
-* @return integer
-*/
-function mbsb_bible_sort ($a, $b) {
-	if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
-		return 0;
-	elseif ($a['language_name'] == $b['language_name'])
-		return ($a['name'] > $b['name']) ? 1 : -1;
-	else
-		return ($a['language_name'] > $b['language_name']) ? 1 : -1;
-}
-	
-/**
-* Returns a language given a language code
-* 
-* @param string $code
-* @return string
-*/
-function mbsb_bible_language_from_code ($code) {
-	$languages = array ('ar' => __('Arabic', MBSB), 'cy' => __('Welsh'), 'el' => __('Greek', MBSB), 'en' => __('English', MBSB), 'eo' => __('Esperanto', MBSB), 'fi' => __('Finnish', MBSB), 'fr' => __('French', MBSB), 'gl' => __('Gaelic'), 'it' => __('Italian', MBSB), 'nl' => __('Dutch', MBSB), 'pt' => __('Portuguese', MBSB), 'ru' => __('Russian', MBSB), 'sp' => __('Spanish', MBSB));
-	if (isset($languages[$code]))
-		return $languages[$code];
-	else
-		return $code;
-}
-
-/**
-* Ensures the language codes are consistent
-* 
-* @param string $lang
-* @param string $lang_code
-* @return string
-*/
-function mbsb_get_bible_search_lang($lang, $lang_code) {
-	return substr($lang, 0, 2);
-}
 ?>
