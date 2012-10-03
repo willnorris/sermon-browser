@@ -403,7 +403,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 		foreach ($this->passages as $index => $p) {
 			if ($c > 1 && $version != 'esv')
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
-			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version}");
+			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version} lang_{$bible['language_code']}");
 		}
 		if (mbsb_get_option ('use_embedded_bible_'.get_locale())) {
 			$text = esc_html(sprintf(__('Powered by %s', MBSB), 'SermonBrowser'));

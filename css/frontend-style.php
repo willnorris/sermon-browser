@@ -102,6 +102,11 @@ div.passage_heading {
 	font-weight: bold;
 	font-size: 175%;
 }
+#passages_text div.lang_ara, #passages_text div.lang_heb {
+	direction: rtl;
+	font-size: 150%;
+	line-height: 150%;
+}
 #passages_powered_by {
 	margin: 0;
 	padding: 0;
