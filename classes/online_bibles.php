@@ -75,6 +75,7 @@ class mbsb_online_bibles {
 				}
 			}
 			uasort ($this->bibles, array($this, 'bible_sort'));
+			$this->inactivate_equivalent_bibles();
 			set_transient ('mbsb_bible_list_'.get_locale(), $this->bibles, 604800);
 		}
 	}
@@ -92,7 +93,7 @@ class mbsb_online_bibles {
 			$language = $this->convert_language_code ($language);
 		} elseif (strlen($language) > 3)
 			$language = substr($language, 0, 3);
-		$inactive = in_array_ic($code, mbsb_get_option('inactive_bibles')) || in_array_ic ($language, mbsb_get_option ('inactive_bible_languages')) || (mbsb_get_option('hide_other_language_bibles') && $language != $this->convert_language_code(substr(get_locale(), 0, 2)) || $this->equivalent_bible_exists($code, $service));
+		$inactive = in_array_ic($code, mbsb_get_option('inactive_bibles')) || in_array_ic ($language, mbsb_get_option ('inactive_bible_languages')) || (mbsb_get_option('hide_other_language_bibles') && $language != $this->convert_language_code(substr(get_locale(), 0, 2)) || array_key_exists_ic ($code, $this->bibles));
 		$this->bibles[$code] = array ('name' => $name, 'language_code' => $language, 'service' => $service, 'active' => !$inactive);
 	}
 	
@@ -145,23 +146,22 @@ class mbsb_online_bibles {
 	}
 	
 	/**
-	* Checks to see whether an equivalent Bible has already been added to the bibles array
-	* 
-	* @param string $code
-	* @param string $service
-	* @return boolean
+	* Inactivates Bibles that have an equivalent, to remove duplicates
 	*/
-	private function equivalent_bible_exists ($code, $service) {
-		if (array_key_exists_ic ($code, $this->bibles))
-			return true;
+	private function inactivate_equivalent_bibles () {
 		$equivalents = $this->equivalent_bibles();
-		if (!isset($equivalents["{$code}_{$service}"]))
-			return false;
-		$equivalent_code = $equivalents ["{$code}_{$service}"];
-		foreach ($equivalents as $k => $v)
-			if ($v == $equivalent_code && isset($this->bibles[(substr($k, 0, strpos($k, '_')))]))
-				return true;
-		return false;
+		foreach ($equivalents as $bible => $common_name)
+			if (!isset($e_index[$common_name])) {
+				$common_versions = array_keys ($equivalents, $common_name);
+				$this_version_active = false;
+				foreach ($common_versions as &$c) {
+					$c = substr($c, 0, strpos($c, '_'));
+					if ($this_version_active && isset($this->bibles[$c]['active']) && $this->bibles[$c]['active'])
+						$this->bibles[$c]['active'] = false;
+					elseif (!$this_version_active && isset($this->bibles[$c]['active']) && $this->bibles[$c]['active'])
+						$this_version_active = true;
+				}
+			}
 	}
 	
 	/**
