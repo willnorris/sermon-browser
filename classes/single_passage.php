@@ -124,7 +124,34 @@ class mbsb_single_passage {
 							$output .= (string)$bible_text->meta->fums;
 						return $output;
 					}
+				} elseif ($bible['service'] == 'preaching_central') {
+					$url = "http://api.preachingcentral.com/bible.php?passage=".urlencode($this->formatted)."&version=".$preferred_version;
+					$bible_text = mbsb_cached_download ($url);
+					if ($bible_text['response']['code'] == '200')
+						return $this->xml_to_html($bible_text['body'], $bible['service']);
+					
 				}
+			}
+		}
+	}
+	
+	private static function xml_to_html ($xml, $service) {
+		if ($service == 'preaching_central') {
+			$xml = new SimpleXMLElement($xml);
+			if (isset($xml->range->item)) {
+				$output = array();
+				$previous_chapter = 0;
+				foreach ($xml->range->item as $item) {
+					if ($item->chapter != $previous_chapter) {
+						if ($item->verse == 1)
+							$output[] = ($previous_chapter == 0 ? '' : '</p><p>')."<span class=\"chapter_num\">{$item->chapter}</span> {$item->text}";
+						else
+							$output[] = "<sup>{$item->verse}</sup>{$item->text}";
+						$previous_chapter = $item->chapter;
+					} else
+						$output[] = "<sup>{$item->verse}</sup>{$item->text}";
+				}
+				return '<p>'.implode (' ', $output).'</p>';
 			}
 		}
 	}

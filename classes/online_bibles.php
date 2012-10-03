@@ -26,13 +26,10 @@ class mbsb_online_bibles {
 	private $bibles;
 
 	/**
-	* Returns the list of available Bibles
-	* 
-	* @return array
+	* Creates the object, and populates the list of available Bibles
 	*/
 	public function __construct() {
 		$this->bibles = get_transient ('mbsb_bible_list_'.get_locale());
-		$this->bibles = array(); // Remove this line before production
 		if (!$this->bibles) {
 			///esvapi.org
 			$this->add_bible ('esv', 'English Standard Version', 'eng', 'esv');
@@ -132,10 +129,10 @@ class mbsb_online_bibles {
 		$equiv ['westcott-parsed_preaching_central'] = 'westcotthort';
 		$equiv ['smith-vandyke_preaching_central'] = 'smithvandyke';
 		$equiv ['ARVANDYKE_biblia'] = 'smithvandyke';
+		$equiv ['lxx-noaccents_preaching_central'] = 'greeklxx';
 		$equiv ['lxx_preaching_central'] = 'greeklxx';
 		$equiv ['lxx-parsed_preaching_central'] = 'greeklxx';
 		$equiv ['lxx-parsed-noaccents_preaching_central'] = 'greeklxx';
-		$equiv ['lxx-noaccents_preaching_central'] = 'greeklxx';
 		$equiv ['lsg_biblia'] = 'louissegond';
 		$equiv ['ls1910_preaching_central'] = 'louissegond';
 		$equiv ['AMP_biblesearch'] = 'amplified';
@@ -191,7 +188,7 @@ class mbsb_online_bibles {
 	* @param string $selected_version - the Bible version currently selected
 	* @return string
 	*/
-	function get_bible_list_dropdown($selected_version = '') {
+	public function get_bible_list_dropdown($selected_version = '') {
 		if ($selected_version == '')
 			$selected_version = mbsb_get_preferred_version();
 		$local_bibles = array();
@@ -237,7 +234,7 @@ class mbsb_online_bibles {
 	* @param array $b
 	* @return integer
 	*/
-	function bible_sort ($a, $b) {
+	public function bible_sort ($a, $b) {
 		$a['language_name'] = $this->language_from_code ($a['language_code']);
 		$b['language_name'] = $this->language_from_code ($b['language_code']);
 		if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
@@ -254,7 +251,7 @@ class mbsb_online_bibles {
 	* @param string $code
 	* @return string
 	*/
-	function language_from_code ($code) {
+	private function language_from_code ($code) {
 		if (!($languages = wp_cache_get ('mbsb_get_languages', get_locale()))) {
 			$languages = array ('ara' => __('Arabic', MBSB), 'cym' => __('Welsh'), 'grc' => __('Greek', MBSB), 'eng' => __('English', MBSB), 'epo' => __('Esperanto', MBSB), 'fin' => __('Finnish', MBSB), 'fra' => __('French', MBSB), 'gla' => __('Gaelic'), 'ita' => __('Italian', MBSB), 'nld' => __('Dutch', MBSB), 'por' => __('Portuguese', MBSB), 'rus' => __('Russian', MBSB), 'spa' => __('Spanish', MBSB), 'zho' => __('Chinese', MBSB), 'deu' => __('German', MBSB), 'heb' => __('Hebrew', MBSB));
 			$languages = apply_filters ('mbsb_language_codes', $languages);

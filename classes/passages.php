@@ -275,7 +275,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* @return array
 	*/
 	public static function bible_books() {
-		$mbsb_bible_books = wp_cache_get ('mbsb_bible_books', get_bloginfo('language'));
+		$mbsb_bible_books = wp_cache_get ('mbsb_bible_books', get_locale());
 		if (!$mbsb_bible_books){
 			$books = array(__('Genesis, Gen, Gn', MBSB), __('Exodus, Exod, Ex', MBSB), __('Leviticus, Lev, Lv', MBSB), __('Numbers, Num, Nm', MBSB), __('Deuteronomy, Deut, Dt', MBSB), __('Joshua, Josh, Jo', MBSB), __('Judges, Judg, Jgs', MBSB), __('Ruth, Ru', MBSB), __('1 Samuel, 1 Sam, 1Sam, 1Sm, 1 Sm', MBSB), __('2 Samuel, 2 Sam, 2Sam, 2 Sm, 2Sm', MBSB), __('1 Kings, 1 Kgs, 1Kgs', MBSB), __('2 Kings, 2 Kgs, 2Kgs', MBSB), __('1 Chronicles, 1 Chron, 1Chron, 1 Chr, 1Chr', MBSB), __('2 Chronicles, 2 Chron, 2Chron, 2 Chr, 2Chr',MBSB), __('Ezra, Ezr', MBSB), __('Nehemiah, Neh', MBSB), __('Esther, Est', MBSB), __('Job, Jb', MBSB), __('Psalm, Psalms, Pss, Psa, Ps', MBSB), __('Proverbs, Prov, Prv', MBSB), __('Ecclesiastes, Eccles, Eccl', MBSB), __('Song of Solomon, Song of Songs, Song of Sol, Songs, Sg', MBSB), __('Isaiah, Isa, Is', MBSB), __('Jeremiah, Jer', MBSB), __('Lamentations, Lam', MBSB), __('Ezekiel, Ezek, Ezk, Ez', MBSB), __('Daniel, Dan, Dn', MBSB), __('Hosea, Hos', MBSB), __('Joel, Jl', MBSB), __('Amos, Am', MBSB), __('Obadiah, Obad, Ob', MBSB), __('Jonah, Jon', MBSB), __('Micah, Mic, Mi', MBSB), __('Nahum, Nah, Na', MBSB), __('Habakkuk, Hab, Hb', MBSB), __('Zephaniah, Zeph, Zep', MBSB), __('Haggai, Hag, Hg', MBSB), __('Zechariah, Zech, Zec', MBSB), __('Malachi, Mal', MBSB), __('Matthew, Matt, Mt', MBSB), __('Mark, Mk', MBSB), __('Luke, Lk', MBSB), __('John, Jn', MBSB), __('Acts', MBSB), __('Romans, Rom', MBSB), __('1 Corinthians, 1 Cor, 1Cor', MBSB), __('2 Corinthians, 2 Cor, 2Cor', MBSB), __('Galatians, Gal', MBSB), __('Ephesians, Eph', MBSB), __('Philippians, Phil', MBSB), __('Colossians, Col', MBSB), __('1 Thessalonians, 1 Thess, 1Thess, 1 Thes, 1Thes, 1 Th, 1Th', MBSB), __('2 Thessalonians, 2 Thess, 2Thess, 2 Thes, 2Thes, 2 Th, 2Th', MBSB), __('1 Timothy, 1 Tim, 1Tim, 1 Ti, 1Ti, 1 Tm, 1Tm', MBSB), __('2 Timothy, 2 Tim, 2Tim, 2 Ti, 2Ti, 2 Tm, 2Tm', MBSB), __('Titus, Tit, Ti', MBSB), __('Philemon, Philem, Phlm', MBSB), __('Hebrews, Heb', MBSB), __('James, Jas', MBSB), __('1 Peter, 1Peter, 1 Pet, 1Pet, 1 Pt, 1Pt', MBSB), __('2 Peter, 2Peter, 2 Pet, 2Pet, 2 Pt, 2Pt', MBSB), __('1 John, 1John, 1 Jn, 1Jn', MBSB), __('2 John, 2John, 2 Jn, 2Jn', MBSB), __('3 John, 3John, 3 Jn, 3Jn', MBSB), __('Jude', MBSB), __('Revelation, Rev, Rv', MBSB));
 			foreach ($books as $num => $names) {
@@ -285,7 +285,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 				foreach ($names as $name)
 					$mbsb_bible_books[trim($name)] = $num;
 			}
-			wp_cache_set ('mbsb_bible_books', $mbsb_bible_books, get_bloginfo('language'));
+			wp_cache_set ('mbsb_bible_books', $mbsb_bible_books, get_locale());
 		}
 		return $mbsb_bible_books;
 	}
