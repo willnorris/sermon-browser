@@ -129,7 +129,11 @@ class mbsb_single_passage {
 					$bible_text = mbsb_cached_download ($url);
 					if ($bible_text['response']['code'] == '200')
 						return $this->xml_to_html($bible_text['body'], $bible['service']);
-					
+				} elseif ($bible['service'] == 'netbible') {
+					$url = "http://labs.bible.org/api/?formatting=para&type=xml&passage=".urlencode($this->formatted);
+					$bible_text = mbsb_cached_download ($url);
+					if ($bible_text['response']['code'] == '200')
+						return $this->xml_to_html($bible_text['body'], $bible['service']);
 				}
 			}
 		}
@@ -152,6 +156,29 @@ class mbsb_single_passage {
 						$output[] = "<sup>{$item->verse}</sup>{$item->text}";
 				}
 				return '<p>'.implode (' ', $output).'</p>';
+			}
+		} elseif ($service == 'netbible') {
+			$xml = new SimpleXMLElement($xml);
+			if (isset($xml->item)) {
+				$output = array();
+				$previous_chapter = 0;
+				foreach ($xml->item as $item) {
+					if ($item->chapter != $previous_chapter) {
+						if ($item->verse == 1)
+							$insert = "<span class=\"chapter_num\">{$item->chapter}</span> ";
+						else
+							$insert = "<sup>{$item->verse}</sup>";
+						$previous_chapter = $item->chapter;
+					} else
+						$insert = "<sup>{$item->verse}</sup>";
+					if (strpos($item->text, '<p') === FALSE)
+						$output[] = "{$insert}{$item->text}";
+					else {
+						$pos = strpos($item->text, '>', strpos ($item->text, '<p'));
+						$output[] = substr($item->text, 0, $pos+1).$insert.substr($item->text, $pos+1);
+					}
+				}
+				return implode (' ', $output);
 			}
 		}
 	}

@@ -98,7 +98,7 @@ div.passage_heading {
 #passages_text div.biblesearch_BCN span.divineName span.divineCaps {
 	text-transform: none;
 }
-#passages_text div.preaching_central span.chapter_num {
+#passages_text div.preaching_central span.chapter_num, #passages_text div.netbible span.chapter_num {
 	font-weight: bold;
 	font-size: 175%;
 }

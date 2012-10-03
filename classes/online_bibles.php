@@ -33,6 +33,8 @@ class mbsb_online_bibles {
 		if (!$this->bibles) {
 			///esvapi.org
 			$this->add_bible ('esv', 'English Standard Version', 'eng', 'esv');
+			//NET Bible API
+			$this->add_bible ('net', 'NET Bible', 'eng', 'netbible');
 			//api.biblia.com
 			if ($api_key = mbsb_get_api_key('biblia')) {
 				$bibles_xml = mbsb_cached_download('http://api.biblia.com/v1/bible/find?key='.$api_key, 604800);
