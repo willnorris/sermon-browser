@@ -139,6 +139,13 @@ class mbsb_single_passage {
 		}
 	}
 	
+	/**
+	* Converts the XML returned by a Bible API service into HTML
+	* 
+	* @param string $xml
+	* @param string $service
+	* @return string
+	*/
 	private static function xml_to_html ($xml, $service) {
 		if ($service == 'preaching_central') {
 			$xml = new SimpleXMLElement($xml);
