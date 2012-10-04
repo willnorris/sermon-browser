@@ -796,10 +796,10 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 	if ($option == 'meta-box-order_mbsb_sermon' && empty($result))
 		return array ('advanced' => '', 'normal' => 'mbsb_sermon_details,mbsb_sermon_media,mbsb_description,commentstatusdiv,commentsdiv', 'side' => 'submitdiv,tagsdiv-post_tag,postimagediv');
-	elseif ($option == 'meta-box-order_mbsb_service' && empty($result))
-		return array ('advanced' => '', 'normal' => 'mbsb_service_details,commentstatusdiv,commentsdiv', 'side' => 'submitdiv,postimagediv');
 	elseif ($option == 'meta-box-order_mbsb_service' && isset($_GET['iframe']) && $_GET['iframe'] == 'true')
 		return array ('advanced' => '', 'normal' => 'mbsb_service_details,commentstatusdiv,commentsdiv,postimagediv,submitdiv');
+	elseif ($option == 'meta-box-order_mbsb_service' && empty($result))
+		return array ('advanced' => '', 'normal' => 'mbsb_service_details,commentstatusdiv,commentsdiv', 'side' => 'submitdiv,postimagediv');
 	elseif (($option == 'meta-box-order_mbsb_preacher' || $option == 'meta-box-order_mbsb_series') && isset($_GET['iframe']) && $_GET['iframe'] == 'true')
 		return array ('advanced' => '', 'normal' => 'postimagediv,commentstatusdiv,submitdiv', 'side' => '');
 	else
