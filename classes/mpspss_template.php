@@ -10,14 +10,12 @@
 */
 
 /**
-* Class that provides basic functionality to be extended by the media, passage, sermon, preacher, series and services classes
-* 
-* This class should never be called directly, but only extended
+* Abstract class that provides basic functionality to be extended by the media, passage, sermon, preacher, series and services classes
 * 
 * @package SermonBrowser
 * @subpackage Templates
 */
-class mbsb_mpspss_template {
+abstract class mbsb_mpspss_template {
 
 	/**
 	* True if the object contains passages, false otherwise
@@ -27,13 +25,6 @@ class mbsb_mpspss_template {
 	public $present;
 
 
-	/**
-	* Warning function to prevent the class being called directly
-	*/
-	public function __construct() {
-		wp_die ('The mbsb_spss_template class should not be called directly, but only extended by other classes.');
-	}
-	
 	/**
 	* Helper function, that wraps text in a div
 	* 

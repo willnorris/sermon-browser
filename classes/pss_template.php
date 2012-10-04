@@ -10,15 +10,13 @@
 */
 
 /**
-* Class that provides basic functionality to be extended by the preacher, series and services classes
-* 
-* This class should never be called directly, but only extended
+* Abstract class that provides basic functionality to be extended by the preacher, series and services classes
 * 
 * @package SermonBrowser
 * @subpackage Templates
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
-class mbsb_pss_template extends mbsb_spss_template {
+abstract class mbsb_pss_template extends mbsb_spss_template {
 
 	/**
 	* Returns the number of sermons preached by the current preacher/in the current series/at the current service
