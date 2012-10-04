@@ -114,7 +114,7 @@ function mbsb_register_custom_post_types() {
 					'show_in_menu' => 'sermon-browser',
 					'supports' => array ('title', 'thumbnail', 'comments'), // No 'editor' support because we'll add it in a positionable box later
 					'taxonomies' => array ('post_tag'),
-					'has_archive' => __('sermons', MBSB),
+					'has_archive' => false,
 					'query_var' => 'sermon',
 					'register_meta_box_cb' => 'mbsb_sermon_meta_boxes',
 					'rewrite' => array('slug' => '/'.__('sermons', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
@@ -129,7 +129,7 @@ function mbsb_register_custom_post_types() {
 					'capability_type' => 'page',
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
-					'has_archive' => __('series', MBSB),
+					'has_archive' => false,
 					'rewrite' => array('slug' => '/'.__('series', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_series', $args);
 	//Preachers post type
@@ -142,7 +142,7 @@ function mbsb_register_custom_post_types() {
 					'capability_type' => 'page',
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
-					'has_archive' => __('preachers', MBSB),
+					'has_archive' => false,
 					'rewrite' => array('slug' => '/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_preacher', $args);
 	//Services post type
@@ -155,7 +155,7 @@ function mbsb_register_custom_post_types() {
 					'capability_type' => 'page',
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments'),
-					'has_archive' => __('services', MBSB),
+					'has_archive' => false,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
 					'rewrite' => array('slug' => '/'.__('services', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
 	register_post_type ('mbsb_service', $args);
