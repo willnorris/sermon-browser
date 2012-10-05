@@ -66,6 +66,7 @@ function mbsb_default_options($all_options) {
 	/*
 	Filters available:
 	=======================
+	mbsb_theme
 	mbsb_attachment_row_actions
 	mbsb_get_option_*
 	mbsb_add_media_types

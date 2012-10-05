@@ -108,11 +108,12 @@ function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
 * Designed to filter posts_join_paged
 * 
 * @param string $join
+* @param string $join_type
 * @return string
 */
-function mbsb_join_preacher ($join) {
+function mbsb_join_preacher ($join, $join_type = 'INNER') {
 	global $wpdb;
-	return $join." INNER JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preacher')";
+	return $join." {$join_type} JOIN {$wpdb->prefix}postmeta AS preachers_postmeta ON ({$wpdb->prefix}posts.ID = preachers_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS preachers ON (preachers.ID = preachers_postmeta.meta_value AND preachers.post_type = 'mbsb_preacher')";
 }
 
 /**
@@ -121,11 +122,12 @@ function mbsb_join_preacher ($join) {
 * Designed to filter posts_join_paged
 * 
 * @param string $join
+* @param string $join_type
 * @return string
 */
-function mbsb_join_service ($join) {
+function mbsb_join_service ($join, $join_type = 'INNER') {
 	global $wpdb;
-	return $join." INNER JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_service')";
+	return $join." {$join_type} JOIN {$wpdb->prefix}postmeta AS services_postmeta ON ({$wpdb->prefix}posts.ID = services_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS services ON (services.ID = services_postmeta.meta_value AND services.post_type = 'mbsb_service')";
 }
 
 /**
@@ -134,11 +136,12 @@ function mbsb_join_service ($join) {
 * Designed to filter posts_join_paged
 * 
 * @param string $join
+* @param string $join_type
 * @return string
 */
-function mbsb_join_series ($join) {
+function mbsb_join_series ($join, $join_type = 'INNER') {
 	global $wpdb;
-	return $join." INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
+	return $join." {$join_type} JOIN {$wpdb->prefix}postmeta AS series_postmeta ON ({$wpdb->prefix}posts.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
 }
 
 /**
@@ -147,11 +150,12 @@ function mbsb_join_series ($join) {
 * Designed to filter posts_join_paged
 * 
 * @param string $join
+* @param string $join_type
 * @return string
 */
-function mbsb_join_book ($join) {
+function mbsb_join_book ($join, $join_type = 'INNER') {
 	global $wpdb;
-	return $join." INNER JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
+	return $join." {$join_type} JOIN {$wpdb->prefix}postmeta AS book_postmeta ON ({$wpdb->prefix}posts.ID = book_postmeta.post_ID AND book_postmeta.meta_key IN ('passage_start', 'passage_end'))";
 }
 
 /**
@@ -208,4 +212,25 @@ function mbsb_get_api_key($service) {
 	return mbsb_get_option("{$service}_api_key");
 }
 
+function mbsb_get_sermon_count_by ($type, $sermon_ids = '') {
+	global $wpdb;
+	if (is_array($sermon_ids))
+		 $sermon_ids = 'AND sermons.ID IN ('.implode (', ', $sermon_ids).')';
+	if (in_array($type, array('series', 'service', 'preacher')))
+		return $wpdb->get_results("SELECT {$type}.ID as id, {$type}.post_title AS name, COUNT(*) AS count FROM {$wpdb->prefix}posts AS sermons INNER JOIN {$wpdb->prefix}postmeta INNER JOIN {$wpdb->prefix}posts AS {$type} WHERE post_id=sermons.ID AND {$type}.post_type='mbsb_{$type}' AND {$wpdb->prefix}postmeta.meta_key='{$type}' AND {$type}.ID={$wpdb->prefix}postmeta.meta_value {$sermon_ids} GROUP BY {$type}.ID ORDER BY name");
+	elseif ($type == 'tag')
+		return $wpdb->get_results("SELECT tag.term_id as id, tag.name AS name, COUNT(*) AS count FROM {$wpdb->prefix}posts AS sermons INNER JOIN {$wpdb->prefix}term_relationships as term_rel INNER JOIN {$wpdb->prefix}terms AS tag INNER JOIN {$wpdb->prefix}term_taxonomy AS term_tax WHERE term_rel.term_taxonomy_id=term_tax.term_taxonomy_id AND term_rel.object_id=sermons.ID AND term_tax.term_id=tag.term_id {$sermon_ids} GROUP BY tag.term_id ORDER BY name");
+	elseif ($type == 'book')
+		return $wpdb->get_results("SELECT LEFT({$wpdb->prefix}postmeta.meta_value,2) as id, LEFT({$wpdb->prefix}postmeta.meta_value,2) AS name, COUNT(DISTINCT sermons.ID) AS count FROM {$wpdb->prefix}posts AS sermons INNER JOIN {$wpdb->prefix}postmeta WHERE post_id=sermons.ID AND ({$wpdb->prefix}postmeta.meta_key='passage_start' OR {$wpdb->prefix}postmeta.meta_key='passage_end') {$sermon_ids} GROUP BY id");
+	elseif ($type == 'year')
+		return $wpdb->get_results("SELECT ID as id, YEAR(post_date) AS name, COUNT(*) AS count FROM {$wpdb->prefix}posts AS sermons WHERE 1=1 {$sermon_ids} GROUP BY name");
+}
+
+function mbsb_get_bible_book_name ($book_id) {
+	$books = mbsb_passages::bible_books();
+	if (isset($books['mbsb_index'][$book_id]))
+		return $books['mbsb_index'][$book_id];
+	else
+		return false;
+}
 ?>

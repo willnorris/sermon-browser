@@ -19,6 +19,9 @@ $color_white = 'white';
 $font_headings = 'sans-serif';
 $font_body = 'serif';
 ?>
+.mbsb_hide {
+	display: none;
+}
 div.sermon_media_list {
 	clear:both;
 }
@@ -117,4 +120,17 @@ div.passage_heading {
 	margin: 0;
 	padding: 0;
 	border: none;
+}
+form#sermon_filter_form table {
+	width: auto;
+	border: none;
+	border-collapse: collapse;
+}
+form#sermon_filter_form table tr td, form#sermon_filter_form table tr th {
+	border: none;
+	text-align: left;
+	padding: 0 0.5em;
+}
+form#sermon_filter_form table select {
+	margin: 0;
 }

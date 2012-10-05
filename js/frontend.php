@@ -102,5 +102,12 @@ jQuery(document).ready(function($) {
 		});
 		e.preventDefault();
 	});
+	//Listen for the 'filter by' menu to be changed
+	$('#filter_filter_by').change(function() {
+		var filter = $(this).val();
+		$('td.mbsb_hide').hide();
+		$('#'+filter+'_dropdown').show();
+	});
+	
 	<?php do_action ('mbsb_frontend_jQuery'); ?>
 });
