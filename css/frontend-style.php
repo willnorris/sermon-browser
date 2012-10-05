@@ -121,16 +121,12 @@ div.passage_heading {
 	padding: 0;
 	border: none;
 }
-form#sermon_filter_form table {
-	width: auto;
-	border: none;
-	border-collapse: collapse;
+#sermon_filter_form select {
+	margin: 0 1em 0 0;
 }
-form#sermon_filter_form table tr td, form#sermon_filter_form table tr th {
-	border: none;
-	text-align: left;
-	padding: 0 0.5em;
+#sermon_filter_form #sermon_filter {
+	float:left;
 }
-form#sermon_filter_form table select {
-	margin: 0;
+#sermon_filter_form #sermon_control {
+	float:right;
 }

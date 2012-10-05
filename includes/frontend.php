@@ -162,30 +162,48 @@ function mbsb_get_sermon_filters() {
 		$tags = mbsb_get_sermon_count_by ('tag', $sermon_ids);
 		$years = mbsb_get_sermon_count_by ('year', $sermon_ids);
 		$books = mbsb_get_sermon_count_by ('book', $sermon_ids);
-		$filter_by = array (array('id' => '', 'name' => ''), array('id' => 'preacher', 'name' => __('Preacher')), array('id' => 'series', 'name' => __('Series')), array('id' => 'service', 'name' => __('Service')), array('id' => 'tag', 'name' => __('Tags')), array('id' => 'book', 'name' => __('Passage')), array('id' => 'year', 'name' => __('Date')));
 		$output = '<form id="sermon_filter_form">';
-		$output .= '<table id="sermon_filter">';
-		$output .= '<tr><td><label for="filter_by">'.__('Filter by:', MBSB).'</label></td></tr><tr><td>'.mbsb_do_filter_dropdown('filter_by', $filter_by).'</td>';
-		$output .= '<td class="mbsb_hide" id="preacher_dropdown">'.mbsb_do_filter_dropdown ('preacher', $preachers).'</td>';
-		$output .= '<td class="mbsb_hide" id="series_dropdown">'.mbsb_do_filter_dropdown ('series', $series).'</td>';
-		$output .= '<td class="mbsb_hide" id="tag_dropdown">'.mbsb_do_filter_dropdown ('tags', $tags).'</td>';
-		$output .= '<td class="mbsb_hide" id="service_dropdown">'.mbsb_do_filter_dropdown ('service', $services).'</td>';
-		$output .= '<td class="mbsb_hide" id="book_dropdown">'.mbsb_do_filter_dropdown ('book', $books).'</td>';
-		$output .= '<td class="mbsb_hide" id="year_dropdown">'.mbsb_do_filter_dropdown ('year', $years).'</td>';
-		$output .= '</tr></table>';
+		$output .= '<div id="sermon_control">';
+		$dropdown = array (array('id' => 'recent', 'name' => __('Most recent', MBSB)), array('id' => 'oldest', 'name' => __('Oldest', MBSB)), array ('id' => 'title', 'name' => __('Title', MBSB)), array('id' => 'preacher', 'name' => __('Preacher', MBSB)), array('id' => 'series', 'name' => __('Series', MBSB)), array('id' => 'service', 'name' => __('Service', MBSB)), array('id' => 'book', 'name' => __('Passage', MBSB)));
+		$output .= '<label for="sort_by">'.__('Sort:', MBSB).'</label> '.mbsb_do_filter_dropdown('sort_by', $dropdown);
+		$dropdown = array (5, 10, 20, 50);
+		if (!in_array(get_option('posts_per_page'), $dropdown)) {
+			$dropdown[] = get_option('posts_per_page');
+			sort ($dropdown);
+		}
+		$dropdown[] = 'all';
+		foreach ($dropdown as $k => $v)
+			$dropdown[$k] = array ('id' => $v, 'name' => $v);
+		$output .= '<label for="per_page">'.__('Num:', MBSB).'</label> '.mbsb_do_filter_dropdown('per_page', $dropdown, '', get_option('posts_per_page'));
+		$output .= '</div>';
+		$output .= '<div id="sermon_filter">';
+		$dropdown = array (array('id' => '', 'name' => ''), array('id' => 'preacher', 'name' => __('Preacher')), array('id' => 'year', 'name' => __('Date')), array('id' => 'series', 'name' => __('Series')), array('id' => 'service', 'name' => __('Service')), array('id' => 'tag', 'name' => __('Tags')), array('id' => 'book', 'name' => __('Passage')));
+		$output .= '<label for="filter_by">'.__('Filter:', MBSB).'</label> '.mbsb_do_filter_dropdown('filter_by', $dropdown);
+		$output .= mbsb_do_filter_dropdown ('preacher', $preachers, 'mbsb_hide');
+		$output .= mbsb_do_filter_dropdown ('series', $series, 'mbsb_hide');
+		$output .= mbsb_do_filter_dropdown ('tag', $tags, 'mbsb_hide');
+		$output .= mbsb_do_filter_dropdown ('service', $services, 'mbsb_hide');
+		$output .= mbsb_do_filter_dropdown ('book', $books, 'mbsb_hide');
+		$output .= mbsb_do_filter_dropdown ('year', $years, 'mbsb_hide');
+		$output .= '</div>';
 		$output .= '</form>';
 		return $output;
 	}
 }
 
-function mbsb_do_filter_dropdown ($field_name, $values) {
+function mbsb_do_filter_dropdown ($field_name, $values, $class='', $selected = null) {
 	if ($values) {
-		$output = "<select id=\"filter_{$field_name}\" name=\"{$field_name}\">";
+		if ($class != '')
+			$class = " class=\"{$class}\"";
+		if (isset($_POST[$field_name]))
+			$selected = $_POST[$field_name];
+		$output = "<select id=\"filter_{$field_name}_dropdown\" name=\"{$field_name}\"{$class}>";
 		foreach ($values as $v) {
 			$v = (object)$v;
 			if ($field_name == 'book')
 				$v->name = mbsb_get_bible_book_name($v->name);
-			$output .= '<option value="'.esc_html($v->id).'">'.esc_html($v->name).(isset($v->count) ? ' ('.$v->count.')' : '').'</option>';
+			$insert = ($v->id == $selected) ? ' selected="selected"' : '';
+			$output .= '<option value="'.esc_html($v->id).'"'.$insert.'>'.esc_html($v->name).(isset($v->count) ? ' ('.$v->count.')' : '').'</option>';
 		}
 		return $output .'</select>';
 	}

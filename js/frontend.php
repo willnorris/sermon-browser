@@ -43,6 +43,7 @@ function mbsbGetCookie(cookieName) {
 */
 jQuery(document).ready(function($) {
 	// Hide hidden sections
+	$('select.mbsb_hide').hide();
 	hideableSections = new Array("sermon_media_list", "preacher_preacher", "series_series", "service_service", "passages_wrap");
 	$.each (hideableSections, function (key, value) {
 		var display = mbsbGetCookie('sermon_browser_section_'+value);
@@ -103,10 +104,10 @@ jQuery(document).ready(function($) {
 		e.preventDefault();
 	});
 	//Listen for the 'filter by' menu to be changed
-	$('#filter_filter_by').change(function() {
+	$('#filter_filter_by_dropdown').change(function() {
 		var filter = $(this).val();
-		$('td.mbsb_hide').hide();
-		$('#'+filter+'_dropdown').show();
+		$('select.mbsb_hide').hide();
+		$('#filter_'+filter+'_dropdown').show();
 	});
 	
 	<?php do_action ('mbsb_frontend_jQuery'); ?>
