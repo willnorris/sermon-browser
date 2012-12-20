@@ -890,7 +890,7 @@ function mbsb_ajax_mbsb_get_service_details() {
 */
 function mbsb_post_updated_messages($messages) {
 	$post_ID = (int)$_GET['post'];
-	$post = get_post ($post_id);
+	$post = get_post ($post_ID);
 	if ($post->post_type == 'mbsb_sermon')
 		$messages['mbsb_sermon'] = array(
 			 0 => '', // Unused. Messages start at index 1.
