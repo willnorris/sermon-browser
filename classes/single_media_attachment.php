@@ -47,7 +47,7 @@ class mbsb_single_media_attachment {
 	*/
 	public function __construct ($meta_id) {
 		$data = get_metadata_by_mid('post', $meta_id);
-		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'object')))
+		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'embed')))
 			$this->present = false;
 		else {
 			$this->attachment_type = $data->meta_value ['type'];
