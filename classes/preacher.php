@@ -38,8 +38,8 @@ class mbsb_preacher extends mbsb_pss_template {
 		global $post;
 		$showing_preacher_page = (isset($post->ID) && ($post->ID == $this->id));
 		$output = '';
-		if (mbsb_get_option('preacher_image') != 'none' && has_post_thumbnail($this->id))
-			$output .= $this->do_div (get_the_post_thumbnail($this->id, 'mbsb_preacher', array ('class' => mbsb_get_option('preacher_image'))), 'preacher_image');
+		if (mbsb_get_option('preacher_image_pos') != 'none' && has_post_thumbnail($this->id))
+			$output .= $this->do_div (get_the_post_thumbnail($this->id, 'mbsb_preacher', array ('class' => mbsb_get_option('preacher_image_pos'))), 'preacher_image');
 		$description = ($excerpt_length == 0) ? $this->get_description() : '<p>'.$this->get_excerpt($excerpt_length).'</p>';
 		$output .= $this->do_div ($description, 'description');
 		if (mbsb_get_option('show_statistics_on_sermon_page') && !$showing_preacher_page) {

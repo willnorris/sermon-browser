@@ -9,7 +9,7 @@
 */
 
 // Temporary filter whilst the Options Page is being built.
-add_filter ('option_sermon_browser_2', 'mbsb_default_options');
+//add_filter ('option_sermon_browser_2', 'mbsb_default_options');
 add_filter ('default_option_sermon_browser_2', 'mbsb_default_options');
 
 /**
@@ -20,47 +20,41 @@ add_filter ('default_option_sermon_browser_2', 'mbsb_default_options');
 * @param array $all_options
 * @return array
 */
-function mbsb_default_options($all_options) {
-	//Standard options
-	$all_options ['audio_shortcode'] = '[mejsaudio src="%URL%"]';
-	$all_options ['video_shortcode'] = '[mejsvideo src="%URL%"]';
+function mbsb_default_options($all_options=array() ) {
+	//Media Player Options
+	$all_options ['audio_shortcode'] = '[audio src="%URL%"]';
+	$all_options ['video_shortcode'] = '[video src="%URL%"]';
+	//Layout Options
+	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
+	$all_options ['hide_media_heading'] = false;
+	$all_options ['sermon_image_pos'] = 'alignright';
+	$all_options ['preacher_image_pos'] = 'alignright';
+	$all_options ['series_image_pos'] = 'alignright';
+	$all_options ['add_download_links'] = true;
+	$all_options ['sermon_image_size'] = array ('width' => '230', 'height' => '129', 'crop' => false);
+	$all_options ['preacher_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['series_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['excerpt_length'] = 55;
+	$all_options ['show_statistics_on_sermon_page'] = true;
+	//Bible Version Options
 	$all_options ['bible_version_'.get_locale()] = 'esv';
 	$all_options ['use_embedded_bible_'.get_locale()] = false;
 	$all_options ['allow_user_to_change_bible'] = true;
-	//Advanced options
+	//Bible API Keys
+	$all_options ['biblia_api_key'] = '';
+	$all_options ['biblesearch_api_key'] = '';
+	$all_options ['esv_api_key'] = 'IP';
+	//Advanced options (not currently shown on Options screen)
 	$all_options ['inactive_bibles'] = array ('emphbbl', 'elberfelder', 'ostervald', 'bibelselskap', 'croatia', 'newvulgate', 'esperanto', 'manxgaelic', 'aleppo', 'turkish', 'afrikaans', 'amharic', 'scotsgaelic', 'bohairic', 'georgian', 'schlachter', 'rv1858', 'danish', 'tamajaq', 'peshitta', 'coptic', 'chamorro', 'kabyle', 'ukranian', 'turkish', 'martin', 'makarij', 'nkb', 'kms', 'bkr', 'vulgate', 'sagradas', 'modernhebrew', 'easternarmenian', 'estonian', 'albanian', 'wolof', 'pyharaamattu', 'finnish1776', 'zhuromsky', 'gothic', 'sahidic', 'moderngreek', 'breton', 'westernarmenian', 'uma', 'elberfelder1905', 'latvian', 'xhosa', 'swedish', 'riveduta', 'basque', 'judson', 'lithuanian', 'giovanni', 'thai', 'tischendorf', 'tagalog', 'pyharaamattu1933', 'vietnamese', 'web', 'hnv');
 	$all_options ['inactive_bible_languages'] = array('kor', 'rum');
 	$all_options ['hide_other_language_bibles'] = false;
 	$all_options ['add_all_types_to_admin_bar'] = false;
-	//Standard template options
-	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
-	$all_options ['hide_media_heading'] = false;
-	$all_options ['sermon_image'] = 'alignright';
-	$all_options ['preacher_image'] = 'alignright';
-	$all_options ['series_image'] = 'alignright';
-	$all_options ['service_image'] = 'alignright';
-	$all_options ['color_bar'] = 'black';
-	$all_options ['add_download_links'] = true;
-	//Advanced template options
-	$all_options ['sermon_image_size'] = array ('width' => '230', 'height' => '129', 'crop' => false);
-	$all_options ['preacher_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
-	$all_options ['series_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
-	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
-	$all_options ['excerpt_length'] = 55;
-	$all_options ['show_statistics_on_sermon_page'] = true;
 	$all_options ['embedded_bible_parameters'] = array ('width' => '100%', 'height' => '600', 'layout' => 'normal', 'historyButtons' => true, 'navigationBox' => true, 'resourcePicker' => true, 'shareButton' => true, 'textSizeButton' =>true);
 	//Options still to be implemented
+	$all_options ['service_image_pos'] = 'alignright';
+	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
+	$all_options ['color_bar'] = 'black';
 	$all_options ['append_passage_to_title_in_feed'] = true;
-	if (!file_exists(mbsb_plugin_dir_path('includes/api_keys.php'))) {
-		$message = "To test Bible API functionality you should create a file called api_keys.php in the includes folder.<br/><br/>";
-		$message .= "<code>&lt;?php<br/>&nbsp;&nbsp;&nbsp;\$all_options ['biblia_api_key'] = '{insert your API key here}';<br/>&nbsp;&nbsp;&nbsp;\$all_options ['biblesearch_api_key'] = '{insert your API key here}';<br/>&nbsp;&nbsp;&nbsp;\$all_options ['esv_api_key'] = 'IP';</br>?&gt;</code>";
-		$message .= "<ul>";
-		$message .= '<li><a href="http://api.biblia.com/docs/API_Keys">Biblia.com</a></li>';
-		$message .= '<li><a href="http://bibles.org/pages/api/signup">biblesearch.org</a></li>';
-		$message .= '</ul><p>If you cannot get an API key, you can create the file with empty strings, which will then ignore that API service.</p>';
-		wp_die($message);
-	}
-	require ('api_keys.php');
 	return $all_options;
 	
 	/*
@@ -96,6 +90,22 @@ function mbsb_get_option ($option, $default = false) {
 	else
 		$return = $default;
 	return apply_filters ("mbsb_get_option_{$option}", $return);
+}
+
+/**
+* Gets a SermonBrowser default option
+*
+* @param string $option - the name of the option
+* @return mixed
+*/
+function mbsb_get_default_option ($option) {
+	$default_options = mbsb_default_options();
+	if (isset($default_options[$option])) {
+		return $default_options[$option];
+	}
+	else {
+		return null;
+	}
 }
 
 /**

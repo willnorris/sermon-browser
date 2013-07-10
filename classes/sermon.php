@@ -321,8 +321,8 @@ class mbsb_sermon extends mbsb_spss_template {
 	*/
 	private function get_main_output() {
 		$output = '';
-		if (mbsb_get_option('sermon_image') != 'none' && $this->has_thumbnail())
-			$output .= $this->do_div ($this->get_thumbnail(array ('class' => mbsb_get_option('sermon_image'))), 'sermon_image');
+		if (mbsb_get_option('sermon_image_pos') != 'none' && $this->has_thumbnail())
+			$output .= $this->do_div ($this->get_thumbnail(array ('class' => mbsb_get_option('sermon_image_pos'))), 'sermon_image');
 		$output .= $this->do_div ($this->get_description(), 'description');
 		return $this->do_div ($output, 'main');
 	}

@@ -188,9 +188,13 @@ class mbsb_online_bibles {
 	* Returns the HTML for the Bible dropdown list
 	* 
 	* @param string $selected_version - the Bible version currently selected
+	* @param string $id - the HTML "id" used for the select box.  The default ('bible_dropdown') should be used for use in the frontend
+	* @param string $name - the HTML "name" used for the select box.  The default ('') will omit the name parameter
 	* @return string
 	*/
-	public function get_bible_list_dropdown($selected_version = '') {
+	public function get_bible_list_dropdown($selected_version = '', $id='bible_dropdown', $name='') {
+		if ($name)
+			$name = 'name="'.$name.'"';
 		if ($selected_version == '')
 			$selected_version = mbsb_get_preferred_version();
 		$local_bibles = array();
@@ -211,7 +215,7 @@ class mbsb_online_bibles {
 			$bibles = $local_bibles;
 		else
 			$bibles = array_merge ($local_bibles, $other_bibles);
-		return  "<select id=\"bible_dropdown\">".implode('', $bibles).'</select><div id="passages_bible_loader"></div>';
+		return  "<select id=\"$id\" $name >".implode('', $bibles).'</select><div id="passages_bible_loader"></div>';
 	}
 
 	/**

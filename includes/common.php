@@ -233,4 +233,11 @@ function mbsb_get_bible_book_name ($book_id) {
 	else
 		return false;
 }
+
+/**
+* Returns a list of all possible frontend sections
+*/
+function mbsb_list_frontend_sections() {
+	return array('main', 'media', 'preacher', 'series', 'passages');
+}
 ?>

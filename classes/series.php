@@ -39,8 +39,8 @@ class mbsb_series extends mbsb_pss_template {
 		global $post;
 		$showing_series_page = (isset($post->ID) && ($post->ID == $this->id));
 		$output = '';
-		if (mbsb_get_option('series_image') != 'none' && has_post_thumbnail($this->id))
-			$output .= $this->do_div (get_the_post_thumbnail($this->id, 'mbsb_series', array ('class' => mbsb_get_option('series_image'))), 'series_image');
+		if (mbsb_get_option('series_image_pos') != 'none' && has_post_thumbnail($this->id))
+			$output .= $this->do_div (get_the_post_thumbnail($this->id, 'mbsb_series', array ('class' => mbsb_get_option('series_image_pos'))), 'series_image');
 		$description = ($excerpt_length == 0) ? $this->get_description() : '<p>'.$this->get_excerpt($excerpt_length).'</p>';
 		$output .= $this->do_div ($description, 'description');
 		if (mbsb_get_option('show_statistics_on_sermon_page')) {
