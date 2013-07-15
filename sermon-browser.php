@@ -215,6 +215,15 @@ function mbsb_plugins_url ($path = '') {
 }
 
 /**
+* Returns the plugin basename
+*
+* @return string
+*/
+function mbsb_plugin_basename() {
+	return plugin_basename(__FILE__);
+}
+
+/**
 * Adds various items to the admin menu bar
 */
 function mbsb_admin_bar_menu() {

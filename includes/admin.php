@@ -671,7 +671,7 @@ function mbsb_add_admin_menu() {
 	add_submenu_page('sermon-browser', __('Files', MBSB), __('Files', MBSB), 'upload_files', 'sermon-browser_files', 'mbsb_files');
 	add_submenu_page('sermon-browser', __('Options', MBSB), __('Options', MBSB), 'manage_options', 'sermon-browser_options', 'mbsb_options_admin_page');
 	add_submenu_page('sermon-browser', __('Templates', MBSB), __('Templates', MBSB), 'manage_options', 'sermon-browser_templates', 'mbsb_templates');
-	add_submenu_page('sermon-browser', __('Uninstall', MBSB), __('Uninstall', MBSB), 'edit_plugins', 'sermon-browser_uninstall', 'mbsb_uninstall');
+	add_submenu_page('sermon-browser', __('Uninstall', MBSB), __('Uninstall', MBSB), 'edit_plugins', 'sermon-browser_uninstall', 'mbsb_uninstall_admin_page');
 	add_submenu_page('sermon-browser', __('Help', MBSB), __('Help', MBSB), 'publish_posts', 'sermon-browser_help', 'mbsb_help');
 	add_submenu_page('sermon-browser', __('Pray for Japan', MBSB), __('Pray for Japan', MBSB), 'publish_posts', 'sermon-browser_japan', 'mbsb_japan');
 }
@@ -951,6 +951,86 @@ function mbsb_post_updated_messages($messages) {
 			10 => sprintf( __('Service draft updated. <a target="_blank" href="%s">Preview service</a>'), esc_url (add_query_arg ('preview', 'true', get_permalink ($post_ID)))),
 		);
 	return $messages;
+}
+
+/**
+* Display uninstall screen and perform uninstall if requested
+*/
+function mbsb_uninstall_admin_page() {
+	if (isset($_POST['uninstall']))
+		mbsb_uninstall();
+?>
+	<div class="wrap">
+		<div id="icon-sermon-browser" class="icon32 icon32-mbsb-uninstall"><br /></div>
+		<h2><?php _e('Sermon Browser Uninstall', MBSB); ?></h2>
+		
+		<form method="post">
+		<p>
+		<?php printf(__('Clicking the Uninstall button below will remove ALL Sermon Browser 2 data (sermons, preachers, series, etc.) 
+		from the database and will deactivate the Sermon Browser 2 plugin.  You will NOT be able to undo this action.  
+		If you only want to temporarily disable Sermon Browser, just deactivate it from the %sPlugins page%s.', MBSB), 
+		'<a href="'.get_admin_url(null, 'plugins.php').'">', '</a>'); ?>
+		</p>
+		<p>
+		<?php _e('Note: As this is a development release of Sermon Browser 2, we strongly recommend that you backup your WordPress 
+		database before clicking the Uninstall button, just in case something weird happens.', MBSB); ?>
+		</p>
+		<p>
+		<?php _e('Note: This Uninstall button only affects Sermon Browser 2.  Sermon Browser 1 data, if present, will remain.', MBSB); ?>
+		</p>
+		<p>
+		<?php _e('Note: The Uninstall button does not remove any files.  Your media files will remain on the server and 
+		will remain in the WordPress media library.', MBSB); ?>
+		</p>
+		<p>
+		<?php _e('Currently in the database, you have:', MBSB); ?>
+			<ul>
+				<li><?php echo ($count = wp_count_posts('mbsb_sermon', 'readable')) ? $count->publish : 0; ?> Sermons</li>
+				<li><?php echo ($count = wp_count_posts('mbsb_series', 'readable')) ? $count->publish : 0; ?> Series</li>
+				<li><?php echo ($count = wp_count_posts('mbsb_preacher', 'readable')) ? $count->publish : 0; ?> Preachers</li>
+				<li><?php echo ($count = wp_count_posts('mbsb_service', 'readable')) ? $count->publish : 0; ?> Services</li>
+			</ul>
+		</p>
+		<p class="submit">
+			<input type="submit" name="uninstall" value="<?php esc_attr_e('Uninstall', MBSB); ?>" onclick="return confirm('<?php esc_attr_e('Do you REALLY want to delete all data?', MBSB); ?>')" /></p>
+		</form>
+	</div><!-- /.wrap -->
+	<script>
+		jQuery("form").submit(function() {
+			var yes = confirm("<?php _e('Are you REALLY REALLY sure you want to remove Sermon Browser?', MBSB); ?>");
+			if(!yes) return false;
+		});
+	</script>
+<?php
+} // end mbsb_uninstall_admin_page
+
+/**
+* Uninstall plugin.
+*
+* Removes all custom post types from database (sermons, series, preachers, services)
+* Removes plugin options from database
+* Deactivates plugin
+*/
+function mbsb_uninstall() {
+	// Delete custom post types
+	$series_plural = get_posts( array('post_type' => 'mbsb_series'));
+	foreach ($series_plural as $series)
+		wp_delete_post($series->ID, true);
+	$services = get_posts( array('post_type' => 'mbsb_service'));
+	foreach ($services as $service)
+		wp_delete_post($service->ID, true);
+	$preachers = get_posts( array('post_type' => 'mbsb_preacher'));
+	foreach ($preachers as $preacher)
+		wp_delete_post($preacher->ID, true);
+	$sermons = get_posts( array('post_type' => 'mbsb_sermon'));
+	foreach ($sermons as $sermon)
+		wp_delete_post($sermon->ID, true);
+	// Delete options
+	delete_option('sermon_browser_2');
+	// Deactivate plugin
+	deactivate_plugins( mbsb_plugin_basename() );
+	// Output message
+	wp_die( __('Sermon Browser 2 has been deactivated and uninstalled.<br /><br />Back to the WordPress <a href="'.get_admin_url(null, 'plugins.php').'">Plugins page</a>.', MBSB) );
 }
 
 /**
@@ -1290,9 +1370,5 @@ function mbsb_bible_version_options_fn() {
 	$output .= "</p>\n";
 	echo $output;
 }
-
-
-
-
 
 ?>
