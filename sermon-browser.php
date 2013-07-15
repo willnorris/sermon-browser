@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Sermon Browser
+Plugin Name: Sermon Browser 2
 Plugin URI: http://www.sermonbrowser.com/
 Description: Upload video or audio sermons to your website, where they can be searched, listened to, and downloaded. Easy to use with comprehensive help and tutorials.
 Author: Mark Barnes
