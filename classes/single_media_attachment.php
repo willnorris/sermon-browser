@@ -316,7 +316,7 @@ class mbsb_single_media_attachment {
 		$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $attachment->post_date).'</td></tr></table>';
+		$output .= '<tr><th scope="row">'.__('Upload date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $attachment->post_date).'</td></tr></table>';
 		$output .= '</td></tr>';
 		return $output;
 	}
@@ -340,7 +340,7 @@ class mbsb_single_media_attachment {
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span title="'.esc_html($url_array['url']).'">'.esc_html($short_address).'</span></td></tr>';
 		if ($url_array['size'] && $this->get_mime_type() != 'text/html')
 			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $url_array['date_time']).'</td></tr></table>';
+		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $url_array['date_time']).'</td></tr></table>';
 		$output .= '</td></tr>';
 		return $output;
 	}
@@ -361,9 +361,22 @@ class mbsb_single_media_attachment {
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ('interactive').'">';
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Code', MBSB).':</th><td>'.esc_html($embed_array['code']).'</td></tr>';
-		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date (get_option('date_format'), $embed_array['date_time']).'</td></tr></table>';
+		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $embed_array['date_time']).'</td></tr></table>';
 		$output .= '</td></tr>';
 		return $output;
+	}
+	
+		/**
+	* Returns the date format to be used in the admin attachment rows on the edit sermon page
+	*
+	* @return string
+	*/
+	private function get_attachment_date_format () {
+		$default_date_format = 'F j, Y';
+		$date_format = get_option('date_format', $default_date_format);
+		if ($date_format == '')
+			$date_format = $default_date_format;
+		return $date_format;
 	}
 }
 ?>
