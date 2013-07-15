@@ -366,7 +366,7 @@ class mbsb_single_media_attachment {
 		return $output;
 	}
 	
-		/**
+	/**
 	* Returns the date format to be used in the admin attachment rows on the edit sermon page
 	*
 	* @return string
