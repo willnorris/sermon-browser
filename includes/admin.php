@@ -1030,7 +1030,7 @@ function mbsb_uninstall() {
 	// Deactivate plugin
 	deactivate_plugins( mbsb_plugin_basename() );
 	// Output message
-	wp_die( __('Sermon Browser 2 has been deactivated and uninstalled.<br /><br />Back to the WordPress <a href="'.get_admin_url(null, 'plugins.php').'">Plugins page</a>.', MBSB) );
+	wp_die( sprintf( __('Sermon Browser 2 has been deactivated and uninstalled.', MBSB).'<br /><br />'.__('Go back to the WordPress %sPlugins page%s.', MBSB), '<a href="'.get_admin_url(null, 'plugins.php').'">', '</a>') );
 }
 
 /**
