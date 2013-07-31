@@ -41,6 +41,7 @@ function mbsb_hide_all() {
 	jQuery('#insert-select').hide();
 	jQuery('#url-select').hide();
 	jQuery('#embed-select').hide();
+	jQuery('#legacy-select').hide();
 }
 
 function add_new_select (post_type, option_name, option_id) {
@@ -98,6 +99,23 @@ function mbsb_handle_url_embed (type) {
 		jQuery('#row_'+row_id).show(1200);
 	});
 }
+/**
+* Handle a legacy attachment
+*/
+function mbsb_handle_legacy (file) {
+	var data = {
+		action: 'mbsb_attach_legacy',
+		attachment: file,
+		_wpnonce: '<?php echo wp_create_nonce("mbsb_handle_legacy") ?>',
+		post_id: mbsb_sermon_id
+	};
+	jQuery.post(ajaxurl, data, function(response) {
+		response = JSON.parse (response);
+		row_id = response.row_id; 
+		jQuery('#mbsb_attached_files').prepend(response.code);
+		jQuery('#row_'+row_id).show(1200);
+	});
+}
 <?php do_action ('mbsb_add_edit_sermon_javascript'); ?>
 
 /**
@@ -140,6 +158,11 @@ jQuery(document).ready(function($) {
 		mbsb_handle_url_embed ('embed');
 		return false;
 	});
+	//Watch for the legacy button being clicked
+	$('#mbsb_attach_legacy_button').click(function() {
+		tb_show('<?php _e('Choose a file from the legacy upload folder for this sermon', MBSB);?>', '#TB_inline?inlineId=legacy_file_tree', false);
+		return false;
+	});	
 	//Watch for the unattach button being clicked
 	$('table#mbsb_attached_files').on('click', 'a.unattach', function (e) {
 		var data = {
@@ -173,6 +196,21 @@ jQuery(document).ready(function($) {
 	$('.add-date-picker').datepicker({
 		dateFormat : 'yy-mm-dd'
 	});
+	//Add the File Tree
+	$('#legacy_file_tree').fileTree({ 
+			root: '',
+			script: ajaxurl,
+			_wpnonce: '<?php echo wp_create_nonce('mbsb_jqueryFileTree') ?>',
+			action: 'mbsb_jqueryFileTree',
+			multiFolder: false
+		},
+		function(file) {
+			if ( confirm('<?php _e('Would you like to attach file ', MBSB) ?>'+file+' ?') ) {
+				tb_remove();  // close thickbox
+				mbsb_handle_legacy(file);
+			}
+		}
+	);
 <?php
 		$post_types = array ('preacher' => esc_js(__('Add a new preacher', MBSB)), 'series' => esc_js(__('Add a new series', MBSB)), 'service' => esc_js(__('Add a new service', MBSB)));
 		foreach ($post_types as $post_type => $add_message) {

@@ -8,7 +8,7 @@
 */
 add_action ('admin_init', 'mbsb_admin_init');
 if (!empty($GLOBALS['pagenow']) and ((($GLOBALS['pagenow'] == 'admin.php') and ($_GET['page'] == 'sermon-browser_options')) or ($GLOBALS['pagenow'] == 'options.php'))) {
-		add_action ('admin_init', 'mbsb_options_page_init');
+	add_action ('admin_init', 'mbsb_options_page_init');
 }
 
 /**
@@ -33,6 +33,7 @@ function mbsb_admin_init () {
 	// Ajax API calls
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
+	add_action ('wp_ajax_mbsb_attach_legacy', 'mbsb_ajax_attach_legacy');
 	add_action ('wp_ajax_mbsb_remove_attachment', 'mbsb_ajax_mbsb_remove_attachment');
 	add_action ('wp_ajax_mbsb_get_bible_text', 'mbsb_ajax_mbsb_get_bible_text');
 	add_action ('wp_ajax_nopriv_mbsb_get_bible_text', 'mbsb_ajax_mbsb_get_bible_text');
@@ -42,6 +43,7 @@ function mbsb_admin_init () {
 	add_action ('wp_ajax_nopriv_mbsb_get_service_details', 'mbsb_ajax_mbsb_get_service_details');
 	add_action ('wp_ajax_mbsb_get_series_details', 'mbsb_ajax_mbsb_get_series_details');
 	add_action ('wp_ajax_nopriv_mbsb_get_series_details', 'mbsb_ajax_mbsb_get_series_details');
+	add_action ('wp_ajax_mbsb_jqueryFileTree', 'mbsb_ajax_jqueryFileTree');
 	// Quick editing a custom post_type?
 	if (isset($_POST['action']) && $_POST['action'] == 'inline-save' && substr($_POST['post_type'], 0, 5) == 'mbsb_') {
 		$mbsb_post_type = substr($_POST['post_type'], 5);
@@ -103,8 +105,11 @@ function mbsb_onload_edit_page () {
 */
 function mbsb_onload_post_page () {
 	$screen = get_current_screen();
-	if (substr($screen->post_type, 0, 5) == 'mbsb_')
+	if (substr($screen->post_type, 0, 5) == 'mbsb_') {
 		add_filter ("get_user_option_meta-box-order_{$screen->post_type}", 'mbsb_set_default_metabox_sort_order', 10, 3);
+		wp_enqueue_script('mbsb_jqueryFileTree_js', mbsb_plugins_url('lib/jqueryFileTree/jqueryFileTree.js'), array('jquery'), '1.01.01');
+		wp_enqueue_style('mbsb_jqueryFileTree_css', mbsb_plugins_url('lib/jqueryFileTree/jqueryFileTree.css'), false, '1.01.01');
+	}
 	add_action ('admin_enqueue_scripts', 'mbsb_add_javascript_and_styles_to_admin_pages');
 	if (isset($_GET['message']))
 		add_filter ('post_updated_messages', 'mbsb_post_updated_messages');
@@ -554,6 +559,56 @@ function mbsb_ajax_attach_url_embed() {
 }
 
 /**
+* Handles the mbsb_ajax_attach_legacy AJAX request, which adds a legacy attachment
+*/
+function mbsb_ajax_attach_legacy() {
+	if (!check_ajax_referer ('mbsb_handle_legacy'))
+		die ('Suspicious behaviour blocked');
+	$sermon = new mbsb_sermon($_POST['post_id']);
+	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
+	$result = $sermon->attachments->add_legacy_attachment ($_POST['attachment']);
+	if ($result === null)
+		echo mbsb_single_media_attachment::get_json_attachment_row(false, __('That file was not found.', MBSB));
+	elseif ($result === FALSE)
+		echo mbsb_single_media_attachment::get_json_attachment_row(false, __('There was an error attaching that file to the sermon.', MBSB));
+	else
+		echo $result->get_json_attachment_row();
+	die();
+}
+
+/**
+* Handles the mbsb_jqueryFileTree AJAX request, the connector script for the legacy file picker
+*/
+function mbsb_ajax_jqueryFileTree() {
+	if (!check_ajax_referer ("mbsb_jqueryFileTree"))
+		die ('Suspicious behaviour blocked');
+	$root = trailingslashit(mbsb_get_home_path()).mbsb_get_option('legacy_upload_folder');
+	$_POST['dir'] = urldecode($_POST['dir']);
+	if( file_exists($root . $_POST['dir']) ) {
+		$files = scandir($root . $_POST['dir']);
+		natcasesort($files);
+		if( count($files) > 2 ) { /* The 2 accounts for . and .. */
+			echo "<ul class=\"jqueryFileTree\" style=\"display: none;\">";
+			// All dirs
+			foreach( $files as $file ) {
+				if( file_exists($root . $_POST['dir'] . $file) && $file != '.' && $file != '..' && is_dir($root . $_POST['dir'] . $file) ) {
+					echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"" . htmlentities($_POST['dir'] . $file) . "/\">" . htmlentities($file) . "</a></li>";
+				}
+			}
+			// All files
+			foreach( $files as $file ) {
+				if( file_exists($root . $_POST['dir'] . $file) && $file != '.' && $file != '..' && !is_dir($root . $_POST['dir'] . $file) ) {
+					$ext = preg_replace('/^.*\./', '', $file);
+					echo "<li class=\"file ext_$ext\"><a href=\"#\" rel=\"" . htmlentities($_POST['dir'] . $file) . "\">" . htmlentities($file) . "</a></li>";
+				}
+			}
+			echo "</ul>";	
+		}
+	}
+	die();
+}
+
+/**
 * Handles the AJAX request for unattaching a media attachment
 */
 function mbsb_ajax_mbsb_remove_attachment() {
@@ -612,7 +667,8 @@ function mbsb_sermon_media_meta_box() {
 					'upload' => array ('label' => __('Upload a new file', MBSB), 'div' => '<div id="upload-select" style="display:none"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_upload_media_button" name="mbsb_upload_media_button"></div>'),
 					'insert' => array ('label' => __('Insert from the Media Library', MBSB), 'div' => '<div id="insert-select" style="display:none"><input type="button" value="'.__('Insert item', MBSB).'" class="button-secondary" id="mbsb_insert_media_button" name="mbsb_insert_media_button"></div>'),
 					'url' => array ('label' => __('Enter an external URL', MBSB), 'div' => '<div id="url-select" style="display:none"><input type="text" name="mbsb_input_url" id="mbsb_input_url" size="30"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_url_button" name="mbsb_attach_url_button"></div>'),
-					'embed' => array ('label' => __('Enter an embed code', MBSB), 'div' => '<div id="embed-select" style="display:none"><input type="text" name="mbsb_input_embed" id="mbsb_input_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed_button" name="mbsb_attach_embed_button"></div>')
+					'embed' => array ('label' => __('Enter an embed code', MBSB), 'div' => '<div id="embed-select" style="display:none"><input type="text" name="mbsb_input_embed" id="mbsb_input_embed" size="60"/><input type="button" value="'.__('Attach', MBSB).'" class="button-secondary" id="mbsb_attach_embed_button" name="mbsb_attach_embed_button"></div>'),
+					'legacy' => array ('label' => __('Choose a file from legacy upload folder', MBSB), 'div' => '<div id="legacy-select" style="display:none"><input type="button" value="'.__('Select file', MBSB).'" class="button-secondary" id="mbsb_attach_legacy_button" name="mbsb_attach_legacy_button"></div>')
 					);
 	$types = apply_filters ('mbsb_add_media_types', $types);
 	foreach ($types as $type => $data)
@@ -622,6 +678,10 @@ function mbsb_sermon_media_meta_box() {
 		echo $data ['div'];
 	echo '</td></tr>';
 	echo '</table>';
+	// temp test for jqueryfiletree
+	echo '<style type="text/css">#legacy_file_tree {width: 200px; height: 400px; border-top: solid 1px #BBB; border-left: solid 1px #BBB; border-right: solid 1px #FFF; border-bottom: solid 1px #FFF; border-right: solid 1px #FFF; background: #FFF; overflow: scroll; padding: 5px;}</style>', "\n";
+	echo '<div style="display:none;" id="legacy_file_tree"></div>', "\n";
+	// end temp test for jqueryfiletree
 	echo '<table id="mbsb_attached_files" cellspacing="0" class="wp-list-table widefat fixed media">';
 	$sermon = new mbsb_sermon($post->ID);
 	$attachments = $sermon->attachments->get_attachments(true);
@@ -671,6 +731,7 @@ function mbsb_add_admin_menu() {
 	add_submenu_page('sermon-browser', __('Files', MBSB), __('Files', MBSB), 'upload_files', 'sermon-browser_files', 'mbsb_files');
 	add_submenu_page('sermon-browser', __('Options', MBSB), __('Options', MBSB), 'manage_options', 'sermon-browser_options', 'mbsb_options_admin_page');
 	add_submenu_page('sermon-browser', __('Templates', MBSB), __('Templates', MBSB), 'manage_options', 'sermon-browser_templates', 'mbsb_templates');
+	add_submenu_page('sermon-browser', __('Import', MBSB), __('Import', MBSB), 'edit_plugins', 'sermon-browser_import', 'mbsb_import_admin_page');
 	add_submenu_page('sermon-browser', __('Uninstall', MBSB), __('Uninstall', MBSB), 'edit_plugins', 'sermon-browser_uninstall', 'mbsb_uninstall_admin_page');
 	add_submenu_page('sermon-browser', __('Help', MBSB), __('Help', MBSB), 'publish_posts', 'sermon-browser_help', 'mbsb_help');
 	add_submenu_page('sermon-browser', __('Pray for Japan', MBSB), __('Pray for Japan', MBSB), 'publish_posts', 'sermon-browser_japan', 'mbsb_japan');
@@ -954,6 +1015,375 @@ function mbsb_post_updated_messages($messages) {
 }
 
 /**
+* Display Import page
+*/
+function mbsb_import_admin_page() {
+	if (isset($_POST['import']))
+		mbsb_import_from_SB1();
+	global $wpdb;
+?>
+	<div class="wrap">
+		<div id="icon-sermon-browser" class="icon32 icon32-mbsb-import"><br /></div>
+		<h2><?php _e('Sermon Browser Import', MBSB); ?></h2>
+		<p>
+		<?php _e('Sermon Browser 2 can import sermons, series, preachers, and services from Sermon Browser 1.  
+		When you import data from SB1, your SB1 data will remain untouched in the database, in case you would like to run SB1 in the future.  
+		To remove SB1 data after you import, activate SB1 and choose Uninstall from the SB1 menu.', MBSB); ?>
+		</p>
+		<p>
+		<?php _e('There is no undo for this import function.  However, you can Uninstall SB2, which will remove all SB2 data from the database.  
+		Uninstalling will remove imported data as well as any data that you have manually entered into SB2.', MBSB); ?>
+		</p>
+		<p>
+		<?php _e('We recommend that you back up your database before using this import feature.', MBSB); ?>
+		</p>
+		<hr />
+<?php
+	$import_count = array();
+	$tables = array('sb_sermons', 'sb_series', 'sb_preachers', 'sb_services');
+	foreach ($tables as $table) {
+		$table_name = $wpdb->prefix.$table;
+		if ($wpdb->get_var("SHOW TABLES LIKE '{$table_name}'") == $table_name) {
+			$import_count[$table] = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
+		}
+		else
+			$import_count[$table] = 0;
+	}
+	if ( array_values($import_count) === array(0,0,0,0) ) {
+?>
+		<p>
+		<?php _e('There is not any SB1 data found in your database.', MBSB); ?>
+		</p>
+<?php
+	}
+	else {
+?>
+		<p>
+		<?php _e('The following SB1 data has been found in your database:', MBSB); ?>
+		</p>
+		<ul>
+			<li><?php echo $import_count['sb_sermons'].' '.__('Sermons', MBSB); ?></li>
+			<li><?php echo $import_count['sb_series'].' '.__('Series', MBSB); ?></li>
+			<li><?php echo $import_count['sb_preachers'].' '.__('Preachers', MBSB); ?></li>
+			<li><?php echo $import_count['sb_services'].' '.__('Services', MBSB); ?></li>
+		</ul>
+
+		<form method="post">
+		<p class="submit">
+			<input type="submit" name="import" value="<?php esc_attr_e('Import data from SB1', MBSB); ?>" onclick="return confirm('<?php esc_attr_e('Do you REALLY want to import data from SB1?', MBSB); ?>')" />
+		</p>
+		</form>
+<?php
+	}
+?>
+	</div><!-- /.wrap -->
+<?php
+}
+
+/**
+* Import data from SB1
+*/
+function mbsb_import_from_SB1() {
+	global $wpdb;
+	// Get currently logged in user ID, used as the author of the imported posts
+	$current_user_id = wp_get_current_user()->ID;
+	// Import Series
+	$count_series_imported = 0;
+	$count_series_duplicate = 0;
+	$count_series_restored = 0;
+	$count_series_error = 0;
+	$series_xref = array();
+	$series_sb1_db = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}sb_series", OBJECT_K);
+	if ($wpdb->num_rows > 0) {
+		foreach ($series_sb1_db as $series_sb1) {
+			$series_sb2 = get_page_by_title($series_sb1->name, OBJECT, 'mbsb_series');
+			if ($series_sb2 === NULL) {
+				// add new series to SB2
+				$new_series = array(
+					'post_title'    => $series_sb1->name,
+					'post_author'   => $current_user_id,
+					'post_status'   => 'publish',
+					'post_type'     => 'mbsb_series'
+				);
+				$sb2_series_id = wp_insert_post($new_series);
+				if ( $sb2_series_id ) {
+					$count_series_imported++;
+					$series_xref[$series_sb1->id] = $sb2_series_id;
+				}
+				else {
+					$count_series_error++;
+					$series_xref[$series_sb1->id] = 0;
+				}
+			}
+			else {
+				// series already exists
+				if ($series_sb2->post_status == 'trash') {
+					// If series is in the trash, move it out of the trash.
+					wp_publish_post($series_sb2->ID);
+					$count_series_restored++;
+				}
+				else {
+					// skip import, use existing series
+					$count_series_duplicate++;
+				}
+				$series_xref[$series_sb1->id] = $series_sb2->ID;
+			}
+		}
+	}
+	// Import Services
+	$count_services_imported = 0;
+	$count_services_duplicate = 0;
+	$count_services_restored = 0;
+	$count_services_error = 0;
+	$services_xref = array();
+	$services_sb1_db = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}sb_services", OBJECT_K);
+	if ($wpdb->num_rows > 0) {
+		foreach ($services_sb1_db as $service_sb1) {
+			$service_sb2 = get_page_by_title($service_sb1->name, OBJECT, 'mbsb_service');
+			if ($service_sb2 === NULL) {
+				// add new series to SB2
+				$new_service = array(
+					'post_title'   => $service_sb1->name,
+					'post_author'  => $current_user_id,
+					'post_status'  => 'publish',
+					'post_type'    => 'mbsb_service'
+				);
+				$sb2_service_id = wp_insert_post($new_service);
+				if ( $sb2_service_id ) {
+					$count_services_imported++;
+					$services_xref[$service_sb1->id] = $sb2_service_id;
+					// Add service metadata
+					$seconds = strtotime ('1 January 1970 '.trim($service_sb1->time).' UTC');
+					if ($seconds and $seconds != '-1')
+						update_post_meta ($sb2_service_id, 'mbsb_service_time', $seconds);
+				}
+				else {
+					$count_services_error++;
+					$services_xref[$service_sb1->id] = 0;
+				}
+			}
+			else {
+				// service already exists
+				if ($service_sb2->post_status == 'trash') {
+					// If service is in the trash, move it out of the trash.
+					wp_publish_post($service_sb2->ID);
+					$count_services_restored++;
+				}
+				else {
+					// skip import, use existing series
+					$count_services_duplicate++;
+				}
+				$services_xref[$service_sb1->id] = $service_sb2->ID;
+			}
+		}
+	}
+	// Import Preachers
+	$count_preachers_imported = 0;
+	$count_preachers_duplicate = 0;
+	$count_preachers_restored = 0;
+	$count_preachers_error = 0;
+	$preacher_image_skipped = false;
+	$preachers_xref = array();
+	$preachers_sb1_db = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}sb_preachers", OBJECT_K);
+	if ($wpdb->num_rows > 0) {
+		foreach ($preachers_sb1_db as $preacher_sb1) {
+			$preacher_sb2 = get_page_by_title($preacher_sb1->name, OBJECT, 'mbsb_preacher');
+			if ($preacher_sb2 === NULL) {
+				// add new preacher to SB2
+				$new_preacher = array(
+					'post_title'   => $preacher_sb1->name,
+					'post_author'  => $current_user_id,
+					'post_status'  => 'publish',
+					'post_type'    => 'mbsb_preacher',
+					'post_content' => $preacher_sb1->description
+				);
+				$sb2_preacher_id = wp_insert_post($new_preacher);
+				if ( $sb2_preacher_id ) {
+					$count_preachers_imported++;
+					$preachers_xref[$preacher_sb1->id] = $sb2_preacher_id;
+					if ($preacher_sb1->image != '')
+						$preacher_image_skipped = true;
+				}
+				else {
+					$count_preachers_error++;
+					$preachers_xref[$preacher_sb1->id] = 0;
+				}
+			}
+			else {
+				// preacher already exists
+				if ($preacher_sb2->post_status == 'trash') {
+					// If preacher is in the trash, move it out of the trash.
+					wp_publish_post($preacher_sb2->ID);
+					$count_preachers_restored++;
+				}
+				else {
+					// skip import, use existing preacher
+					$count_preachers_duplicate++;
+				}
+				$preachers_xref[$preacher_sb1->id] = $preacher_sb2->ID;
+			}
+		}
+	}
+	// Import Sermons
+	$count_sermons_imported = 0;
+	$count_sermons_duplicate = 0;
+	$count_sermons_restored = 0;
+	$count_sermons_error = 0;
+	$count_tags = 0;
+	$count_attachments = 0;
+	$sermons_xref = array();
+	$sermons_sb1_db = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}sb_sermons", OBJECT_K);
+	if ($wpdb->num_rows > 0) {
+		foreach ($sermons_sb1_db as $sermon_sb1) {
+			$sermons_sb2 = mbsb_get_sermons_by_title($sermon_sb1->title);
+			$duplicate_sermon_found = false;
+			if ( is_array($sermons_sb2) )
+				foreach ($sermons_sb2 as $sermon_sb2) {
+					if ( substr($sermon_sb2->post_date, 0, 10) == substr($sermon_sb1->datetime, 0, 10) and $sermon_sb2->post_status != 'trash' ) {
+						$duplicate_sermon_found = true;
+						$sermons_xref[$sermon_sb1->id] = $sermon_sb2->ID;
+					}
+				}
+			if ( $sermons_sb2 === NULL or !$duplicate_sermon_found ) {
+				// add new sermon to SB2
+				$new_sermon = array(
+					'post_title'   => $sermon_sb1->title,
+					'post_author'  => $current_user_id,
+					'post_status'  => 'publish',
+					'post_type'    => 'mbsb_sermon',
+					'post_content' => $sermon_sb1->description,
+					'post_date'    => $sermon_sb1->datetime
+				);
+				$sb2_sermon_id = wp_insert_post($new_sermon);
+				if ( $sb2_sermon_id ) {
+					$count_sermons_imported++;
+					$sb2_sermon_object = new mbsb_sermon($sb2_sermon_id);
+					$sermons_xref[$sermon_sb1->id] = $sb2_sermon_id;
+					// Add series data
+					if ( $sermon_sb1->series_id )
+						if ( $series_xref[$sermon_sb1->series_id] )
+							$sb2_sermon_object->update_series( $series_xref[$sermon_sb1->series_id] );
+					// Add service data
+					if ( $sermon_sb1->service_id )
+						if ( $services_xref[$sermon_sb1->service_id] )
+							$sb2_sermon_object->update_service( $services_xref[$sermon_sb1->service_id] );
+					// Add preacher data
+					if ( $sermon_sb1->preacher_id )
+						if ( $preachers_xref[$sermon_sb1->preacher_id] )
+							$sb2_sermon_object->update_preacher( $preachers_xref[$sermon_sb1->preacher_id] );
+					// Add tag data
+					$sb1_tag_db = $wpdb->get_results( "SELECT sermons_tags.*, tags.name FROM {$wpdb->prefix}sb_sermons_tags as sermons_tags LEFT JOIN {$wpdb->prefix}sb_tags as tags ON sermons_tags.tag_id=tags.id WHERE sermons_tags.sermon_id={$sermon_sb1->id}" );
+					if ( $wpdb->num_rows > 0 ) {
+						foreach ($sb1_tag_db as $tag) {
+							if ($tag->name)
+								wp_set_post_tags( $sb2_sermon_id, $tag->name, true );
+						}
+					}
+					// Bible Passages
+					$start = unserialize($sermon_sb1->start);
+					$end = unserialize($sermon_sb1->end);
+					$passages = array();
+					$bible_passage_count = count($start);
+					for ($i = 0; $i < $bible_passage_count; $i++) {
+						if ( $start[$i] and $end[$i] )
+							$passages[] = "{$start[$i]['book']} {$start[$i]['chapter']}:{$start[$i]['verse']}-{$end[$i]['book']} {$end[$i]['chapter']}:{$end[$i]['verse']}";
+					}
+					$passages_string = implode(';',$passages);
+					if ($passages_string)
+						$sb2_sermon_object->update_passages($passages_string);
+					// Media Attachments
+					$sb1_attachments = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}sb_stuff WHERE sermon_id={$sermon_sb1->id}" );
+					if ( $wpdb->num_rows > 0) {
+						$sb1_upload_folder = mbsb_get_sb1_option('upload_dir');
+						if ($sb1_upload_folder != null)
+							mbsb_update_option( 'legacy_upload_folder', trailingslashit(ltrim($sb1_upload_folder, '/')) );
+						foreach ($sb1_attachments as $sb1_attachment) {
+							if ($sb1_attachment->type == 'url') {
+								$sb2_sermon_object->attachments->add_url_attachment( $sb1_attachment->name );
+								$count_attachments++;
+							}
+							elseif ($sb1_attachment->type == 'file') {
+								$sb2_sermon_object->attachments->add_legacy_attachment( $sb1_attachment->name );
+								$count_attachments++;
+							}
+							elseif ($sb1_attachment->type == 'code') {
+								$sb2_sermon_object->attachments->add_embed_attachment( base64_decode($sb1_attachment->name) );
+								$count_attachments++;
+							}
+						}
+					}
+				}
+				else {
+					$count_sermons_error++;
+					$sermons_xref[$sermon_sb1->id] = 0;
+				}
+			}
+			else {
+				// sermon already exists
+				// skip import, use existing sermon
+				$count_sermons_duplicate++;
+			}
+		}
+	}
+	// Output results
+?>
+	<div id="message" class="updated fade">
+		<h3>Import Results</h3>
+		<p><ul>
+			<li><?php echo $count_sermons_imported, ' ', __('sermons imported.', MBSB); ?></li>
+			<li><?php echo $count_sermons_duplicate, ' ', __('duplicate sermons skipped.', MBSB); ?></li>
+			<li><?php echo $count_sermons_error, ' ', __('sermons not imported due to error.', MBSB); ?></li>
+		</ul></p>
+		<p><ul>
+			<li><?php echo $count_attachments, ' ', __('attachments imported.', MBSB); ?></li>
+		</ul></p>
+		<p><ul>
+			<li><?php echo $count_series_imported, ' ', __('series imported.', MBSB); ?></li>
+			<li><?php echo $count_series_duplicate, ' ', __('duplicate series skipped.', MBSB); ?></li>
+			<li><?php echo $count_series_restored, ' ', __('series restored from the trash.', MBSB); ?></li>
+			<li><?php echo $count_series_error, ' ', __('series not imported due to error.', MBSB); ?></li>
+		</ul></p>
+		<p><ul>
+			<li><?php echo $count_services_imported, ' ', __('services imported.', MBSB); ?></li>
+			<li><?php echo $count_services_duplicate, ' ', __('duplicate services skipped.', MBSB); ?></li>
+			<li><?php echo $count_services_restored, ' ', __('services restored from the trash.', MBSB); ?></li>
+			<li><?php echo $count_services_error, ' ', __('services not imported due to error.', MBSB); ?></li>
+		</ul></p>
+		<p><ul>
+			<li><?php echo $count_preachers_imported, ' ', __('preachers imported.', MBSB); ?>
+				<?php if ($preacher_image_skipped) echo ' ', __('Note: Images attached to preachers in SB1 have not been imported into SB2.', MBSB); ?></li>
+			<li><?php echo $count_preachers_duplicate, ' ', __('duplicate preachers skipped.', MBSB); ?></li>
+			<li><?php echo $count_preachers_restored, ' ', __('preachers restored from the trash.', MBSB); ?></li>
+			<li><?php echo $count_preachers_error, ' ', __('preachers not imported due to error.', MBSB); ?></li>
+		</ul></p>
+	</div>
+<?php
+}
+
+/**
+* Retrieves an array of objects containing all sermons with a certain title
+*
+* Based on the core function get_page_by_title, but will return multiple results in an array
+*
+* @param string title to search for
+* @return array of objects
+* @return null if no sermons found
+*/
+function mbsb_get_sermons_by_title($sermon_title) {
+	global $wpdb;
+	//Query all columns so as not to use get_post()
+	$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE post_title = %s AND post_type = 'mbsb_sermon' AND post_status = 'publish'", $sermon_title ) );
+	if ($results) {
+		$output = array();
+		foreach ( $results as $post ) {
+			$output[] = $post;
+		}
+		return $output;
+	}
+	return null;
+}
+
+/**
 * Display uninstall screen and perform uninstall if requested
 */
 function mbsb_uninstall_admin_page() {
@@ -992,7 +1422,8 @@ function mbsb_uninstall_admin_page() {
 			</ul>
 		</p>
 		<p class="submit">
-			<input type="submit" name="uninstall" value="<?php esc_attr_e('Uninstall', MBSB); ?>" onclick="return confirm('<?php esc_attr_e('Do you REALLY want to delete all data?', MBSB); ?>')" /></p>
+			<input type="submit" name="uninstall" value="<?php esc_attr_e('Uninstall', MBSB); ?>" onclick="return confirm('<?php esc_attr_e('Do you REALLY want to delete all data?', MBSB); ?>')" />
+		</p>
 		</form>
 	</div><!-- /.wrap -->
 	<script>
@@ -1065,6 +1496,7 @@ function mbsb_options_page_init() {
 	add_settings_section('mbsb_media_player_options_section', __('Media Player Options', MBSB), 'mbsb_media_player_options_fn', 'sermon-browser/options');
 	add_settings_field('mbsb_audio_shortcode', __('Audio Shortcode', MBSB), 'mbsb_audio_shortcode_fn', 'sermon-browser/options', 'mbsb_media_player_options_section');
 	add_settings_field('mbsb_video_shortcode', __('Video Shortcode', MBSB), 'mbsb_video_shortcode_fn', 'sermon-browser/options', 'mbsb_media_player_options_section');
+	add_settings_field('mbsb_legacy_upload_folder', __('Upload Folder (Legacy)', MBSB), 'mbsb_legacy_upload_folder_fn', 'sermon-browser/options', 'mbsb_media_player_options_section');
 	add_settings_section('mbsb_layout_options_section', __('Layout Options', MBSB), 'mbsb_layout_options_fn', 'sermon-browser/options');
 	add_settings_field('mbsb_frontend_sermon_sections', __('Frontend Sermon Sections', MBSB), 'mbsb_frontend_sermon_sections_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
 	add_settings_field('mbsb_hide_media_heading', __('Hide "Media" heading?', MBSB), 'mbsb_hide_media_heading_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
@@ -1110,6 +1542,7 @@ function mbsb_options_validate($input) {
 	// Validate and save each option from the form
 	$all_options['audio_shortcode'] = $input['audio_shortcode'];
 	$all_options['video_shortcode'] = $input['video_shortcode'];
+	$all_options['legacy_upload_folder'] = trailingslashit(ltrim($input['legacy_upload_folder'], '/'));
 	$sections = mbsb_list_frontend_sections();
 	$visible_sections = array();
 	foreach ($sections as $section) {
@@ -1188,6 +1621,15 @@ function mbsb_video_shortcode_fn() {
 	$default_video_shortcode = mbsb_get_default_option('video_shortcode');
 	$video_shortcode = mbsb_get_option('video_shortcode', $default_video_shortcode);
 	echo '<input id="mbsb_video_shortcode" name="sermon_browser_2[video_shortcode]" size="40" type="text" value="'.esc_attr($video_shortcode).'" /> '.__('Default:', MBSB).' <span class="mbsb_default_option">'.$default_video_shortcode."</span>\n";
+}
+
+/**
+* Legacy Upload Folder setting input field
+*/
+function mbsb_legacy_upload_folder_fn() {
+	$default_legacy_upload_folder = mbsb_get_default_option('legacy_upload_folder');
+	$legacy_upload_folder = mbsb_get_option('legacy_upload_folder', $default_legacy_upload_folder);
+	echo '<input id="mbsb_legacy_upload_folder" name="sermon_browser_2[legacy_upload_folder]" size="40" type="text" value="'.esc_attr($legacy_upload_folder).'" /> '.__('Default:', MBSB).' <span class="mbsb_default_option">'.$default_legacy_upload_folder."</span>\n";
 }
 
 /**

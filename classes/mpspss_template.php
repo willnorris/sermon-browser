@@ -18,7 +18,7 @@
 abstract class mbsb_mpspss_template {
 
 	/**
-	* True if the object contains passages, false otherwise
+	* True if the object contains items, false otherwise
 	* 
 	* @var boolean
 	*/

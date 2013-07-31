@@ -1,7 +1,7 @@
 .mbsb_hide {
 	display:none;
 }
-div.icon32-posts-mbsb_sermon, div.icon32-posts-mbsb_series, div.icon32-posts-mbsb_preacher, div.icon32-posts-mbsb_service, div.icon32-mbsb-options, div.icon32-mbsb-uninstall {
+div.icon32-posts-mbsb_sermon, div.icon32-posts-mbsb_series, div.icon32-posts-mbsb_preacher, div.icon32-posts-mbsb_service, div.icon32-mbsb-options, div.icon32-mbsb-uninstall, div.icon32-mbsb-import {
 	background-image: url('../images/icon-32-color.png');
 }
 div.postbox th[scope=row] {

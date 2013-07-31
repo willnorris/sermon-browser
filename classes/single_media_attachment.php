@@ -19,7 +19,7 @@
 class mbsb_single_media_attachment {
 	
 	/**
-	* The type of attachment this is, i.e. 'library', 'url', or 'embed'
+	* The type of attachment this is, i.e. 'library', 'url', 'embed', or 'legacy'
 	* 
 	* @var string
 	*/
@@ -38,7 +38,7 @@ class mbsb_single_media_attachment {
 	* @var object stdClass
 	*/
 	private $data;
-
+	
 	/**
 	* Initiates the object and populates its properties
 	* 
@@ -47,7 +47,7 @@ class mbsb_single_media_attachment {
 	*/
 	public function __construct ($meta_id) {
 		$data = get_metadata_by_mid('post', $meta_id);
-		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'embed')))
+		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'embed', 'legacy')))
 			$this->present = false;
 		else {
 			$this->attachment_type = $data->meta_value ['type'];
@@ -68,7 +68,7 @@ class mbsb_single_media_attachment {
 	}
 	
 	/**
-	* Returns the type of attachment ('library', 'url' or 'embed')
+	* Returns the type of attachment ('library', 'url', 'embed', or 'legacy')
 	* 
 	* @return string
 	*/
@@ -130,6 +130,8 @@ class mbsb_single_media_attachment {
 	public function get_url() {
 		if ($this->attachment_type == 'url')
 			return $this->data['url'];
+		elseif ($this->attachment_type == 'legacy')
+			return site_url(mbsb_get_option('legacy_upload_folder').$this->data['filename']);
 		elseif ($this->attachment_type == 'library')
 			return $this->data->guid;
 		else
@@ -248,7 +250,8 @@ class mbsb_single_media_attachment {
 					$url['host'] = $a;
 			}
 			return __('Embed code', MBSB).' ('.$url['host'].')';
-		}
+		} elseif ($this->attachment_type == 'legacy')
+			return basename($this->data['filename']);
 	}
 	
 	/**
@@ -271,7 +274,7 @@ class mbsb_single_media_attachment {
 	* @return string
 	*/
 	public function get_mime_type() {
-		if ($this->attachment_type == 'url')
+		if ($this->attachment_type == 'url' || $this->attachment_type == 'legacy')
 			return $this->data['mime_type'];
 		elseif ($this->attachment_type == 'library')
 			return $this->data->post_mime_type;
@@ -362,6 +365,27 @@ class mbsb_single_media_attachment {
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ('interactive').'">';
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Code', MBSB).':</th><td>'.esc_html($embed_array['code']).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $embed_array['date_time']).'</td></tr></table>';
+		$output .= '</td></tr>';
+		return $output;
+	}
+	
+	/**
+	* Returns a legacy attachment row, ready to be inserted in a table displaying a list of media items
+	*
+	* @param string $class - a CSS class to be added to the row
+	* @return string
+	*/
+	private function add_admin_legacy_attachment_row ($class = '') {
+		$legacy_array = $this->data;
+		$insert = $class ? "  class=\"{$class}\"" : '';
+		$actions = apply_filters ('mbsb_attachment_row_actions', '');
+		$title = $this->get_name();
+		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
+		if ($actions)
+			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($this->get_mime_type()).'">';
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html($legacy_array['filename']).'</td></tr>';
+		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $legacy_array['date_time']).'</td></tr></table>';
 		$output .= '</td></tr>';
 		return $output;
 	}
