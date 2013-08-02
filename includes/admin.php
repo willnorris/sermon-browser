@@ -631,7 +631,6 @@ function mbsb_sermon_meta_boxes () {
 	add_meta_box ('mbsb_sermon_media', __('Media', MBSB), 'mbsb_sermon_media_meta_box', 'mbsb_sermon', 'normal', 'high');
 	add_meta_box ('mbsb_sermon_details', __('Details', MBSB), 'mbsb_sermon_details_meta_box', 'mbsb_sermon', 'normal', 'high');
 	add_meta_box ('mbsb_description', __('Description', MBSB), 'mbsb_sermon_editor_box', 'mbsb_sermon', 'normal', 'default');
-	remove_meta_box ('slugdiv', 'mbsb_sermon', 'normal');
 	wp_enqueue_script ('jquery-ui-datepicker');
 	wp_enqueue_style('mbsb_jquery_ui');
 	add_filter ('mbsb_attachment_row_actions', 'mbsb_add_admin_attachment_row_actions');
@@ -705,7 +704,6 @@ function mbsb_sermon_editor_box ($post) {
 */
 function mbsb_service_meta_boxes () {
 	add_meta_box ('mbsb_service_details', __('Details and description', MBSB), 'mbsb_service_details_meta_box', 'mbsb_service', 'normal', 'high');
-	remove_meta_box ('slugdiv', 'mbsb_service', 'normal');
 }
 
 /**
