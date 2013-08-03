@@ -21,10 +21,15 @@ add_filter ('default_option_sermon_browser_2', 'mbsb_default_options');
 * @return array
 */
 function mbsb_default_options($all_options=array() ) {
+	//General Options
+	$all_options ['sermons_slug']   = _x('sermons', MBSB, 'sermons default slug');
+	$all_options ['series_slug']    = _x('series', MBSB, 'series default slug');
+	$all_options ['preachers_slug'] = _x('preachers', MBSB, 'preachers default slug');
+	$all_options ['services_slug']  = _x('services', MBSB, 'services default slug');
+	$all_options ['legacy_upload_folder'] = 'wp-content/uploads/sermons/';
 	//Media Player Options
 	$all_options ['audio_shortcode'] = '[audio src="%URL%"]';
 	$all_options ['video_shortcode'] = '[video src="%URL%"]';
-	$all_options ['legacy_upload_folder'] = 'wp-content/uploads/sermons/';
 	//Layout Options
 	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;

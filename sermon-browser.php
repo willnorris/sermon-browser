@@ -117,7 +117,7 @@ function mbsb_register_custom_post_types() {
 					'has_archive' => false,
 					'query_var' => 'sermon',
 					'register_meta_box_cb' => 'mbsb_sermon_meta_boxes',
-					'rewrite' => array('slug' => '/'.__('sermons', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => mbsb_get_option('sermons_slug'), 'with_front' => false));
 	register_post_type ('mbsb_sermon', $args);
 	//Series post type	
 	$args = array (	'label' => __('Series', MBSB),
@@ -130,7 +130,7 @@ function mbsb_register_custom_post_types() {
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => false,
-					'rewrite' => array('slug' => '/'.__('series', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => mbsb_get_option('series_slug'), 'with_front' => false));
 	register_post_type ('mbsb_series', $args);
 	//Preachers post type
 	$args = array (	'label' => __('Preachers', MBSB),
@@ -143,7 +143,7 @@ function mbsb_register_custom_post_types() {
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => false,
-					'rewrite' => array('slug' => '/'.__('preachers', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => mbsb_get_option('preachers_slug'), 'with_front' => false));
 	register_post_type ('mbsb_preacher', $args);
 	//Services post type
 	$args = array (	'label' => __('Services', MBSB),
@@ -157,7 +157,7 @@ function mbsb_register_custom_post_types() {
 					'supports' => array ('title', 'thumbnail', 'comments'),
 					'has_archive' => false,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
-					'rewrite' => array('slug' => '/'.__('services', MBSB), 'with_front' => false)); //Todo: Slug should be dynamic in the future
+					'rewrite' => array('slug' => mbsb_get_option('services_slug'), 'with_front' => false));
 	register_post_type ('mbsb_service', $args);
 }
 
