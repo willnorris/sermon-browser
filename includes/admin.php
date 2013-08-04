@@ -30,6 +30,7 @@ function mbsb_admin_init () {
 	add_action ('load-upload.php', 'mbsb_onload_upload_page');
 	add_action ('load-media-upload.php', 'mbsb_media_upload_actions');
 	add_action ('load-async-upload.php', 'mbsb_media_upload_actions');
+	add_action ('update_option_sermon_browser_2', 'mbsb_update_option_actions');
 	// Ajax API calls
 	add_action ('wp_ajax_mbsb_attachment_insert', 'mbsb_ajax_attachment_insert');
 	add_action ('wp_ajax_mbsb_attach_url_embed', 'mbsb_ajax_attach_url_embed');
@@ -58,6 +59,13 @@ function mbsb_admin_init () {
 		add_action ('admin_head', 'mbsb_tb_iframe_admin_head');
 	if (isset($_GET['showtab']))
 		$_GET['tab'] = $_GET['showtab'];
+}
+
+/**
+* Runs on the update_option_sermon_browser_2 action (Runs after the sermon_browser_2 option is updated)
+*/
+function mbsb_update_option_actions() {
+	set_transient('mbsb_flush_rules', true);    // sets transient to flush rewrite rules on next page load for new post type slugs
 }
 
 /**

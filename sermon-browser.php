@@ -94,6 +94,10 @@ function mbsb_plugins_loaded() {
 */
 function mbsb_init () {
 	mbsb_register_custom_post_types();
+	if (delete_transient('mbsb_flush_rules')) {
+		flush_rewrite_rules();
+		error_log('Rules rewritten!');
+	}
 	mbsb_register_image_sizes();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
