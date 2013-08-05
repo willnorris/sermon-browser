@@ -94,10 +94,8 @@ function mbsb_plugins_loaded() {
 */
 function mbsb_init () {
 	mbsb_register_custom_post_types();
-	if (delete_transient('mbsb_flush_rules')) {
+	if (delete_transient('mbsb_flush_rules'))
 		flush_rewrite_rules();
-		error_log('Rules rewritten!');
-	}
 	mbsb_register_image_sizes();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
@@ -118,7 +116,7 @@ function mbsb_register_custom_post_types() {
 					'show_in_menu' => 'sermon-browser',
 					'supports' => array ('title', 'thumbnail', 'comments'), // No 'editor' support because we'll add it in a positionable box later
 					'taxonomies' => array ('post_tag'),
-					'has_archive' => false,
+					'has_archive' => true,
 					'query_var' => 'sermon',
 					'register_meta_box_cb' => 'mbsb_sermon_meta_boxes',
 					'rewrite' => array('slug' => mbsb_get_option('sermons_slug'), 'with_front' => false));
@@ -133,7 +131,7 @@ function mbsb_register_custom_post_types() {
 					'capability_type' => 'page',
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
-					'has_archive' => false,
+					'has_archive' => true,
 					'rewrite' => array('slug' => mbsb_get_option('series_slug'), 'with_front' => false));
 	register_post_type ('mbsb_series', $args);
 	//Preachers post type
@@ -146,7 +144,7 @@ function mbsb_register_custom_post_types() {
 					'capability_type' => 'page',
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
-					'has_archive' => false,
+					'has_archive' => true,
 					'rewrite' => array('slug' => mbsb_get_option('preachers_slug'), 'with_front' => false));
 	register_post_type ('mbsb_preacher', $args);
 	//Services post type
@@ -159,7 +157,7 @@ function mbsb_register_custom_post_types() {
 					'capability_type' => 'page',
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments'),
-					'has_archive' => false,
+					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
 					'rewrite' => array('slug' => mbsb_get_option('services_slug'), 'with_front' => false));
 	register_post_type ('mbsb_service', $args);
