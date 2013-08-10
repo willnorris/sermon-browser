@@ -8,7 +8,9 @@
 */
 
 add_action ('init', 'mbsb_frontend_init');
+add_action ('template_redirect', 'mbsb_frontend_init_after_query');
 require (apply_filters ('mbsb_theme', mbsb_plugin_dir_path('includes/default_theme.php')));
+
 /**
 * Runs on the init action
 * 
@@ -25,6 +27,53 @@ function mbsb_frontend_init() {
 	add_shortcode ('series', 'mbsb_display_series');
 	add_shortcode ('services', 'mbsb_display_services');
 	add_shortcode ('preachers', 'mbsb_display_preachers');
+}
+
+/**
+* Sets up features that need to be set up after the query runs
+*
+*/
+function mbsb_frontend_init_after_query() {
+	if ( is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service') ) {
+		// add actions and filters to alter podcast feeds
+		add_action('rss2_ns', 'mbsb_podcast_ns');
+		add_action('rss2_head', 'mbsb_podcast_head');
+		add_action('rss2_item', 'mbsb_podcast_item');
+		add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
+	}
+}
+
+/**
+* Changes bloginfo_rss data for podcast feed
+*
+*/
+function mbsb_bloginfo_rss_filter($input, $show) {
+	if ($show == 'description')
+		return $input;  // change description for podcast based on option (not coded yet)
+	else
+		return $input;
+}
+
+/**
+* Adds code to the namespace section of podcast feed
+*
+*/
+function mbsb_podcast_ns() {
+	echo 'xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"';
+}
+
+/**
+* Adds code to the head section of podcast feed
+*
+*/
+function mbsb_podcast_head() {
+}
+
+/**
+* Adds code to the item section of podcast feed
+*
+*/
+function mbsb_podcast_item() {
 }
 
 /**
