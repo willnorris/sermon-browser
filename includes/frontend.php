@@ -40,7 +40,21 @@ function mbsb_frontend_init_after_query() {
 		add_action('rss2_head', 'mbsb_podcast_head');
 		add_action('rss2_item', 'mbsb_podcast_item');
 		add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
+		add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
 	}
+}
+
+/**
+* Changes wp_title_rss data for podcast feed
+*
+* If 'podcast_feed_title' option is set, then blank out wp_title_rss data for podcast feed.  Title will be set in the mbsb_bloginfo_rss_filter function.
+*/
+function mbsb_wp_title_rss_filter($input) {
+	$title = mbsb_get_option('podcast_feed_title');
+	if ($title != '')
+		return '';
+	else
+		return $input;
 }
 
 /**
@@ -48,8 +62,20 @@ function mbsb_frontend_init_after_query() {
 *
 */
 function mbsb_bloginfo_rss_filter($input, $show) {
-	if ($show == 'description')
-		return $input;  // change description for podcast based on option (not coded yet)
+	if ($show == 'name') {
+		$title = mbsb_get_option('podcast_feed_title');
+		if ($title != '')
+			return $title;
+		else
+			return $input;
+	}
+	elseif ($show == 'description') {
+		$description = mbsb_get_option('podcast_feed_description');
+		if ($description != '')
+			return $description;
+		else
+			return $input;
+	}
 	else
 		return $input;
 }
@@ -67,6 +93,22 @@ function mbsb_podcast_ns() {
 *
 */
 function mbsb_podcast_head() {
+	$author = mbsb_get_option('podcast_feed_author');
+	if ($author == '')
+		$author = strip_tags(get_bloginfo('name'));
+	$summary = mbsb_get_option('podcast_feed_summary');
+	if ($summary == '')
+		$summary = strip_tags(get_bloginfo('description'));
+	//output
+?>
+	<itunes:author><?php echo $author; ?></itunes:author>
+	<itunes:summary><?php echo $summary; ?></itunes:summary>
+	<itunes:explicit>no</itunes:explicit>
+	<itunes:owner>
+		<itunes:name><?php echo mbsb_get_option('podcast_feed_owner_name'); ?></itunes:name>
+		<itunes:email><?php echo mbsb_get_option('podcast_feed_owner_email'); ?></itunes:email>
+	</itunes:owner>
+<?php
 }
 
 /**

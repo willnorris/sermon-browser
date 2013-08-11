@@ -1535,7 +1535,14 @@ function mbsb_options_page_init() {
 	add_settings_section('mbsb_bible_api_keys_section', __('Bible API Keys', MBSB), 'mbsb_bible_api_keys_fn', 'sermon-browser/options');
 	add_settings_field('mbsb_biblia_api_key', __('Biblia API Key', MBSB), 'mbsb_biblia_api_key_fn', 'sermon-browser/options', 'mbsb_bible_api_keys_section');
 	add_settings_field('mbsb_biblesearch_api_key', __('Biblesearch API Key', MBSB), 'mbsb_biblesearch_api_key_fn', 'sermon-browser/options', 'mbsb_bible_api_keys_section');
-	add_settings_field('mbsb_esv_api_key', __('ESV API Key', MBSB), 'mbsb_esv_api_key_fn', 'sermon-browser/options', 'mbsb_bible_api_keys_section');	
+	add_settings_field('mbsb_esv_api_key', __('ESV API Key', MBSB), 'mbsb_esv_api_key_fn', 'sermon-browser/options', 'mbsb_bible_api_keys_section');
+	add_settings_section('mbsb_podcast_feed_options_section', __('Podcast Feed Options', MBSB), 'mbsb_podcast_feed_options_fn', 'sermon-browser/options');
+	add_settings_field('mbsb_podcast_feed_title', __('Podcast Feed Title', MBSB), 'mbsb_podcast_feed_title_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_description', __('Podcast Feed Description', MBSB), 'mbsb_podcast_feed_description_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_author', __('Podcast Feed iTunes Author', MBSB), 'mbsb_podcast_feed_author_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_summary', __('Podcast Feed iTunes Summary', MBSB), 'mbsb_podcast_feed_summary_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_owner_name', __('Podcast Feed iTunes Owner Name', MBSB), 'mbsb_podcast_feed_owner_name_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_owner_email', __('Podcast Feed iTunes Owner Email', MBSB), 'mbsb_podcast_feed_owner_email_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 }
 
 /**
@@ -1551,13 +1558,16 @@ function mbsb_options_validate($input) {
 	// Get current options from database to use as starting point
 	$all_options = get_option('sermon_browser_2', mbsb_default_options() );
 	// Validate and save each option from the form
+	// General Options
 	$all_options['sermons_slug'] = trim($input['sermons_slug'], '/');
 	$all_options['series_slug'] = trim($input['series_slug'], '/');
 	$all_options['preachers_slug'] = trim($input['preachers_slug'], '/');
 	$all_options['services_slug'] = trim($input['services_slug'], '/');
 	$all_options['legacy_upload_folder'] = trailingslashit(ltrim($input['legacy_upload_folder'], '/'));
+	// Media Player Options
 	$all_options['audio_shortcode'] = $input['audio_shortcode'];
 	$all_options['video_shortcode'] = $input['video_shortcode'];
+	// Layout Options
 	$sections = mbsb_list_frontend_sections();
 	$visible_sections = array();
 	foreach ($sections as $section) {
@@ -1594,6 +1604,7 @@ function mbsb_options_validate($input) {
 		$all_options['show_statistics_on_sermon_page'] = true;
 	else
 		$all_options['show_statistics_on_sermon_page'] = false;
+	// Bible Version Options
 	$locale = get_locale();
 	if (isset($input['bible_version_'.$locale]))
 		$all_options['bible_version_'.$locale] = $input['bible_version_'.$locale];
@@ -1605,9 +1616,17 @@ function mbsb_options_validate($input) {
 		$all_options['allow_user_to_change_bible'] = true;
 	else
 		$all_options['allow_user_to_change_bible'] = false;
+	// Bible API Keys
 	$all_options['biblia_api_key'] = $input['biblia_api_key'];
 	$all_options['biblesearch_api_key'] = $input['biblesearch_api_key'];
 	$all_options['esv_api_key'] = $input['esv_api_key'];
+	// Podcast Feed Options
+	$all_options['podcast_feed_title'] = sanitize_text_field($input['podcast_feed_title']);
+	$all_options['podcast_feed_description'] = sanitize_text_field($input['podcast_feed_description']);
+	$all_options['podcast_feed_author'] = sanitize_text_field($input['podcast_feed_author']);
+	$all_options['podcast_feed_summary'] = sanitize_text_field($input['podcast_feed_summary']);
+	$all_options['podcast_feed_owner_name'] = sanitize_text_field($input['podcast_feed_owner_name']);
+	$all_options['podcast_feed_owner_email'] = sanitize_email($input['podcast_feed_owner_email']);
 	return $all_options;
 }
 
@@ -1706,6 +1725,71 @@ function mbsb_esv_api_key_fn() {
 	echo __('Default value is', MBSB), ' <strong>', $default_esv_api_key, "</strong><br />\n";
 	echo __('If you get a message saying that you have exceeded your quote of ESV lookups (5000 per day), and you suspect that it is because of other websites on your shared server, you can request an API Key from ESV.', MBSB);
 	echo ' <a href="http://www.esvapi.org/signup">esvapi.org</a>';
+}
+
+/**
+* Defines the section description area for the Podcast Feed Options section on the Options page
+*/
+function mbsb_podcast_feed_options_fn() {
+	// This is where an explanation would go for the Podcast Feed Options section.
+}
+
+/**
+* Podcast Feed Title setting input field
+*/
+function mbsb_podcast_feed_title_fn() {
+	$default_podcast_feed_title = mbsb_get_default_option('podcast_feed_title');
+	$podcast_feed_title = mbsb_get_option('podcast_feed_title', $default_podcast_feed_title);
+	echo '<input id="mbsb_podcast_feed_title" name="sermon_browser_2[podcast_feed_title]" size="40" type="text" value="'.esc_attr($podcast_feed_title).'" />'."\n";
+	echo __('Leave empty to use the default WordPress title.', MBSB);
+}
+
+/**
+* Podcast Feed Description setting input field
+*/
+function mbsb_podcast_feed_description_fn() {
+	$default_podcast_feed_description = mbsb_get_default_option('podcast_feed_description');
+	$podcast_feed_description = mbsb_get_option('podcast_feed_description', $default_podcast_feed_description);
+	echo '<input id="mbsb_podcast_feed_description" name="sermon_browser_2[podcast_feed_description]" size="40" type="text" value="'.esc_attr($podcast_feed_description).'" />'."\n";
+	echo __('Leave empty to use the default WordPress description.', MBSB);
+}
+
+/**
+* Podcast Feed Author setting input field
+*/
+function mbsb_podcast_feed_author_fn() {
+	$default_podcast_feed_author = mbsb_get_default_option('podcast_feed_author');
+	$podcast_feed_author = mbsb_get_option('podcast_feed_author', $default_podcast_feed_author);
+	echo '<input id="mbsb_podcast_feed_author" name="sermon_browser_2[podcast_feed_author]" size="40" type="text" value="'.esc_attr($podcast_feed_author).'" />'."\n";
+	echo __('Leave empty to use your website name:', MBSB), ' ', strip_tags(get_bloginfo('name'));
+}
+
+/**
+* Podcast Feed Summary setting input field
+*/
+function mbsb_podcast_feed_summary_fn() {
+	$default_podcast_feed_summary = mbsb_get_default_option('podcast_feed_summary');
+	$podcast_feed_summary = mbsb_get_option('podcast_feed_summary', $default_podcast_feed_summary);
+	echo '<input id="mbsb_podcast_feed_summary" name="sermon_browser_2[podcast_feed_summary]" size="40" type="text" value="'.esc_attr($podcast_feed_summary).'" />'."\n";
+	echo __('Leave empty to use the default WordPress description.', MBSB);
+}
+
+/**
+* Podcast Feed Owner Name setting input field
+*/
+function mbsb_podcast_feed_owner_name_fn() {
+	$default_podcast_feed_owner_name = mbsb_get_default_option('podcast_feed_owner_name');
+	$podcast_feed_owner_name = mbsb_get_option('podcast_feed_owner_name', $default_podcast_feed_owner_name);
+	echo '<input id="mbsb_podcast_feed_owner_name" name="sermon_browser_2[podcast_feed_owner_name]" size="40" type="text" value="'.esc_attr($podcast_feed_owner_name).'" />'."\n";
+}
+
+/**
+* Podcast Feed Owner Email setting input field
+*/
+function mbsb_podcast_feed_owner_email_fn() {
+	$default_podcast_feed_owner_email = mbsb_get_default_option('podcast_feed_owner_email');
+	$podcast_feed_owner_email = mbsb_get_option('podcast_feed_owner_email', $default_podcast_feed_owner_email);
+	echo '<input id="mbsb_podcast_feed_owner_email" name="sermon_browser_2[podcast_feed_owner_email]" size="40" type="text" value="'.esc_attr($podcast_feed_owner_email).'" />'."\n";
 }
 
 /**
