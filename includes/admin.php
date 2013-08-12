@@ -1543,6 +1543,8 @@ function mbsb_options_page_init() {
 	add_settings_field('mbsb_podcast_feed_summary', __('Podcast Feed iTunes Summary', MBSB), 'mbsb_podcast_feed_summary_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 	add_settings_field('mbsb_podcast_feed_owner_name', __('Podcast Feed iTunes Owner Name', MBSB), 'mbsb_podcast_feed_owner_name_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 	add_settings_field('mbsb_podcast_feed_owner_email', __('Podcast Feed iTunes Owner Email', MBSB), 'mbsb_podcast_feed_owner_email_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_image', __('Podcast Feed iTunes Image URL', MBSB), 'mbsb_podcast_feed_image_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
+	add_settings_field('mbsb_podcast_feed_category', __('Podcast Feed iTunes Category', MBSB), 'mbsb_podcast_feed_category_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 }
 
 /**
@@ -1627,6 +1629,17 @@ function mbsb_options_validate($input) {
 	$all_options['podcast_feed_summary'] = sanitize_text_field($input['podcast_feed_summary']);
 	$all_options['podcast_feed_owner_name'] = sanitize_text_field($input['podcast_feed_owner_name']);
 	$all_options['podcast_feed_owner_email'] = sanitize_email($input['podcast_feed_owner_email']);
+	$all_options['podcast_feed_image'] = filter_var($input['podcast_feed_image'], FILTER_VALIDATE_URL);
+	if ( $all_options['podcast_feed_image'] === 'false' )
+		$all_options['podcast_feed_image'] = '';
+	$podcast_feed_category = explode( '/', $input['podcast_feed_category'] );
+	$count_categories = count($podcast_feed_category);
+	if ($count_categories == 1)
+		$all_options['podcast_feed_category'] = trim($podcast_feed_category[0]);
+	elseif ($count_categories > 1)
+		$all_options['podcast_feed_category'] = trim($podcast_feed_category[0]).'/'.trim($podcast_feed_category[1]);
+	else
+		$all_options['podcast_feed_category'] = '';
 	return $all_options;
 }
 
@@ -1741,7 +1754,7 @@ function mbsb_podcast_feed_title_fn() {
 	$default_podcast_feed_title = mbsb_get_default_option('podcast_feed_title');
 	$podcast_feed_title = mbsb_get_option('podcast_feed_title', $default_podcast_feed_title);
 	echo '<input id="mbsb_podcast_feed_title" name="sermon_browser_2[podcast_feed_title]" size="40" type="text" value="'.esc_attr($podcast_feed_title).'" />'."\n";
-	echo __('Leave empty to use the default WordPress title.', MBSB);
+	echo __('Leave empty to use the default WordPress title.', MBSB), "\n";
 }
 
 /**
@@ -1751,7 +1764,7 @@ function mbsb_podcast_feed_description_fn() {
 	$default_podcast_feed_description = mbsb_get_default_option('podcast_feed_description');
 	$podcast_feed_description = mbsb_get_option('podcast_feed_description', $default_podcast_feed_description);
 	echo '<input id="mbsb_podcast_feed_description" name="sermon_browser_2[podcast_feed_description]" size="40" type="text" value="'.esc_attr($podcast_feed_description).'" />'."\n";
-	echo __('Leave empty to use the default WordPress description.', MBSB);
+	echo __('Leave empty to use the default WordPress description.', MBSB), "\n";
 }
 
 /**
@@ -1761,7 +1774,7 @@ function mbsb_podcast_feed_author_fn() {
 	$default_podcast_feed_author = mbsb_get_default_option('podcast_feed_author');
 	$podcast_feed_author = mbsb_get_option('podcast_feed_author', $default_podcast_feed_author);
 	echo '<input id="mbsb_podcast_feed_author" name="sermon_browser_2[podcast_feed_author]" size="40" type="text" value="'.esc_attr($podcast_feed_author).'" />'."\n";
-	echo __('Leave empty to use your website name:', MBSB), ' ', strip_tags(get_bloginfo('name'));
+	echo __('Leave empty to use your website name:', MBSB), ' ', strip_tags(get_bloginfo('name')), "\n";
 }
 
 /**
@@ -1771,7 +1784,7 @@ function mbsb_podcast_feed_summary_fn() {
 	$default_podcast_feed_summary = mbsb_get_default_option('podcast_feed_summary');
 	$podcast_feed_summary = mbsb_get_option('podcast_feed_summary', $default_podcast_feed_summary);
 	echo '<input id="mbsb_podcast_feed_summary" name="sermon_browser_2[podcast_feed_summary]" size="40" type="text" value="'.esc_attr($podcast_feed_summary).'" />'."\n";
-	echo __('Leave empty to use the default WordPress description.', MBSB);
+	echo __('Leave empty to use the default WordPress description.', MBSB), "\n";
 }
 
 /**
@@ -1790,6 +1803,26 @@ function mbsb_podcast_feed_owner_email_fn() {
 	$default_podcast_feed_owner_email = mbsb_get_default_option('podcast_feed_owner_email');
 	$podcast_feed_owner_email = mbsb_get_option('podcast_feed_owner_email', $default_podcast_feed_owner_email);
 	echo '<input id="mbsb_podcast_feed_owner_email" name="sermon_browser_2[podcast_feed_owner_email]" size="40" type="text" value="'.esc_attr($podcast_feed_owner_email).'" />'."\n";
+}
+
+/**
+* Podcast Feed Image URL setting input field
+*/
+function mbsb_podcast_feed_image_fn() {
+	$default_podcast_feed_image = mbsb_get_default_option('podcast_feed_image');
+	$podcast_feed_image = mbsb_get_option('podcast_feed_image', $default_podcast_feed_image);
+	echo '<input id="mbsb_podcast_feed_image" name="sermon_browser_2[podcast_feed_image]" size="40" type="text" value="'.esc_attr($podcast_feed_image).'" />'."\n";
+}
+
+/**
+* Podcast Feed Category setting input field
+*/
+function mbsb_podcast_feed_category_fn() {
+	$default_podcast_feed_category = mbsb_get_default_option('podcast_feed_category');
+	$podcast_feed_category = mbsb_get_option('podcast_feed_category', $default_podcast_feed_category);
+	echo '<input id="mbsb_podcast_feed_category" name="sermon_browser_2[podcast_feed_category]" size="40" type="text" value="'.esc_attr($podcast_feed_category).'" />'."\n";
+	echo __('Entered as "Main Category/Sub Category".  Default value is "Religion & Spirituality/Christianity".', MBSB), "\n";
+	echo '<a href="https://www.apple.com/itunes/podcasts/specs.html#categories">', __("List of iTunes categories", MBSB), "</a>\n";
 }
 
 /**

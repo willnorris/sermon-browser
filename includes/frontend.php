@@ -109,6 +109,20 @@ function mbsb_podcast_head() {
 		<itunes:email><?php echo mbsb_get_option('podcast_feed_owner_email'); ?></itunes:email>
 	</itunes:owner>
 <?php
+	$image = mbsb_get_option('podcast_feed_image');
+	if ($image) 
+		echo '	<itunes:image href="', esc_url($image), '" />';
+	$category = explode( '/', mbsb_get_option('podcast_feed_category') );
+	if ($category) {
+		if ( isset($category[0]) and $category[0] ) {
+			echo '	<itunes:category text="', esc_attr($category[0]), '">', "\n";
+			if ( isset($category[1]) and $category[1] )
+				echo '		<itunes:category text="', esc_attr($category[1]), '" />', "\n";
+			echo "	</itunes:category>\n";
+		}
+	}
+?>
+<?php
 }
 
 /**

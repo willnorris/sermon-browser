@@ -57,6 +57,8 @@ function mbsb_default_options($all_options=array() ) {
 	$all_options ['podcast_feed_summary'] = '';
 	$all_options ['podcast_feed_owner_name'] = '';
 	$all_options ['podcast_feed_owner_email'] = '';
+	$all_options ['podcast_feed_image'] = '';
+	$all_options ['podcast_feed_category'] = 'Religion & Spirituality/Christianity';
 	//Advanced options (not currently shown on Options screen)
 	$all_options ['inactive_bibles'] = array ('emphbbl', 'elberfelder', 'ostervald', 'bibelselskap', 'croatia', 'newvulgate', 'esperanto', 'manxgaelic', 'aleppo', 'turkish', 'afrikaans', 'amharic', 'scotsgaelic', 'bohairic', 'georgian', 'schlachter', 'rv1858', 'danish', 'tamajaq', 'peshitta', 'coptic', 'chamorro', 'kabyle', 'ukranian', 'turkish', 'martin', 'makarij', 'nkb', 'kms', 'bkr', 'vulgate', 'sagradas', 'modernhebrew', 'easternarmenian', 'estonian', 'albanian', 'wolof', 'pyharaamattu', 'finnish1776', 'zhuromsky', 'gothic', 'sahidic', 'moderngreek', 'breton', 'westernarmenian', 'uma', 'elberfelder1905', 'latvian', 'xhosa', 'swedish', 'riveduta', 'basque', 'judson', 'lithuanian', 'giovanni', 'thai', 'tischendorf', 'tagalog', 'pyharaamattu1933', 'vietnamese', 'web', 'hnv');
 	$all_options ['inactive_bible_languages'] = array('kor', 'rum');
