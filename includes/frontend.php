@@ -41,6 +41,7 @@ function mbsb_frontend_init_after_query() {
 		add_action('rss2_item', 'mbsb_podcast_item');
 		add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
 		add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
+		add_filter('rss_enclosure', 'mbsb_blankout_filter');
 	}
 }
 
@@ -91,6 +92,7 @@ function mbsb_podcast_ns() {
 /**
 * Adds code to the head section of podcast feed
 *
+* Add iTunes-specific tags for podcast feed
 */
 function mbsb_podcast_head() {
 	$author = mbsb_get_option('podcast_feed_author');
@@ -128,8 +130,14 @@ function mbsb_podcast_head() {
 /**
 * Adds code to the item section of podcast feed
 *
+* Adds enclosure tags for Sermon Browser attachments
 */
 function mbsb_podcast_item() {
+	$sermon = new mbsb_sermon( get_the_ID() );
+	$podcast_type = 'all';
+	if ( isset($_GET['podcast_type']) )
+		$podcast_type = $_GET['podcast_type'];
+	echo $sermon->attachments->get_podcast_enclosures($podcast_type);
 }
 
 /**

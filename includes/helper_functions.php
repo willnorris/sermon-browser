@@ -253,4 +253,14 @@ function mbsb_get_home_path() {
 	}
 	return $home_path;
 }
+
+/**
+* Filter function that always returns an empty string
+*
+* @return string
+*/
+function mbsb_blankout_filter($input) {
+	return '';
+}
+
 ?>

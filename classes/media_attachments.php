@@ -94,6 +94,32 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 		else
 			return __('No media attached', MBSB);
 	}
+	
+	/** Returns enclosure tags for podcast feed
+	*
+	* @return string
+	*/
+	public function get_podcast_enclosures($podcast_type) {
+		$output = '';
+		$attachments = $this->attachments;
+		if ($this->attachments) {
+			foreach ($this->attachments as $attachment) {
+				$type = $attachment->get_type();
+				if ($type == 'library' or $type == 'url' or $type == 'legacy') {
+					$url = $attachment->get_url();
+					$filesize = $attachment->get_filesize();
+					if ( !$filesize )
+						$filesize = '0';
+					$mime_type = $attachment->get_mime_type();
+					$media_type = explode('/', $mime_type);
+					$media_type = $media_type[0];
+					if ( $podcast_type == 'all' or $podcast_type == $media_type )
+						$output .= '	<enclosure url="'.esc_attr($url).'" length="'.esc_attr($filesize).'" type="'.esc_attr($mime_type).'" />'."\n";
+				}
+			}
+		}
+		return $output;
+	}
 
 	/**
 	* Returns a simple list of the media items (titles separated by <br/> tags), with admin edit links
