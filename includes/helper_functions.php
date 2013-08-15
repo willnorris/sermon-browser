@@ -51,6 +51,7 @@ function mbsb_default_options($all_options=array() ) {
 	$all_options ['biblesearch_api_key'] = '';
 	$all_options ['esv_api_key'] = 'IP';
 	//Podcast Feed Options
+	$all_options ['podcast_number_of_items'] = 20;
 	$all_options ['podcast_feed_title'] = '';
 	$all_options ['podcast_feed_description'] = '';
 	$all_options ['podcast_feed_author'] = '';
@@ -257,10 +258,19 @@ function mbsb_get_home_path() {
 /**
 * Filter function that always returns an empty string
 *
-* @return string
+* @return string - always returns empty string
 */
 function mbsb_blankout_filter($input) {
 	return '';
+}
+
+/**
+* Filter function that always returns false
+*
+* @return bool - always returns false
+*/
+function mbsb_false_filter($input) {
+	return false;
 }
 
 ?>

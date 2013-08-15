@@ -8,7 +8,7 @@
 */
 
 add_action ('init', 'mbsb_frontend_init');
-add_action ('template_redirect', 'mbsb_frontend_init_after_query');
+add_action ('pre_get_posts', 'mbsb_frontend_pre_get_posts');
 require (apply_filters ('mbsb_theme', mbsb_plugin_dir_path('includes/default_theme.php')));
 
 /**
@@ -30,19 +30,36 @@ function mbsb_frontend_init() {
 }
 
 /**
-* Sets up features that need to be set up after the query runs
+* Sets up features that need to be set up after the request is known, but before the query runs
 *
 */
-function mbsb_frontend_init_after_query() {
-	if ( is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service') ) {
-		// add actions and filters to alter podcast feeds
-		add_action('rss2_ns', 'mbsb_podcast_ns');
-		add_action('rss2_head', 'mbsb_podcast_head');
-		add_action('rss2_item', 'mbsb_podcast_item');
-		add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
-		add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
-		add_filter('rss_enclosure', 'mbsb_blankout_filter');
+function mbsb_frontend_pre_get_posts() {
+	if ( is_main_query() ) {
+		if ( is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service') ) {
+			// add actions and filters to alter podcast feeds
+			add_action('rss2_ns', 'mbsb_podcast_ns');
+			add_action('rss2_head', 'mbsb_podcast_head');
+			add_action('rss2_item', 'mbsb_podcast_item');
+			add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
+			add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
+			add_filter('rss_enclosure', 'mbsb_blankout_filter');
+			add_filter('the_excerpt_rss', 'mbsb_podcast_item_description_filter');
+			add_filter('option_rss_use_excerpt', 'mbsb_false_filter');  // turns 'rss_use_excerpt' option off for podcast feed
+			add_filter('option_posts_per_rss', 'mbsb_podcast_number_of_items_filter');  // changes the number of items in the podcast feed
+		}
 	}
+}
+
+/**
+* Changes the number of items in the podcast feed
+*
+*/
+function mbsb_podcast_number_of_items_filter($input) {
+	$number = mbsb_get_option('podcast_number_of_items');
+	if ($number)
+		return $number;
+	else
+		return $input;
 }
 
 /**
@@ -54,6 +71,18 @@ function mbsb_wp_title_rss_filter($input) {
 	$title = mbsb_get_option('podcast_feed_title');
 	if ($title != '')
 		return '';
+	else
+		return $input;
+}
+
+/**
+* Changes the_excerpt_rss data for the podcast feed item description
+*/
+function mbsb_podcast_item_description_filter($input) {
+	$sermon = new mbsb_sermon( get_the_ID() );
+	$description = $sermon->get_description();
+	if ($description)
+		return $description;
 	else
 		return $input;
 }

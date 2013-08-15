@@ -1537,6 +1537,7 @@ function mbsb_options_page_init() {
 	add_settings_field('mbsb_biblesearch_api_key', __('Biblesearch API Key', MBSB), 'mbsb_biblesearch_api_key_fn', 'sermon-browser/options', 'mbsb_bible_api_keys_section');
 	add_settings_field('mbsb_esv_api_key', __('ESV API Key', MBSB), 'mbsb_esv_api_key_fn', 'sermon-browser/options', 'mbsb_bible_api_keys_section');
 	add_settings_section('mbsb_podcast_feed_options_section', __('Podcast Feed Options', MBSB), 'mbsb_podcast_feed_options_fn', 'sermon-browser/options');
+	add_settings_field('mbsb_podcast_number_of_items', __('Podcast feeds show the most recent', MBSB), 'mbsb_podcast_number_of_items_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 	add_settings_field('mbsb_podcast_feed_title', __('Podcast Feed Title', MBSB), 'mbsb_podcast_feed_title_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 	add_settings_field('mbsb_podcast_feed_description', __('Podcast Feed Description', MBSB), 'mbsb_podcast_feed_description_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
 	add_settings_field('mbsb_podcast_feed_author', __('Podcast Feed iTunes Author', MBSB), 'mbsb_podcast_feed_author_fn', 'sermon-browser/options', 'mbsb_podcast_feed_options_section');
@@ -1623,6 +1624,9 @@ function mbsb_options_validate($input) {
 	$all_options['biblesearch_api_key'] = $input['biblesearch_api_key'];
 	$all_options['esv_api_key'] = $input['esv_api_key'];
 	// Podcast Feed Options
+	$podcast_number_of_items = (int) $input['podcast_number_of_items'];
+	if ($podcast_number_of_items > 0)
+		$all_options['podcast_number_of_items'] = $podcast_number_of_items;
 	$all_options['podcast_feed_title'] = sanitize_text_field($input['podcast_feed_title']);
 	$all_options['podcast_feed_description'] = sanitize_text_field($input['podcast_feed_description']);
 	$all_options['podcast_feed_author'] = sanitize_text_field($input['podcast_feed_author']);
@@ -1745,6 +1749,16 @@ function mbsb_esv_api_key_fn() {
 */
 function mbsb_podcast_feed_options_fn() {
 	// This is where an explanation would go for the Podcast Feed Options section.
+}
+
+/**
+* Podcast feed number of items setting input field
+*/
+function mbsb_podcast_number_of_items_fn() {
+	$default_podcast_number_of_items = mbsb_get_default_option('podcast_number_of_items');
+	$podcast_number_of_items = mbsb_get_option('podcast_number_of_items', $default_podcast_number_of_items);
+	echo '<input id="mbsb_podcast_number_of_items" name="sermon_browser_2[podcast_number_of_items]" size="7" type="text" value="'.esc_attr($podcast_number_of_items).'" />'."\n";
+	echo __('sermons', MBSB), "\n";
 }
 
 /**
