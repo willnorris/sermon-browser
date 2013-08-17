@@ -1509,6 +1509,7 @@ function mbsb_options_page_init() {
 	add_settings_field('mbsb_audio_shortcode', __('Audio Shortcode', MBSB), 'mbsb_audio_shortcode_fn', 'sermon-browser/options', 'mbsb_media_player_options_section');
 	add_settings_field('mbsb_video_shortcode', __('Video Shortcode', MBSB), 'mbsb_video_shortcode_fn', 'sermon-browser/options', 'mbsb_media_player_options_section');
 	add_settings_section('mbsb_layout_options_section', __('Layout Options', MBSB), 'mbsb_layout_options_fn', 'sermon-browser/options');
+	add_settings_field('mbsb_sermons_per_page', __('Sermons pages show at most', MBSB), 'mbsb_sermons_per_page_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
 	add_settings_field('mbsb_frontend_sermon_sections', __('Frontend Sermon Sections', MBSB), 'mbsb_frontend_sermon_sections_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
 	add_settings_field('mbsb_hide_media_heading', __('Hide "Media" heading?', MBSB), 'mbsb_hide_media_heading_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
 	add_settings_field('mbsb_sermon_image_pos', __('Sermon Image Position', MBSB), 'mbsb_image_pos_fn', 'sermon-browser/options', 'mbsb_layout_options_section', array('sermon'));
@@ -1845,7 +1846,7 @@ function mbsb_podcast_feed_category_fn() {
 function mbsb_excerpt_length_fn() {
 	$default_excerpt_length = mbsb_get_default_option('excerpt_length');
 	$excerpt_length = mbsb_get_option('excerpt_length', $default_excerpt_length);
-	echo '<input id="mbsb_excerpt_length" name="sermon_browser_2[excerpt_length]" size="4" type="text" value="'.esc_attr($excerpt_length).'" />'."\n";
+	echo '<input id="mbsb_excerpt_length" name="sermon_browser_2[excerpt_length]" size="7" type="text" value="'.esc_attr($excerpt_length).'" />'."\n";
 }
 
 /**
@@ -1853,6 +1854,16 @@ function mbsb_excerpt_length_fn() {
 */
 function mbsb_layout_options_fn() {
 	// This is where an explanation would go for the Layout Options section.
+}
+
+/**
+* Sermons Per Page setting input field
+*/
+function mbsb_sermons_per_page_fn() {
+	$default_sermons_per_page = mbsb_get_default_option('sermons_per_page');
+	$sermons_per_page = mbsb_get_option('sermons_per_page', $default_sermons_per_page);
+	echo '<input id="mbsb_sermons_per_page" name="sermon_browser_2[sermons_per_page]" size="7" type="text" value="'.esc_attr($sermons_per_page).'" />'."\n";
+	echo __('sermons', MBSB), "\n";
 }
 
 /**

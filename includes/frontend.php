@@ -36,6 +36,8 @@ function mbsb_frontend_init() {
 function mbsb_frontend_pre_get_posts() {
 	if ( is_main_query() ) {
 		if ( is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service') ) {
+			//add_filter('post_limits', 'mbsb_sermons_per_page_filter'); // changes the number of sermons per page
+			set_query_var( 'posts_per_page', mbsb_get_option('sermons_per_page') );
 			// add actions and filters to alter podcast feeds
 			add_action('rss2_ns', 'mbsb_podcast_ns');
 			add_action('rss2_head', 'mbsb_podcast_head');
@@ -51,15 +53,18 @@ function mbsb_frontend_pre_get_posts() {
 }
 
 /**
+* Changes the number of sermons per page on the archive pages
+*/
+function mbsb_sermons_per_page_filter($input) {
+	return mbsb_get_option('sermons_per_page', $input);
+}
+
+/**
 * Changes the number of items in the podcast feed
 *
 */
 function mbsb_podcast_number_of_items_filter($input) {
-	$number = mbsb_get_option('podcast_number_of_items');
-	if ($number)
-		return $number;
-	else
-		return $input;
+	return mbsb_get_option('podcast_number_of_items', $input);
 }
 
 /**

@@ -31,6 +31,7 @@ function mbsb_default_options($all_options=array() ) {
 	$all_options ['audio_shortcode'] = '[audio src="%URL%"]';
 	$all_options ['video_shortcode'] = '[video src="%URL%"]';
 	//Layout Options
+	$all_options ['sermons_per_page'] = 10;
 	$all_options ['frontend_sermon_sections'] = array ('main', 'media', 'preacher', 'series', 'passages');
 	$all_options ['hide_media_heading'] = false;
 	$all_options ['sermon_image_pos'] = 'alignright';
