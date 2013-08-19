@@ -36,17 +36,19 @@ function mbsb_frontend_init() {
 function mbsb_frontend_pre_get_posts() {
 	if ( is_main_query() ) {
 		if ( is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service') ) {
-			set_query_var( 'posts_per_page', mbsb_get_option('sermons_per_page') );  // changes the number of sermons per page
+			set_query_var( 'posts_per_page', mbsb_get_option('sermons_per_page') );    // changes the number of sermons per page
 			// add actions and filters to alter podcast feeds
-			add_action('rss2_ns', 'mbsb_podcast_ns');
-			add_action('rss2_head', 'mbsb_podcast_head');
-			add_action('rss2_item', 'mbsb_podcast_item');
-			add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
-			add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
-			add_filter('rss_enclosure', 'mbsb_blankout_filter');
-			add_filter('the_excerpt_rss', 'mbsb_podcast_item_description_filter');
-			add_filter('option_rss_use_excerpt', 'mbsb_false_filter');  // turns 'rss_use_excerpt' option off for podcast feed
-			add_filter('option_posts_per_rss', 'mbsb_podcast_number_of_items_filter');  // changes the number of items in the podcast feed
+			if ( is_feed() ) {
+				add_action('rss2_ns', 'mbsb_podcast_ns');
+				add_action('rss2_head', 'mbsb_podcast_head');
+				add_action('rss2_item', 'mbsb_podcast_item');
+				add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
+				add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
+				add_filter('rss_enclosure', 'mbsb_blankout_filter');
+				add_filter('the_excerpt_rss', 'mbsb_podcast_item_description_filter');
+				add_filter('option_rss_use_excerpt', 'mbsb_false_filter');    // turns 'rss_use_excerpt' option off for podcast feed
+				add_filter('option_posts_per_rss', 'mbsb_podcast_number_of_items_filter');    // changes the number of items in the podcast feed
+			}
 		}
 	}
 }

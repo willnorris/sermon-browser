@@ -1572,6 +1572,9 @@ function mbsb_options_validate($input) {
 	$all_options['audio_shortcode'] = $input['audio_shortcode'];
 	$all_options['video_shortcode'] = $input['video_shortcode'];
 	// Layout Options
+	$sermons_per_page = (int) $input['sermons_per_page'];
+	if ( $sermons_per_page > 0 )
+		$all_options['sermons_per_page'] = $sermons_per_page;
 	$sections = mbsb_list_frontend_sections();
 	$visible_sections = array();
 	foreach ($sections as $section) {
