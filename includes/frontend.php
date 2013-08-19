@@ -8,7 +8,6 @@
 */
 
 add_action ('init', 'mbsb_frontend_init');
-add_action ('pre_get_posts', 'mbsb_frontend_pre_get_posts');
 require (apply_filters ('mbsb_theme', mbsb_plugin_dir_path('includes/default_theme.php')));
 
 /**
@@ -27,6 +26,18 @@ function mbsb_frontend_init() {
 	add_shortcode ('series', 'mbsb_display_series');
 	add_shortcode ('services', 'mbsb_display_services');
 	add_shortcode ('preachers', 'mbsb_display_preachers');
+	// add actions and filters to alter podcast feeds
+	add_action('rss2_ns', 'mbsb_podcast_ns');
+	add_action('rss2_head', 'mbsb_podcast_head');
+	add_action('rss2_item', 'mbsb_podcast_item');
+	add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
+	add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
+	add_filter('rss_enclosure', 'mbsb_blankout_enclosure_filter');    // removes WordPress auto podcast enclosures from feed
+	add_filter('the_excerpt_rss', 'mbsb_podcast_item_description_filter');
+	add_filter('option_rss_use_excerpt', 'mbsb_podcast_rss_use_excerpt_filter');    // turns 'rss_use_excerpt' option off for podcast feed
+	add_filter('option_posts_per_rss', 'mbsb_podcast_number_of_items_filter');    // changes the number of items in the podcast feed
+	//add_filter('posts_join', 'mbsb_podcast_query_join');    // join metadata table to query
+	add_action ('pre_get_posts', 'mbsb_frontend_pre_get_posts');
 }
 
 /**
@@ -34,31 +45,46 @@ function mbsb_frontend_init() {
 *
 */
 function mbsb_frontend_pre_get_posts() {
-	if ( is_main_query() ) {
-		if ( is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service') ) {
-			set_query_var( 'posts_per_page', mbsb_get_option('sermons_per_page') );    // changes the number of sermons per page
-			// add actions and filters to alter podcast feeds
-			if ( is_feed() ) {
-				add_action('rss2_ns', 'mbsb_podcast_ns');
-				add_action('rss2_head', 'mbsb_podcast_head');
-				add_action('rss2_item', 'mbsb_podcast_item');
-				add_filter('bloginfo_rss', 'mbsb_bloginfo_rss_filter', 10, 2);
-				add_filter('wp_title_rss', 'mbsb_wp_title_rss_filter');
-				add_filter('rss_enclosure', 'mbsb_blankout_filter');
-				add_filter('the_excerpt_rss', 'mbsb_podcast_item_description_filter');
-				add_filter('option_rss_use_excerpt', 'mbsb_false_filter');    // turns 'rss_use_excerpt' option off for podcast feed
-				add_filter('option_posts_per_rss', 'mbsb_podcast_number_of_items_filter');    // changes the number of items in the podcast feed
-			}
-		}
-	}
+	if ( is_main_query() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
+		set_query_var( 'posts_per_page', mbsb_get_option('sermons_per_page') );    // changes the number of sermons per page
+}
+
+/**
+* Adds tables to query for podcast feed
+*/
+function mbsb_podcast_query_join($join) {
+	global $wpdb;
+	//$join .= ' LEFT JOIN '.$wpdb->
 }
 
 /**
 * Changes the number of items in the podcast feed
 *
 */
-function mbsb_podcast_number_of_items_filter($input) {
-	return mbsb_get_option('podcast_number_of_items', $input);
+function mbsb_podcast_number_of_items_filter($number) {
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
+		$number = mbsb_get_option('podcast_number_of_items', $number);
+	return $number;
+}
+
+/**
+* Removes automatic WordPress podcast enclosures, so that Sermon Browser enclosures will be used instead
+*/
+function mbsb_blankout_enclosure_filter($input) {
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
+		return '';
+	else
+		return $input;
+}
+
+/**
+* Turns 'rss_use_excerpt' option off for podcast feed
+*/
+function mbsb_podcast_rss_use_excerpt_filter($option) {
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
+		return false;
+	else
+		return $option;
 }
 
 /**
@@ -66,47 +92,46 @@ function mbsb_podcast_number_of_items_filter($input) {
 *
 * If 'podcast_feed_title' option is set, then blank out wp_title_rss data for podcast feed.  Title will be set in the mbsb_bloginfo_rss_filter function.
 */
-function mbsb_wp_title_rss_filter($input) {
-	$title = mbsb_get_option('podcast_feed_title');
-	if ($title != '')
-		return '';
-	else
-		return $input;
+function mbsb_wp_title_rss_filter($title) {
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) ) {
+		$podcast_title = mbsb_get_option('podcast_feed_title');
+		if ($podcast_title != '')
+			$title = $podcast_title;
+	}
+	return $title;
 }
 
 /**
 * Changes the_excerpt_rss data for the podcast feed item description
 */
-function mbsb_podcast_item_description_filter($input) {
-	$sermon = new mbsb_sermon( get_the_ID() );
-	$description = $sermon->get_description();
-	if ($description)
-		return $description;
-	else
-		return $input;
+function mbsb_podcast_item_description_filter($description) {
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) ) {
+		$sermon = new mbsb_sermon( get_the_ID() );
+		$sermon_description = $sermon->get_description();
+		if ($sermon_description)
+			$description = $sermon_description;
+	}
+	return $description;
 }
 
 /**
 * Changes bloginfo_rss data for podcast feed
 *
 */
-function mbsb_bloginfo_rss_filter($input, $show) {
-	if ($show == 'name') {
-		$title = mbsb_get_option('podcast_feed_title');
-		if ($title != '')
-			return $title;
-		else
-			return $input;
+function mbsb_bloginfo_rss_filter($info, $show) {
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) ) {
+		if ($show == 'name') {
+			$title = mbsb_get_option('podcast_feed_title');
+			if ($title != '')
+				$info = $title;
+		}
+		elseif ($show == 'description') {
+			$description = mbsb_get_option('podcast_feed_description');
+			if ($description != '')
+				$info = $description;
+		}
 	}
-	elseif ($show == 'description') {
-		$description = mbsb_get_option('podcast_feed_description');
-		if ($description != '')
-			return $description;
-		else
-			return $input;
-	}
-	else
-		return $input;
+	return $info;
 }
 
 /**
@@ -114,7 +139,8 @@ function mbsb_bloginfo_rss_filter($input, $show) {
 *
 */
 function mbsb_podcast_ns() {
-	echo 'xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"';
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
+			echo 'xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"';
 }
 
 /**
@@ -123,13 +149,14 @@ function mbsb_podcast_ns() {
 * Add iTunes-specific tags for podcast feed
 */
 function mbsb_podcast_head() {
-	$author = mbsb_get_option('podcast_feed_author');
-	if ($author == '')
-		$author = strip_tags(get_bloginfo('name'));
-	$summary = mbsb_get_option('podcast_feed_summary');
-	if ($summary == '')
-		$summary = strip_tags(get_bloginfo('description'));
-	//output
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) ) {
+		$author = mbsb_get_option('podcast_feed_author');
+		if ($author == '')
+			$author = strip_tags(get_bloginfo('name'));
+		$summary = mbsb_get_option('podcast_feed_summary');
+		if ($summary == '')
+			$summary = strip_tags(get_bloginfo('description'));
+		//output
 ?>
 	<itunes:author><?php echo $author; ?></itunes:author>
 	<itunes:summary><?php echo $summary; ?></itunes:summary>
@@ -139,20 +166,19 @@ function mbsb_podcast_head() {
 		<itunes:email><?php echo mbsb_get_option('podcast_feed_owner_email'); ?></itunes:email>
 	</itunes:owner>
 <?php
-	$image = mbsb_get_option('podcast_feed_image');
-	if ($image) 
-		echo '	<itunes:image href="', esc_url($image), '" />';
-	$category = explode( '/', mbsb_get_option('podcast_feed_category') );
-	if ($category) {
-		if ( isset($category[0]) and $category[0] ) {
-			echo '	<itunes:category text="', esc_attr($category[0]), '">', "\n";
-			if ( isset($category[1]) and $category[1] )
-				echo '		<itunes:category text="', esc_attr($category[1]), '" />', "\n";
-			echo "	</itunes:category>\n";
+		$image = mbsb_get_option('podcast_feed_image');
+		if ($image) 
+			echo '	<itunes:image href="', esc_url($image), '" />';
+		$category = explode( '/', mbsb_get_option('podcast_feed_category') );
+		if ($category) {
+			if ( isset($category[0]) and $category[0] ) {
+				echo '	<itunes:category text="', esc_attr($category[0]), '">', "\n";
+				if ( isset($category[1]) and $category[1] )
+					echo '		<itunes:category text="', esc_attr($category[1]), '" />', "\n";
+				echo "	</itunes:category>\n";
+			}
 		}
 	}
-?>
-<?php
 }
 
 /**
@@ -161,11 +187,13 @@ function mbsb_podcast_head() {
 * Adds enclosure tags for Sermon Browser attachments
 */
 function mbsb_podcast_item() {
-	$sermon = new mbsb_sermon( get_the_ID() );
-	$podcast_type = 'all';
-	if ( isset($_GET['podcast_type']) )
-		$podcast_type = $_GET['podcast_type'];
-	echo $sermon->attachments->get_podcast_enclosures($podcast_type);
+	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) ) {
+		$sermon = new mbsb_sermon( get_the_ID() );
+		$podcast_type = 'all';
+		if ( isset($_GET['podcast_type']) )
+			$podcast_type = $_GET['podcast_type'];
+		echo $sermon->attachments->get_podcast_enclosures($podcast_type);
+	}
 }
 
 /**
