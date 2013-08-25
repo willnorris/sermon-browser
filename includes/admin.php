@@ -408,13 +408,13 @@ function mbsb_edit_posts_sort($orderby) {
 	if (isset($_GET['orderby'])) {
 		if ($_GET['post_type'] == 'mbsb_sermon') {
 			if ($_GET['orderby'] == 'preacher')
-				return "preachers.post_title ".$wpdb->escape($_GET["order"]);
+				return "preachers.post_title ".esc_sql($_GET["order"]);
 			elseif ($_GET['orderby'] == 'service')
-				return "services.post_title ".$wpdb->escape($_GET["order"]);
+				return "services.post_title ".esc_sql($_GET["order"]);
 			elseif ($_GET['orderby'] == 'series')
-				return "series.post_title ".$wpdb->escape($_GET["order"]);
+				return "series.post_title ".esc_sql($_GET["order"]);
 			elseif ($_GET['orderby'] == 'passages')
-				return "passage_sort ".$wpdb->escape($_GET["order"]);
+				return "passage_sort ".esc_sql($_GET["order"]);
 		}
 	}
 	return $orderby;
@@ -449,13 +449,13 @@ function mbsb_edit_posts_where($where) {
 	global $wpdb;
 	if ($_GET['post_type'] == 'mbsb_sermon') {
 		if (isset($_GET['preacher']))
-			$where .= " AND preachers.ID=".$wpdb->escape($_GET["preacher"]);
+			$where .= " AND preachers.ID=".esc_sql($_GET["preacher"]);
 		if (isset($_GET['series']))
-			$where .= " AND series.ID=".$wpdb->escape($_GET["series"]);
+			$where .= " AND series.ID=".esc_sql($_GET["series"]);
 		if (isset($_GET['service']))
-			$where .= " AND services.ID=".$wpdb->escape($_GET["service"]);
+			$where .= " AND services.ID=".esc_sql($_GET["service"]);
 		if (isset($_GET['book']))
-			$where .= " AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".$wpdb->escape($_GET["book"]);
+			$where .= " AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".esc_sql($_GET["book"]);
 	}
 	return $where;
 }
@@ -493,7 +493,7 @@ function mbsb_edit_posts_search ($search) {
 			$new_search_fields = array ('preachers.post_title', 'services.post_title', 'series.post_title');
 		if (isset($new_search_fields)) {
 			$search = rtrim ($search, ' )').')';
-			$term = '%'.$wpdb->escape($_GET['s']).'%';
+			$term = '%'.esc_sql($_GET['s']).'%';
 			foreach ($new_search_fields as &$s)
 				$s = "({$s} LIKE '{$term}')";
 			$search .= " OR ".implode( ' OR ', $new_search_fields  ).")) ";
@@ -1341,7 +1341,7 @@ function mbsb_import_from_SB1() {
 			<li><?php echo $count_sermons_error, ' ', __('sermons not imported due to error.', MBSB); ?></li>
 		</ul></p>
 		<p><ul>
-			<li><?php echo $count_attachments, ' ', __('attachments imported.', MBSB); ?></li>
+			<li><?php echo $count_attachments, ' ', __('attachments imported to media library.', MBSB); ?></li>
 		</ul></p>
 		<p><ul>
 			<li><?php echo $count_series_imported, ' ', __('series imported.', MBSB); ?></li>

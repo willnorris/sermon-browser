@@ -409,15 +409,15 @@ function mbsb_frontend_sermons_standard_join ($join) {
 function mbsb_frontend_sermons_standard_where($where) {
 	global $wpdb;
 	if (isset($_POST['preacher']))
-		$where .= " AND preachers.ID=".$wpdb->escape($_POST["preacher"]);
+		$where .= " AND preachers.ID=".esc_sql($_POST["preacher"]);
 	if (isset($_POST['series']))
-		$where .= " AND series.ID=".$wpdb->escape($_POST["series"]);
+		$where .= " AND series.ID=".esc_sql($_POST["series"]);
 	if (isset($_POST['service']))
-		$where .= " AND services.ID=".$wpdb->escape($_POST["service"]);
+		$where .= " AND services.ID=".esc_sql($_POST["service"]);
 	if (isset($_POST['book']))
-		$where .= " AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".$wpdb->escape($_POST["book"]);
+		$where .= " AND CONVERT(LEFT(book_postmeta.meta_value,2), UNSIGNED)=".esc_sql($_POST["book"]);
 	if (isset($_POST['year']))
-		$where .= " AND YEAR(post_date) =".$wpdb->escape($_POST["year"]);
+		$where .= " AND YEAR(post_date) =".esc_sql($_POST["year"]);
 	return $where;
 }
 ?>
