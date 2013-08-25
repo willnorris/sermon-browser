@@ -256,22 +256,6 @@ function mbsb_get_home_path() {
 	return $home_path;
 }
 
-/**
-* Filter function that always returns an empty string
-*
-* @return string - always returns empty string
-*/
-function mbsb_blankout_filter($input) {
-	return '';
-}
 
-/**
-* Filter function that always returns false
-*
-* @return bool - always returns false
-*/
-function mbsb_false_filter($input) {
-	return false;
-}
 
 ?>

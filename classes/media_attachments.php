@@ -186,7 +186,9 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 	}
 	
 	/**
-	* Adds a Legacy file attachment to a sermon
+	* Adds a Library attachment to a sermon, from a file in the legacy upload folder.
+	*
+	* File is added to the media library and attached to sermon.
 	*
 	* @param string $filename
 	* @return mixed False for failure.  Null if the file is not found.  The media_attachment object if successful.
@@ -198,21 +200,21 @@ class mbsb_media_attachments extends mbsb_mpspss_template {
 			return null;
 		else {
 			$url = site_url($legacy_upload_folder.$filename);
-			$headers = wp_remote_head ($url, array ('redirection' => 5));
-			if (is_wp_error($headers) || $headers['response']['code'] != 200)
-				return null;
-			else {
-				$content_type = isset($headers['headers']['content-type']) ? $headers['headers']['content-type'] : '';
-				if (($a = strpos($content_type, ';')) !== FALSE)
-					$content_type = substr($content_type, 0, $a);
-				$metadata = array('type' => 'legacy', 'filename' => $filename, 
-					'mime_type' => $content_type, 
-					'date_time' => time());
-				if ($meta_id = add_post_meta ($this->sermon_id, 'attachments', $metadata))
-					return new mbsb_single_media_attachment($meta_id);
-				else
-					return false;
+			$filetype = wp_check_filetype( $absolute_file_path );
+			$attachment = array(
+				'guid' => $url,
+				'post_mime_type' => $filetype['type'],
+				'post_title' => preg_replace('/\.[^.]+$/', '', basename($absolute_file_path)),
+				'post_content' => '',
+				'post_status' => 'inherit'
+			);
+			$attach_id = wp_insert_attachment( $attachment, $absolute_file_path, $this->sermon_id );
+			if ( !is_wp_error($attach_id) ) {
+				wp_update_attachment_metadata( $attach_id, wp_generate_attachment_metadata( $attach_id, $absolute_file_path ) );
+				return $this->add_library_attachment($attach_id);
 			}
+			else
+				return false;
 		}
 	}
 	
