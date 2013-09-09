@@ -29,7 +29,7 @@ GNU General Public License for more details: <http://www.gnu.org/licenses/>
 */
 
 /**
-* mbsb is used as a pseudo-namespace throughout the plugin to prevent classes with other plugins.
+* mbsb is used as a pseudo-namespace throughout the plugin to prevent clashes with other plugins.
 * This constant is used as the domain in gettext calls.
 */
 define ('MBSB', 'MBSB');
@@ -119,7 +119,8 @@ function mbsb_register_custom_post_types() {
 					'has_archive' => true,
 					'query_var' => 'sermon',
 					'register_meta_box_cb' => 'mbsb_sermon_meta_boxes',
-					'rewrite' => array('slug' => mbsb_get_option('sermons_slug'), 'with_front' => false));
+					'rewrite' => array('slug' => mbsb_get_option('sermons_slug'), 'with_front' => false),
+				);
 	register_post_type ('mbsb_sermon', $args);
 	//Series post type	
 	$args = array (	'label' => __('Series', MBSB),
@@ -132,7 +133,9 @@ function mbsb_register_custom_post_types() {
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => mbsb_get_option('series_slug'), 'with_front' => false));
+					'rewrite' => array('slug' => mbsb_get_option('series_slug'), 'with_front' => false),
+					'map_meta_cap' => true,
+				);
 	register_post_type ('mbsb_series', $args);
 	//Preachers post type
 	$args = array (	'label' => __('Preachers', MBSB),
@@ -145,7 +148,9 @@ function mbsb_register_custom_post_types() {
 					'hierarchical' => true,
 					'supports' => array ('title', 'thumbnail', 'comments', 'editor'),
 					'has_archive' => true,
-					'rewrite' => array('slug' => mbsb_get_option('preachers_slug'), 'with_front' => false));
+					'rewrite' => array('slug' => mbsb_get_option('preachers_slug'), 'with_front' => false),
+					'map_meta_cap' => true,
+				);
 	register_post_type ('mbsb_preacher', $args);
 	//Services post type
 	$args = array (	'label' => __('Services', MBSB),
@@ -159,7 +164,9 @@ function mbsb_register_custom_post_types() {
 					'supports' => array ('title', 'thumbnail', 'comments'),
 					'has_archive' => true,
 					'register_meta_box_cb' => 'mbsb_service_meta_boxes',
-					'rewrite' => array('slug' => mbsb_get_option('services_slug'), 'with_front' => false));
+					'rewrite' => array('slug' => mbsb_get_option('services_slug'), 'with_front' => false),
+					'map_meta_cap' => true,
+				);
 	register_post_type ('mbsb_service', $args);
 }
 

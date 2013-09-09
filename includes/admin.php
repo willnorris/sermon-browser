@@ -7,7 +7,7 @@
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 add_action ('admin_init', 'mbsb_admin_init');
-if (!empty($GLOBALS['pagenow']) and ((($GLOBALS['pagenow'] == 'admin.php') and ($_GET['page'] == 'sermon-browser_options')) or ($GLOBALS['pagenow'] == 'options.php'))) {
+if (!empty($GLOBALS['pagenow']) and ((($GLOBALS['pagenow'] == 'admin.php') and (isset($_GET['page']) and $_GET['page'] == 'sermon-browser_options')) or ($GLOBALS['pagenow'] == 'options.php'))) {
 	add_action ('admin_init', 'mbsb_options_page_init');
 }
 
@@ -1306,7 +1306,6 @@ function mbsb_import_from_SB1() {
 						foreach ($sb1_attachments as $sb1_attachment) {
 							if ($sb1_attachment->type == 'url') {
 								$sb2_sermon_object->attachments->add_url_attachment( $sb1_attachment->name );
-								$count_attachments++;
 							}
 							elseif ($sb1_attachment->type == 'file') {
 								$sb2_sermon_object->attachments->add_legacy_attachment( $sb1_attachment->name );
@@ -1314,7 +1313,6 @@ function mbsb_import_from_SB1() {
 							}
 							elseif ($sb1_attachment->type == 'code') {
 								$sb2_sermon_object->attachments->add_embed_attachment( base64_decode($sb1_attachment->name) );
-								$count_attachments++;
 							}
 						}
 					}
