@@ -1236,7 +1236,6 @@ function mbsb_import_from_SB1() {
 	$count_sermons_restored = 0;
 	$count_sermons_error = 0;
 	$count_tags = 0;
-	$count_attachments = 0;
 	$sermons_xref = array();
 	$sermons_sb1_db = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}sb_sermons", OBJECT_K);
 	if ($wpdb->num_rows > 0) {
@@ -1309,7 +1308,6 @@ function mbsb_import_from_SB1() {
 							}
 							elseif ($sb1_attachment->type == 'file') {
 								$sb2_sermon_object->attachments->add_legacy_attachment( $sb1_attachment->name );
-								$count_attachments++;
 							}
 							elseif ($sb1_attachment->type == 'code') {
 								$sb2_sermon_object->attachments->add_embed_attachment( base64_decode($sb1_attachment->name) );
@@ -1337,9 +1335,6 @@ function mbsb_import_from_SB1() {
 			<li><?php echo $count_sermons_imported, ' ', __('sermons imported.', MBSB); ?></li>
 			<li><?php echo $count_sermons_duplicate, ' ', __('duplicate sermons skipped.', MBSB); ?></li>
 			<li><?php echo $count_sermons_error, ' ', __('sermons not imported due to error.', MBSB); ?></li>
-		</ul></p>
-		<p><ul>
-			<li><?php echo $count_attachments, ' ', __('attachments imported to media library.', MBSB); ?></li>
 		</ul></p>
 		<p><ul>
 			<li><?php echo $count_series_imported, ' ', __('series imported.', MBSB); ?></li>
