@@ -487,8 +487,7 @@ function mbsb_edit_posts_groupby($groupby) {
 * @return string
 */
 function mbsb_edit_posts_search ($search) {
-	global $wpdb;
-	if (isset($_GET['s'])) {
+	if (isset($_GET['s']) && !empty($_GET['s'])) {
 		if ($_GET['post_type'] == 'mbsb_sermon')
 			$new_search_fields = array ('preachers.post_title', 'services.post_title', 'series.post_title');
 		if (isset($new_search_fields)) {
