@@ -23,6 +23,8 @@ function mbsb_admin_init () {
 	add_action ('delete_post', 'mbsb_handle_media_deletion');
 	add_filter ('admin_body_class', 'mbsb_admin_body_class');
 	add_filter ('gettext', 'mbsb_do_custom_translations', 1, 3);
+	add_filter ('wp_unique_post_slug_is_bad_hierarchical_slug', 'mbsb_slug_is_bad_hierarchical_filter', 10, 4);
+	add_filter ('wp_unique_post_slug_is_bad_flat_slug', 'mbsb_slug_is_bad_flat_filter', 10, 3);
 	// Single admin pages only
 	add_action ('load-edit.php', 'mbsb_onload_edit_page');
 	add_action ('load-post.php', 'mbsb_onload_post_page');
@@ -66,6 +68,49 @@ function mbsb_admin_init () {
 */
 function mbsb_update_option_actions() {
 	set_transient('mbsb_flush_rules', true);    // sets transient to flush rewrite rules on next page load for new post type slugs
+}
+
+/**
+* Prevents WordPress from assigning a slug to a hierarchical post that conflicts with one of the Sermon Browser custom post type archive slugs
+* Filter for wp_unique_post_slug_is_bad_hierarchical_slug hook
+*
+* @param bool $is_bad - whether or not the slug has already been determined to be bad
+* @param string $slug - the slug being tested
+* @param string $post_type - the post type of the post being tested
+* @param string $post_parent - the id of the parent of the post being tested
+* @return bool - true if slug is bad, false if slug is okay
+*/
+function mbsb_slug_is_bad_hierarchical_filter( $is_bad, $slug, $post_type, $post_parent ) {
+	$reserved_slugs = array(
+		mbsb_get_option('sermons_slug'),
+		mbsb_get_option('series_slug'),
+		mbsb_get_option('preachers_slug'),
+		mbsb_get_option('services_slug')
+	);
+	if ( !$post_parent && in_array( $slug, $reserved_slugs ) )
+		return true;
+	return $is_bad;
+}
+
+/**
+* Prevents WordPress from assigning a slug to a base post that conflicts with one of the Sermon Browser custom post type archive slugs
+* Filter for wp_unique_post_slug_is_bad_flat_slug hook
+*
+* @param bool $is_bad - whether or not the slug has already been determined to be bad
+* @param string $slug - the slug being tested
+* @param string $post_type - the post type of the post being tested
+* @return bool - true if slug is bad, false if slug is okay
+*/
+function mbsb_slug_is_bad_flat_filter( $is_bad, $slug, $post_type ) {
+	$reserved_slugs = array(
+		mbsb_get_option('sermons_slug'),
+		mbsb_get_option('series_slug'),
+		mbsb_get_option('preachers_slug'),
+		mbsb_get_option('services_slug')
+	);
+	if ( in_array( $slug, $reserved_slugs ) )
+		return true;
+	return $is_bad;
 }
 
 /**
