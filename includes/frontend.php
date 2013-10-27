@@ -44,8 +44,8 @@ function mbsb_frontend_init() {
 * Sets up features that need to be set up after the request is known, but before the query runs
 *
 */
-function mbsb_frontend_pre_get_posts() {
-	if ( is_main_query() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
+function mbsb_frontend_pre_get_posts( $query ) {
+	if ( $query->is_main_query() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) )
 		set_query_var( 'posts_per_page', mbsb_get_option('sermons_per_page') );    // changes the number of sermons per page
 }
 
