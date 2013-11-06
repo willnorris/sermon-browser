@@ -102,7 +102,7 @@ function mbsb_default_options($all_options=array() ) {
 */
 function mbsb_get_option ($option, $default = null) {
 	$all_options = get_option ('sermon_browser_2');
-	if ( isset($all_options[$option]) and $all_options[$option] )
+	if ( isset($all_options[$option]) )
 		$return = $all_options[$option];
 	else
 		if ($default === null)
