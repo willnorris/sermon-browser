@@ -42,7 +42,7 @@ class mbsb_preacher extends mbsb_pss_template {
 			$output .= $this->do_div (get_the_post_thumbnail($this->id, 'mbsb_preacher', array ('class' => mbsb_get_option('preacher_image_pos'))), 'preacher_image');
 		$description = ($excerpt_length == 0) ? $this->get_description() : '<p>'.$this->get_excerpt($excerpt_length).'</p>';
 		$output .= $this->do_div ($description, 'description');
-		if (mbsb_get_option('show_statistics_on_sermon_page') && !$showing_preacher_page) {
+		if (mbsb_get_option('show_sermon_counts_on_sermon_page') && !$showing_preacher_page) {
 			$num_sermons = $this->get_sermon_count();
 			if ($num_sermons > 1) {
 				$output .= '<p class="preacher_statistics"><strong>'.__('See more', MBSB).'</strong>: ';

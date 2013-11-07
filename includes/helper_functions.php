@@ -42,7 +42,7 @@ function mbsb_default_options($all_options=array() ) {
 	$all_options ['preacher_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['series_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
 	$all_options ['excerpt_length'] = 55;
-	$all_options ['show_statistics_on_sermon_page'] = true;
+	$all_options ['sermon_nav_in_post_content'] = false;
 	//Bible Version Options
 	$all_options ['bible_version_'.get_locale()] = 'esv';
 	$all_options ['use_embedded_bible_'.get_locale()] = false;

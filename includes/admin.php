@@ -1559,7 +1559,7 @@ function mbsb_options_page_init() {
 	add_settings_field('mbsb_series_image_size', __('Series Image Size', MBSB), 'mbsb_image_size_fn', 'sermon-browser/options', 'mbsb_layout_options_section', array('series'));
 	//add_settings_field('mbsb_service_image_size', __('Service Image Size', MBSB), 'mbsb_image_size_fn', 'sermon-browser/options', 'mbsb_layout_options_section', array('service'));
 	add_settings_field('mbsb_excerpt_length', __('Excerpt Length', MBSB), 'mbsb_excerpt_length_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
-	add_settings_field('mbsb_show_statistics_on_sermon_page', __('Show statistics on sermon page?', MBSB), 'mbsb_show_statistics_on_sermon_page_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
+	add_settings_field('mbsb_sermon_nav_in_post_content', __('Show previous/next sermon navigation links in post content?', MBSB), 'mbsb_sermon_nav_in_post_content_fn', 'sermon-browser/options', 'mbsb_layout_options_section');
 	add_settings_section('mbsb_bible_version_options_section', __('Bible Version Options', MBSB), 'mbsb_bible_version_options_fn', 'sermon-browser/options');
 	add_settings_field('mbsb_bible_version', __('Bible Version', MBSB), 'mbsb_bible_version_fn', 'sermon-browser/options', 'mbsb_bible_version_options_section');
 	add_settings_field('mbsb_use_embedded_bible', __('Use embedded Bible?', MBSB), 'mbsb_use_embedded_bible_fn', 'sermon-browser/options', 'mbsb_bible_version_options_section');
@@ -1644,10 +1644,10 @@ function mbsb_options_validate($input) {
 	}
 	if ( $input['excerpt_length'] == (int) $input['excerpt_length'] )
 		$all_options['excerpt_length'] = (int) $input['excerpt_length'];
-	if (isset($input['show_statistics_on_sermon_page']))
-		$all_options['show_statistics_on_sermon_page'] = true;
+	if (isset($input['sermon_nav_in_post_content']))
+		$all_options['sermon_nav_in_post_content'] = true;
 	else
-		$all_options['show_statistics_on_sermon_page'] = false;
+		$all_options['sermon_nav_in_post_content'] = false;
 	// Bible Version Options
 	$locale = get_locale();
 	if (isset($input['bible_version_'.$locale]))
@@ -1954,11 +1954,11 @@ function mbsb_hide_media_heading_fn() {
 /**
 * Show Statistics on Sermon Page setting input field
 */
-function mbsb_show_statistics_on_sermon_page_fn() {
-	$default_show_statistics_on_sermon_page = mbsb_get_default_option('show_statistics_on_sermon_page');
-	$show_statistics_on_sermon_page = mbsb_get_option('show_statistics_on_sermon_page', $default_show_statistics_on_sermon_page);
-	$checked = ($show_statistics_on_sermon_page) ? 'checked="checked"' : '';
-	echo '<input id="mbsb_show_statistics_on_sermon_page" name="sermon_browser_2[show_statistics_on_sermon_page]" type="checkbox" value="true" '.$checked." />\n";
+function mbsb_sermon_nav_in_post_content_fn() {
+	$default_sermon_nav_in_post_content = mbsb_get_default_option('sermon_nav_in_post_content');
+	$sermon_nav_in_post_content = mbsb_get_option('sermon_nav_in_post_content', $default_sermon_nav_in_post_content);
+	$checked = ($sermon_nav_in_post_content) ? 'checked="checked"' : '';
+	echo '<input id="mbsb_sermon_nav_in_post_content" name="sermon_browser_2[sermon_nav_in_post_content]" type="checkbox" value="true" '.$checked." />\n";
 }
 
 /**
