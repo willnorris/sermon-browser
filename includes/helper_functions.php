@@ -67,6 +67,7 @@ function mbsb_default_options($all_options=array() ) {
 	$all_options ['hide_other_language_bibles'] = false;
 	$all_options ['add_all_types_to_admin_bar'] = false;
 	$all_options ['embedded_bible_parameters'] = array ('width' => '100%', 'height' => '600', 'layout' => 'normal', 'historyButtons' => true, 'navigationBox' => true, 'resourcePicker' => true, 'shareButton' => true, 'textSizeButton' =>true);
+	$all_options ['show_sermon_counts_on_sermon_page'] = false;
 	//Options still to be implemented
 	$all_options ['service_image_pos'] = 'alignright';
 	$all_options ['service_image_size'] = array ('width' => '150', 'height' => '150', 'crop' => true);
