@@ -42,6 +42,7 @@ else
 
 require mbsb_plugin_dir_path ('includes/common.php');
 require mbsb_plugin_dir_path ('includes/helper_functions.php');
+require mbsb_plugin_dir_path ('includes/widgets.php');
 
 //Register activation hook
 register_activation_hook(__FILE__, 'mbsb_activate');
