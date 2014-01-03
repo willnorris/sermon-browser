@@ -8,23 +8,26 @@
 
 add_action('widgets_init', 'mbsb_widgets_init');
 function mbsb_widgets_init() {
-	register_widget( 'Widget_Sermons_In_Series' );
+	register_widget( 'Widget_Related_Sermons' );
 	register_widget( 'Widget_Recent_Sermons' );
 }
 
 /**
-* Sermons_In_Series widget class.  This widget lists all of the sermons in the
-* same series as the sermon currently being viewed.
+* Related_Sermons widget class.  This widget lists all of the sermons that are
+* related to the sermon, series, service, or preacher currently being viewed.
 *
 * @package SermonBrowser
 * @subpackage Widgets
 */
-class Widget_Sermons_In_Series extends WP_Widget {
+class Widget_Related_Sermons extends WP_Widget {
 
 	function __construct() {
-		$widget_ops = array('classname' => 'widget_sermons_in_series', 'description' => __( "Other sermons in the same series as the current one.") );
-		parent::__construct('sermons-in-series', __('Sermons in Series'), $widget_ops);
-		$this->alt_option_name = 'widget_sermons_in_series';
+		$widget_ops = array(
+			'classname' => 'widget_related_sermons',
+			'description' => __( 'Sermons related to the sermon, preacher, service, or sermon series page being viewed.', MBSB)
+		);
+		parent::__construct('related-sermons', __('Related Sermons', MBSB), $widget_ops);
+		$this->alt_option_name = 'widget_related_sermons';
 	}
 
 	function widget($args, $instance) {
@@ -33,16 +36,31 @@ class Widget_Sermons_In_Series extends WP_Widget {
 
 		extract($args);
 
-		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Sermons in this Series' );
+		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Related Sermons', MBSB );
 		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 		$order = isset( $instance['order'] ) ? $instance['order'] : 'desc';
+		$number = ( ! empty( $instance['number'] ) ) ? $instance['number'] : 10;
 		$show_date = isset( $instance['show_date'] ) ? $instance['show_date'] : false;
 
-		$sermon_id = get_queried_object_id();
-		$series_id = get_post_meta($sermon_id, 'series', true);
-		$title = sprintf($title, get_the_title($series_id));
+		if ( is_singular( 'mbsb_sermon' ) ) {
+			$meta_key = 'series';
+			$sermon_id = get_queried_object_id();
+			$meta_value = get_post_meta($sermon_id, 'series', true);
+		} else if ( is_singular ( 'mbsb_series' ) ) {
+			$meta_key = 'series';
+			$meta_value = get_queried_object_id();
+		} else if ( is_singular ( 'mbsb_service' ) ) {
+			$meta_key = 'service';
+			$meta_value = get_queried_object_id();
+		} else if ( is_singular ( 'mbsb_preacher' ) ) {
+			$meta_key = 'preacher';
+			$meta_value = get_queried_object_id();
+		}
 
-		$r = new WP_Query( apply_filters( 'widget_posts_args', array( 'posts_per_page' => -1, 'no_found_rows' => true, 'post_status' => 'publish', 'ignore_sticky_posts' => true, 'post_type' => 'mbsb_sermon', 'meta_key' => 'series', 'meta_value' => $series_id, 'orderby' => 'date', 'order' => $order ) ) );
+		$title_sub = sprintf('<a href="%s">%s</a>', get_permalink($meta_value), get_the_title($meta_value));
+		$title = sprintf($title, $title_sub);
+
+		$r = new WP_Query( apply_filters( 'widget_posts_args', array( 'posts_per_page' => $number, 'no_found_rows' => true, 'post_status' => 'publish', 'ignore_sticky_posts' => true, 'post_type' => 'mbsb_sermon', 'meta_key' => $meta_key, 'meta_value' => $meta_value, 'orderby' => 'date', 'order' => $order ) ) );
 		if ($r->have_posts()) :
 ?>
 		<?php echo $before_widget; ?>
@@ -68,6 +86,7 @@ class Widget_Sermons_In_Series extends WP_Widget {
 	function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
 		$instance['title'] = strip_tags($new_instance['title']);
+		$instance['number'] = (int) $new_instance['number'];
 		$instance['order'] = strip_tags($new_instance['order']);
 		$instance['show_date'] = isset( $new_instance['show_date'] ) ? (bool) $new_instance['show_date'] : false;
 
@@ -76,12 +95,16 @@ class Widget_Sermons_In_Series extends WP_Widget {
 
 	function form( $instance ) {
 		$title     = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
+		$number    = isset( $instance['number'] ) ? $instance['number'] : 10;
 		$order     = isset( $instance['order'] ) ? $instance['order'] : 'desc';
 		$show_date = isset( $instance['show_date'] ) ? (bool) $instance['show_date'] : false;
 ?>
 		<p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" />
-		<span class="description">"<em>%s</em>" will be replaced with the series title.</span></p>
+		<span class="description">"<em>%s</em>" will be replaced with the title of preacher, series, or service.</span></p>
+
+		<p><label for="<?php echo $this->get_field_id( 'number' ); ?>"><?php _e( 'Number of sermons to show:' ); ?></label>
+		<input id="<?php echo $this->get_field_id( 'number' ); ?>" name="<?php echo $this->get_field_name( 'number' ); ?>" type="text" value="<?php echo $number; ?>" size="3" /></p>
 
 		<p><label for="<?php echo $this->get_field_id( 'order' ); ?>"><?php _e( 'Sort Order:' ); ?></label>
 		<select class="widefat" id="<?php echo $this->get_field_id( 'order' ); ?>" name="<?php echo $this->get_field_name( 'order' ); ?>">
@@ -105,8 +128,11 @@ class Widget_Sermons_In_Series extends WP_Widget {
 class Widget_Recent_Sermons extends WP_Widget {
 
 	function __construct() {
-		$widget_ops = array('classname' => 'widget_recent_sermons', 'description' => __( "Your site&#8217;s most recent Sermons.") );
-		parent::__construct('recent-sermons', __('Recent Sermons'), $widget_ops);
+		$widget_ops = array(
+			'classname' => 'widget_recent_sermons',
+			'description' => __( 'Your site&#8217;s most recent Sermons.', MBSB)
+		);
+		parent::__construct('recent-sermons', __('Recent Sermons', MBSB), $widget_ops);
 		$this->alt_option_name = 'widget_recent_sermons';
 
 		add_action( 'save_post', array($this, 'flush_widget_cache') );
@@ -131,7 +157,7 @@ class Widget_Recent_Sermons extends WP_Widget {
 		ob_start();
 		extract($args);
 
-		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Recent Sermons' );
+		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Recent Sermons', MBSB );
 		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 		$number = ( ! empty( $instance['number'] ) ) ? absint( $instance['number'] ) : 10;
 		if ( ! $number )
@@ -190,7 +216,7 @@ class Widget_Recent_Sermons extends WP_Widget {
 		<p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" /></p>
 
-		<p><label for="<?php echo $this->get_field_id( 'number' ); ?>"><?php _e( 'Number of posts to show:' ); ?></label>
+		<p><label for="<?php echo $this->get_field_id( 'number' ); ?>"><?php _e( 'Number of sermons to show:' ); ?></label>
 		<input id="<?php echo $this->get_field_id( 'number' ); ?>" name="<?php echo $this->get_field_name( 'number' ); ?>" type="text" value="<?php echo $number; ?>" size="3" /></p>
 
 		<p><input class="checkbox" type="checkbox" <?php checked( $show_date ); ?> id="<?php echo $this->get_field_id( 'show_date' ); ?>" name="<?php echo $this->get_field_name( 'show_date' ); ?>" />
