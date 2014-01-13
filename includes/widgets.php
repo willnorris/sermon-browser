@@ -41,6 +41,7 @@ class Widget_Related_Sermons extends WP_Widget {
 		$order = isset( $instance['order'] ) ? $instance['order'] : 'desc';
 		$number = ( ! empty( $instance['number'] ) ) ? $instance['number'] : 10;
 		$show_date = isset( $instance['show_date'] ) ? $instance['show_date'] : false;
+		$show_image = isset( $instance['show_image'] ) ? $instance['show_image'] : false;
 
 		if ( is_singular( 'mbsb_sermon' ) ) {
 			$meta_key = 'series';
@@ -64,6 +65,7 @@ class Widget_Related_Sermons extends WP_Widget {
 		if ($r->have_posts()) :
 ?>
 		<?php echo $before_widget; ?>
+		<?php if ( $show_image && has_post_thumbnail($meta_value) ) echo get_the_post_thumbnail($meta_value, 'medium'); ?>
 		<?php if ( $title ) echo $before_title . $title . $after_title; ?>
 		<ul>
 		<?php while ( $r->have_posts() ) : $r->the_post(); ?>
@@ -89,6 +91,7 @@ class Widget_Related_Sermons extends WP_Widget {
 		$instance['number'] = (int) $new_instance['number'];
 		$instance['order'] = strip_tags($new_instance['order']);
 		$instance['show_date'] = isset( $new_instance['show_date'] ) ? (bool) $new_instance['show_date'] : false;
+		$instance['show_image'] = isset( $new_instance['show_image'] ) ? (bool) $new_instance['show_image'] : false;
 
 		return $instance;
 	}
@@ -98,6 +101,7 @@ class Widget_Related_Sermons extends WP_Widget {
 		$number    = isset( $instance['number'] ) ? $instance['number'] : 10;
 		$order     = isset( $instance['order'] ) ? $instance['order'] : 'desc';
 		$show_date = isset( $instance['show_date'] ) ? (bool) $instance['show_date'] : false;
+		$show_image = isset( $instance['show_image'] ) ? (bool) $instance['show_image'] : false;
 ?>
 		<p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" />
@@ -114,6 +118,9 @@ class Widget_Related_Sermons extends WP_Widget {
 
 		<p><input class="checkbox" type="checkbox" <?php checked( $show_date ); ?> id="<?php echo $this->get_field_id( 'show_date' ); ?>" name="<?php echo $this->get_field_name( 'show_date' ); ?>" />
 		<label for="<?php echo $this->get_field_id( 'show_date' ); ?>"><?php _e( 'Display sermon date?' ); ?></label></p>
+
+		<p><input class="checkbox" type="checkbox" <?php checked( $show_image ); ?> id="<?php echo $this->get_field_id( 'show_image' ); ?>" name="<?php echo $this->get_field_name( 'show_image' ); ?>" />
+		<label for="<?php echo $this->get_field_id( 'show_image' ); ?>"><?php _e( 'Display image?' ); ?></label></p>
 <?php
 	}
 }
