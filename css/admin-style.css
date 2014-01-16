@@ -72,7 +72,7 @@ table#mbsb_attached_files table.mbsb_media_detail th, table#mbsb_attached_files 
 	padding: 2px 7px;
 }
 body.post_mbsb_sermon #misc-publishing-actions, body.post_mbsb_series #misc-publishing-actions, body.post_mbsb_preacher #misc-publishing-actions, body.post_mbsb_service #misc-publishing-actions {
-	display:none;
+	/*display:none;*/
 }
 body.post_mbsb_sermon #minor-publishing, body.post_mbsb_series #minor-publishing, body.post_mbsb_preacher #minor-publishing, body.post_mbsb_service #minor-publishing {
 	border-bottom: none;
