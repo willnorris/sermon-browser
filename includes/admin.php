@@ -778,13 +778,13 @@ function mbsb_service_details_meta_box () {
 */
 function mbsb_add_admin_menu() {
 	add_menu_page(__('Sermons', MBSB), __('Sermons', MBSB), 'publish_posts', 'sermon-browser', 'sb_manage_sermons', mbsb_plugins_url('images/icon-16-color.png', __FILE__), 21);
-	add_submenu_page('sermon-browser', __('Files', MBSB), __('Files', MBSB), 'upload_files', 'sermon-browser_files', 'mbsb_files');
+	//add_submenu_page('sermon-browser', __('Files', MBSB), __('Files', MBSB), 'upload_files', 'sermon-browser_files', 'mbsb_files');
 	add_submenu_page('sermon-browser', __('Options', MBSB), __('Options', MBSB), 'manage_options', 'sermon-browser_options', 'mbsb_options_admin_page');
-	add_submenu_page('sermon-browser', __('Templates', MBSB), __('Templates', MBSB), 'manage_options', 'sermon-browser_templates', 'mbsb_templates');
-	add_submenu_page('sermon-browser', __('Import', MBSB), __('Import', MBSB), 'edit_plugins', 'sermon-browser_import', 'mbsb_import_admin_page');
-	add_submenu_page('sermon-browser', __('Uninstall', MBSB), __('Uninstall', MBSB), 'edit_plugins', 'sermon-browser_uninstall', 'mbsb_uninstall_admin_page');
-	add_submenu_page('sermon-browser', __('Help', MBSB), __('Help', MBSB), 'publish_posts', 'sermon-browser_help', 'mbsb_help');
-	add_submenu_page('sermon-browser', __('Pray for Japan', MBSB), __('Pray for Japan', MBSB), 'publish_posts', 'sermon-browser_japan', 'mbsb_japan');
+	//add_submenu_page('sermon-browser', __('Templates', MBSB), __('Templates', MBSB), 'manage_options', 'sermon-browser_templates', 'mbsb_templates');
+	//add_submenu_page('sermon-browser', __('Import', MBSB), __('Import', MBSB), 'edit_plugins', 'sermon-browser_import', 'mbsb_import_admin_page');
+	//add_submenu_page('sermon-browser', __('Uninstall', MBSB), __('Uninstall', MBSB), 'edit_plugins', 'sermon-browser_uninstall', 'mbsb_uninstall_admin_page');
+	//add_submenu_page('sermon-browser', __('Help', MBSB), __('Help', MBSB), 'publish_posts', 'sermon-browser_help', 'mbsb_help');
+	//add_submenu_page('sermon-browser', __('Pray for Japan', MBSB), __('Pray for Japan', MBSB), 'publish_posts', 'sermon-browser_japan', 'mbsb_japan');
 }
 
 /**
