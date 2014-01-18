@@ -340,7 +340,7 @@ class mbsb_single_media_attachment {
 		if ($actions)
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($this->get_mime_type()).'">';
-		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><span title="'.esc_html($url_array['url']).'">'.esc_html($short_address).'</span></td></tr>';
+		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><a href="'.esc_html($url_array['url']).'">'.esc_html($short_address).'</a></td></tr>';
 		if ($url_array['size'] && $this->get_mime_type() != 'text/html')
 			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $url_array['date_time']).'</td></tr></table>';
