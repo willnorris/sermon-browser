@@ -277,7 +277,7 @@ function mbsb_add_javascript_and_styles_to_admin_pages() {
 	$screen = get_current_screen();
 	if ($screen->base == 'post' && $screen->id == 'mbsb_sermon') {
 		wp_enqueue_style ('thickbox');
-		wp_enqueue_script('mbsb_add_edit_sermon', home_url("?mbsb_script=add-edit-sermons&locale=".get_locale()), array ('jquery', 'thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/add-edit-sermons.php')));
+		wp_enqueue_script('mbsb_add_edit_sermon', admin_url("?mbsb_script=add-edit-sermons&locale=".get_locale()), array ('jquery', 'thickbox', 'media-upload'), @filemtime(mbsb_plugin_dir_path('js/add-edit-sermons.php')));
 	}
 }
 /**
