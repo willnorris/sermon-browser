@@ -86,11 +86,13 @@ abstract class mbsb_pss_template extends mbsb_spss_template {
 	*/
 	protected function get_adjacent ($direction) {
 		$next_previous = $direction ? 'previous' : 'next';
-		if ($a = method_exists($this, "adjacent_join_{$this->type}"))
+		if ($a = method_exists($this, "adjacent_join_{$this->type}")) {
 			add_filter ("get_{$next_previous}_post_join", array ($this, "adjacent_join_{$this->type}"));
+		}
 		$adjacent = get_adjacent_post(false, '', $direction);
-		if ($a)
+		if ($a) {
 			remove_filter ("get_{$next_previous}_post_join", array ($this, "adjacent_join_{$this->type}"));
+		}
 		return $adjacent;
 	}
 }

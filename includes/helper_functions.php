@@ -103,13 +103,15 @@ function mbsb_default_options($all_options=array() ) {
 */
 function mbsb_get_option ($option, $default = null) {
 	$all_options = get_option ('sermon_browser_2');
-	if ( isset($all_options[$option]) )
+	if ( isset($all_options[$option]) ) {
 		$return = $all_options[$option];
-	else
-		if ($default === null)
+	} else {
+		if ($default === null) {
 			$return = mbsb_get_default_option($option);
-		else
+		} else {
 			$return = $default;
+		}
+	}
 	return apply_filters ("mbsb_get_option_{$option}", $return);
 }
 
@@ -121,10 +123,11 @@ function mbsb_get_option ($option, $default = null) {
 */
 function mbsb_get_sb1_option ($option) {
 	$sb1_options = unserialize( base64_decode( get_option('sermonbrowser_options') ) );
-	if ( $sb1_options and isset($sb1_options[$option]) )
+	if ( $sb1_options and isset($sb1_options[$option]) ) {
 		return $sb1_options[$option];
-	else
+	} else {
 		return null;
+	}
 }
 
 /**
@@ -164,8 +167,9 @@ function mbsb_update_option ($option, $new_value) {
 */
 function mbsb_delete_option ($option) {
 	$all_options = get_option ('sermon_browser_2');
-	if (!$all_options)
+	if (!$all_options) {
 		return false;
+	}
 	unset ($all_options [$option]);
 	return update_option ('sermon_browser_2');
 }
@@ -180,8 +184,9 @@ function mbsb_delete_option ($option) {
 * @return string
 */
 function mbsb_shorten_string ($string, $max_length = 30) {
-	if (strlen($string) <= $max_length)
+	if (strlen($string) <= $max_length) {
 		return $string;
+	}
 	$offset = min((integer)($max_length/4), 10);
 	$break_characters = array ('-', '+', ' ', '_');
 	$left_array = $right_array = array();
@@ -192,8 +197,9 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 		$right_array[] = ($a = strrpos($string, htmlentities($b), -$offset)) ? $a : 999;
 	}
 	$new_string = ($left = substr($string, 0, min($left_array))).'…'.substr($string, min($right_array)+1);
-	if (strlen($new_string) > $max_length)
+	if (strlen($new_string) > $max_length) {
 		return substr($left, 0, $max_length-1).'…';
+	}
 	else
 		return $new_string;
 }
@@ -205,14 +211,15 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 * @return string
 */
 function mbsb_format_bytes ($bytes) {
-	if ($bytes < 1100)
+	if ($bytes < 1100) {
 		return number_format($bytes, 0).' '.__('bytes', MBSB);
-	elseif ($bytes < 1024000)
+	} else if ($bytes < 1024000) {
 		return number_format($bytes/1024, 1).' '.__('kB', MBSB);
-	elseif ($bytes < 1024000000)
+	} else if ($bytes < 1024000000) {
 		return number_format($bytes/1000000, 2).' '.__('MB', MBSB);
-	elseif ($bytes < 1024000000000)
+	} else if ($bytes < 1024000000000) {
 		return number_format($bytes/1000000000, 2).' '.__('GB', MBSB);
+	}
 }
 
 /**

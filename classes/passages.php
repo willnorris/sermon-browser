@@ -46,29 +46,36 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* @param mixed $end
 	*/
 	public function __construct ($start, $end = null) {
-		if ($end === null)
+		if ($end === null) {
 			// This is a human-friendly reference (e.g. 'John 3:16; Rev 22')
 			$verses = $this->parse_passages ($start);
-		else {
+		} else {
 			// This is in a machine readable format (e.g '44003016')
-			foreach ($start as $s)
-				if ($result = $this->convert_raw_format_to_array ($s))
+			foreach ($start as $s) {
+				if ($result = $this->convert_raw_format_to_array ($s)) {
 					$verses [$result['index']]['start'] = $result ['result'];
-			foreach ($end as $s)
-				if ($result = $this->convert_raw_format_to_array ($s))
+				}
+			}
+			foreach ($end as $s) {
+				if ($result = $this->convert_raw_format_to_array ($s)) {
 					$verses [$result['index']]['end'] = $result ['result'];
+				}
+			}
 		}
 		if (isset ($verses) && !is_wp_error($verses)) {
 			ksort ($verses);
-			foreach ($verses as $v)
-				if (isset($v['start']) && isset($v['end']))
+			foreach ($verses as $v) {
+				if (isset($v['start']) && isset($v['end'])) {
 					$passages[] = new mbsb_single_passage ($v['start'], $v['end']);
+				}
+			}
 		}
 		if (isset($passages)) {
 			$this->passages = $passages;
 			$this->present = true;
-		} else
+		} else {
 			$this->present = false;
+		}
 		$this->formatted = $this->get_formatted();
 		$this->type = 'passages';
 		$this->id = '';
@@ -83,10 +90,11 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* @return boolean|array - false on failure, the array on success
 	*/
 	private function convert_raw_format_to_array ($s) {
-		if (strlen($s) === 13 && substr($s, 8, 1) == '.' && ($left = substr($s, 0, 7)) && ((integer)$left == $left) && ($right = substr($s, 9, 4)) && ((integer)$right == $right))
+		if (strlen($s) === 13 && substr($s, 8, 1) == '.' && ($left = substr($s, 0, 7)) && ((integer)$left == $left) && ($right = substr($s, 9, 4)) && ((integer)$right == $right)) {
 			return array ('index' => (integer)$right, 'result' => array ('book' => (integer)substr($s, 0, 2), 'chapter' => (integer)substr ($s, 2, 3), 'verse' => (integer)substr ($s, 5, 3)));
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -95,19 +103,22 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* @return string
 	*/
 	public function get_formatted() {
-		if ($this->formatted !== null)
+		if ($this->formatted !== null) {
 			return $this->formatted;
+		}
 		if ($this->passages) {
 			$output = '';
 			foreach ($this->passages as $index => $p) {
 				if (!isset($this->passages[$index-1]) || $this->passages[$index-1]->start['book'] != $p->start['book']) {
-					if (isset($this->passages[$index-1]))
+					if (isset($this->passages[$index-1])) {
 						$output .= '; ';
+					}
 					$output .= $p->get_formatted();
-				} elseif ($this->passages[$index-1]->start['chapter'] != $p->start['chapter'])
+				} else if ($this->passages[$index-1]->start['chapter'] != $p->start['chapter']) {
 					$output .= __(',', MBSB).' '.$p->get_formatted(true, false);
-				else
+				} else {
 					$output .= __(',', MBSB).' '.$p->get_formatted(true, true);
+				}
 			}
 			return $output;
 		}
@@ -166,42 +177,48 @@ class mbsb_passages extends mbsb_mpspss_template {
 						}
 						if (count($startend) === 1) {
 							$parsed_end = $parsed_start; // Starting point only specified (e.g. Ex. 13:12 or Gen. 12)
-							if ($parsed_start['verse'] == '')
+							if ($parsed_start['verse'] == '') {
 								$parsed_end['verse'] = 'last'; // Single chapter (e.g. Gen. 12)
+							}
 						} else
 							$parsed_end = $this->parse_one (trim($startend[1]), $parsed_start); // Verse range (e.g. Ex. 13:12-15)
 					}
-					if ($parsed_start['book'] == '')
+					if ($parsed_start['book'] == '') {
 						$processed[$count] = new WP_Error(1, ('Could not determine Bible book for '.$passage));
-					else {
+					} else {
 						$single_chapter_books = array (31, 57, 63, 64); // Obadiah, Philemon, 2 John and 3 John
-						if ($parsed_start['verse'] == '')
+						if ($parsed_start['verse'] == '') {
 							if (in_array($parsed_start['book'], $single_chapter_books)) {
 								$parsed_start['verse'] = $parsed_start['chapter'];
 								$parsed_end['verse'] = $parsed_end['chapter'];
 								$parsed_start['chapter'] = $parsed_end['chapter'] = 1;
-							} else
+							} else {
 								$parsed_start['verse'] = 1;
+							}
+						}
 						if ($parsed_end['verse'] == 'last') {
-							if (!isset($verses_per_chapter))
+							if (!isset($verses_per_chapter)) {
 								$verses_per_chapter = $this->verses_per_chapter ();
+							}
 							$parsed_end['verse'] = $verses_per_chapter[$parsed_end['book']][$parsed_end['chapter']];
 						}
-						if ($parsed_start['chapter'] < 1 | $parsed_start['verse'] < 1 | $parsed_end['chapter'] < 1 | $parsed_end['verse'] < 1)
+						if ($parsed_start['chapter'] < 1 | $parsed_start['verse'] < 1 | $parsed_end['chapter'] < 1 | $parsed_end['verse'] < 1) {
 							$processed[$count] = new WP_Error(2, 'Could not parse chapter and verse for '.$passage);
-						elseif ($parsed_end['book'] < $parsed_start['book'] || ($parsed_end['book'] == $parsed_start['book'] && $parsed_end['chapter'] < $parsed_start['chapter']) || (($parsed_end['book'] == $parsed_start['book'] && $parsed_end['chapter'] == $parsed_start['chapter'] && $parsed_end['verse'] < $parsed_start['verse'])))
+						} else if ($parsed_end['book'] < $parsed_start['book'] || ($parsed_end['book'] == $parsed_start['book'] && $parsed_end['chapter'] < $parsed_start['chapter']) || (($parsed_end['book'] == $parsed_start['book'] && $parsed_end['chapter'] == $parsed_start['chapter'] && $parsed_end['verse'] < $parsed_start['verse']))) {
 							$processed[$count] = new WP_Error(3, 'The end is before the start in '.$passage);
-						else
+						} else {
 							$processed[$count] = array('start' => $parsed_start, 'end' => $parsed_end); //Return parsed result.
+						}
 					}
 					$count++;
 				}
 			}
 		}
-		if (!empty($processed))
+		if (!empty($processed)) {
 			return $processed;
-		else
+		} else {
 	    	return new WP_Error(4, 'No Bible references could be parsed in '.$raw_passages);
+		}
 	}
 
 	/**
@@ -222,19 +239,20 @@ class mbsb_passages extends mbsb_mpspss_template {
 						$passage = trim(ltrim(substr($passage, $len), '.'));
 						$chapterverse = $this->parse_chapter_verse ($passage, $previous);
 						return array('book' => $book_index, 'chapter' => $chapterverse['chapter'], 'verse' => $chapterverse['verse']); //Bookname found, return result
-					}
-					elseif (strcasecmp($passage, $book_name) === 0)
+					} else if (strcasecmp($passage, $book_name) === 0) {
 						return array('book' => $book_index, 'chapter' => 'wholebook'); //Bookname found, no reference supplied, whole book assumed
+					}
 				}
 			}
 			return array('book' => '', 'chapter' => '', 'verse' => ''); //Bookname not found, but alpha characters remain. Return blank.
 		}
 		$passage = trim(ltrim($passage, '.'));
 		$chapterverse = $this->parse_chapter_verse ($passage, $previous);
-		if ($previous === FALSE)
+		if ($previous === FALSE) {
 			return array('book' => '', 'chapter' => $chapterverse['chapter'], 'verse' => $chapterverse['verse']); // Assume bookname implied by previous reference (e.g. Ex. 13:12, 19)
-		else
+		} else {
 			return array('book' => $previous['book'], 'chapter' => $chapterverse['chapter'], 'verse' => $chapterverse['verse']); // Assume bookname implied by first part of current reference (e.g. Ex. 13:12-19)
+		}
 	}
 
 	/**
@@ -247,23 +265,27 @@ class mbsb_passages extends mbsb_mpspss_template {
 	private function parse_chapter_verse ($passage, $previous) {
 		$period = strpos($passage, '.');
 		$colon = strpos($passage, __(':', MBSB));
-		if ($period === FALSE && $colon === FALSE)
-			if ($previous)
-				if ($previous['verse'] == '')
+		if ($period === FALSE && $colon === FALSE) {
+			if ($previous) {
+				if ($previous['verse'] == '') {
 					return (array('chapter' => (int)$passage, 'verse' => 'last')); // Single number found, second part, no verse specified, therefore return several chapters (e.g. Ex. 13-19)
-				else
+				} else {
 					return (array('chapter' => $previous['chapter'], 'verse' => (int)$passage)); // Single number found, second part, therefore assume chapter from previous (e.g. Ex. 13:12-19)
-			else
+				}
+			} else {
 				return (array('chapter' => (int)$passage, 'verse' => '')); // Single number found, first part, therefore just return chapter (e.g. Ex. 13)
-		else {
-			if ($colon === FALSE)
+			}
+		} else {
+			if ($colon === FALSE) {
 				$colon = $period;
+			}
 			$chapter = substr($passage, 0, $colon);
 			$verse = substr($passage, $colon+1);
-			if ($verse == '' && $previous)
+			if ($verse == '' && $previous) {
 				return (array('chapter' => $previous['chapter'], 'verse' => (int)$chapter)); // Single number found, second part, therefore assume chapter from previous (e.g. Ex. 13:12-19)
-			else
+			} else {
 				return (array('chapter' => (int)$chapter, 'verse' => (int)$verse)); // Two numbers found, return chapter and verse (e.g. Ex. 13:12)
+			}
 		}
 	}
 
@@ -276,14 +298,15 @@ class mbsb_passages extends mbsb_mpspss_template {
 	*/
 	public static function bible_books() {
 		$mbsb_bible_books = wp_cache_get ('mbsb_bible_books', get_locale());
-		if (!$mbsb_bible_books){
+		if (!$mbsb_bible_books) {
 			$books = array(__('Genesis, Gen, Gn', MBSB), __('Exodus, Exod, Ex', MBSB), __('Leviticus, Lev, Lv', MBSB), __('Numbers, Num, Nm', MBSB), __('Deuteronomy, Deut, Dt', MBSB), __('Joshua, Josh, Jo', MBSB), __('Judges, Judg, Jgs', MBSB), __('Ruth, Ru', MBSB), __('1 Samuel, 1 Sam, 1Sam, 1Sm, 1 Sm', MBSB), __('2 Samuel, 2 Sam, 2Sam, 2 Sm, 2Sm', MBSB), __('1 Kings, 1 Kgs, 1Kgs', MBSB), __('2 Kings, 2 Kgs, 2Kgs', MBSB), __('1 Chronicles, 1 Chron, 1Chron, 1 Chr, 1Chr', MBSB), __('2 Chronicles, 2 Chron, 2Chron, 2 Chr, 2Chr',MBSB), __('Ezra, Ezr', MBSB), __('Nehemiah, Neh', MBSB), __('Esther, Est', MBSB), __('Job, Jb', MBSB), __('Psalm, Psalms, Pss, Psa, Ps', MBSB), __('Proverbs, Prov, Prv', MBSB), __('Ecclesiastes, Eccles, Eccl', MBSB), __('Song of Solomon, Song of Songs, Song of Sol, Songs, Sg', MBSB), __('Isaiah, Isa, Is', MBSB), __('Jeremiah, Jer', MBSB), __('Lamentations, Lam', MBSB), __('Ezekiel, Ezek, Ezk, Ez', MBSB), __('Daniel, Dan, Dn', MBSB), __('Hosea, Hos', MBSB), __('Joel, Jl', MBSB), __('Amos, Am', MBSB), __('Obadiah, Obad, Ob', MBSB), __('Jonah, Jon', MBSB), __('Micah, Mic, Mi', MBSB), __('Nahum, Nah, Na', MBSB), __('Habakkuk, Hab, Hb', MBSB), __('Zephaniah, Zeph, Zep', MBSB), __('Haggai, Hag, Hg', MBSB), __('Zechariah, Zech, Zec', MBSB), __('Malachi, Mal', MBSB), __('Matthew, Matt, Mt', MBSB), __('Mark, Mk', MBSB), __('Luke, Lk', MBSB), __('John, Jn', MBSB), __('Acts', MBSB), __('Romans, Rom', MBSB), __('1 Corinthians, 1 Cor, 1Cor', MBSB), __('2 Corinthians, 2 Cor, 2Cor', MBSB), __('Galatians, Gal', MBSB), __('Ephesians, Eph', MBSB), __('Philippians, Phil', MBSB), __('Colossians, Col', MBSB), __('1 Thessalonians, 1 Thess, 1Thess, 1 Thes, 1Thes, 1 Th, 1Th', MBSB), __('2 Thessalonians, 2 Thess, 2Thess, 2 Thes, 2Thes, 2 Th, 2Th', MBSB), __('1 Timothy, 1 Tim, 1Tim, 1 Ti, 1Ti, 1 Tm, 1Tm', MBSB), __('2 Timothy, 2 Tim, 2Tim, 2 Ti, 2Ti, 2 Tm, 2Tm', MBSB), __('Titus, Tit, Ti', MBSB), __('Philemon, Philem, Phlm', MBSB), __('Hebrews, Heb', MBSB), __('James, Jas', MBSB), __('1 Peter, 1Peter, 1 Pet, 1Pet, 1 Pt, 1Pt', MBSB), __('2 Peter, 2Peter, 2 Pet, 2Pet, 2 Pt, 2Pt', MBSB), __('1 John, 1John, 1 Jn, 1Jn', MBSB), __('2 John, 2John, 2 Jn, 2Jn', MBSB), __('3 John, 3John, 3 Jn, 3Jn', MBSB), __('Jude', MBSB), __('Revelation, Rev, Rv', MBSB));
 			foreach ($books as $num => $names) {
 				$num++;
 				$names = explode (',', $names);
 				$mbsb_bible_books['mbsb_index'][$num] = trim($names[0]);
-				foreach ($names as $name)
+				foreach ($names as $name) {
 					$mbsb_bible_books[trim($name)] = $num;
+				}
 			}
 			wp_cache_set ('mbsb_bible_books', $mbsb_bible_books, get_locale());
 		}
@@ -379,8 +402,9 @@ class mbsb_passages extends mbsb_mpspss_template {
 			$bibles = new mbsb_online_bibles();
 			if (mbsb_get_option('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale())) {
 				$output = $this->do_div ($bibles->get_bible_list_dropdown(), 'bible_dropdown');
-			} else
+			} else {
 				$output = '';
+			}
 			$preferred_version = mbsb_get_preferred_version();
 			$output .= $this->do_div ($this->get_text_output($preferred_version), 'text');
 			return $this->do_div ($output, 'wrap');
@@ -394,26 +418,29 @@ class mbsb_passages extends mbsb_mpspss_template {
 	* @return string
 	*/
 	public function get_text_output($version = '') {
-		if ($version == '')
+		if ($version == '') {
 			$version = mbsb_get_preferred_version();
+		}
 		$bibles = new mbsb_online_bibles();
 		$bible = $bibles->get_bible_details($version);
 		$output = '';
 		$c = count ($this->passages);
 		foreach ($this->passages as $index => $p) {
-			if ($c > 1 && $version != 'esv')
+			if ($c > 1 && $version != 'esv') {
 				$output .= $this->do_div($p->formatted, "heading_{$index}", 'passage_heading');
+			}
 			$output .= $this->do_div ($p->get_bible_text($version), "body_{$index}", "passage_body {$bible['service']} {$bible['service']}_{$version} lang_{$bible['language_code']}");
 		}
 		if (mbsb_get_option ('use_embedded_bible_'.get_locale())) {
 			$text = esc_html(sprintf(__('Powered by %s', MBSB), 'SermonBrowser'));
 			$output .= $this->do_div('<a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.$text.'" title="'.$text.'"/>', 'powered_by', 'powered_by sermonbrowser');
-		} elseif ($bible['service'] == 'biblia')
+		} else if ($bible['service'] == 'biblia') {
 			$output .= $this->do_div('<a href="http://biblia.com/"><img src="http://api.biblia.com/docs/media/PoweredByBiblia.png" alt="'.sprintf(__('Powered by %s', MBSB), 'Biblia.com').'"/><a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.sprintf(__('Powered by %s', MBSB), 'SermonBrowser').'"/>', 'powered_by', 'powered_by sermonbrowser');
-		elseif ($bible['service'] == 'biblesearch')
+		} else if ($bible['service'] == 'biblesearch') {
 			$output .= $this->do_div(sprintf(__('Powered by %s and %s.', MBSB), '<a href="http://bibles.org/">BibleSearch</a>', '<a href="http://www.sermonbrowser.com">SermonBrowser</a>'), 'powered_by', 'powered_by '.$bible['service']);
-		elseif ($bible ['service'] == 'esv')
+		} else if ($bible ['service'] == 'esv') {
 			$output .= $this->do_div (sprintf(__('Powered by %s and the %s API.', MBSB), '<a href="http://www.sermonbrowser.com">SermonBrowser</a>', '<a href="http://www.esv.org/">ESV</a>'), 'powered_by', 'powered_by esv');
+		}
 		return $output;
 	}
 }

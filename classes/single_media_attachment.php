@@ -47,9 +47,9 @@ class mbsb_single_media_attachment {
 	*/
 	public function __construct ($meta_id) {
 		$data = get_metadata_by_mid('post', $meta_id);
-		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'embed', 'legacy')))
+		if (!$data || $data->meta_key != 'attachments' || !isset($data->meta_value['type']) || !in_array($data->meta_value['type'], array ('library', 'url', 'embed', 'legacy'))) {
 			$this->present = false;
-		else {
+		} else {
 			$this->attachment_type = $data->meta_value ['type'];
 			unset ($data->meta_value['type']);
 			if ($this->attachment_type == 'library') {
@@ -93,10 +93,11 @@ class mbsb_single_media_attachment {
 	* @return string - the JSON encoded result
 	*/
 	public function get_json_attachment_row($success = true, $message = '') {
-		if ($success)
+		if ($success) {
 			return json_encode(array('result' => 'success', 'code' => $this->get_admin_attachment_row ('mbsb_hide'), 'row_id' => $this->meta_id));
-		else
+		} else {
 			return json_encode(array('result' => 'failure', 'code' => mbsb_do_media_row_message ($message), 'row_id' => 'error_'.time()));
+		}
 	}
 
 	/**
@@ -116,10 +117,11 @@ class mbsb_single_media_attachment {
 	* @return boolean|string - False on failure, the embed code on success.
 	*/
 	public function get_embed_code () {
-		if ($this->attachment_type != 'embed')
+		if ($this->attachment_type != 'embed') {
 			return false;
-		else
+		} else {
 			return $this->data['code'];
+		}
 	}
 
 	/**
@@ -128,14 +130,15 @@ class mbsb_single_media_attachment {
 	* @return boolean|string - False on failure, the URL on success
 	*/
 	public function get_url() {
-		if ($this->attachment_type == 'url')
+		if ($this->attachment_type == 'url') {
 			return $this->data['url'];
-		elseif ($this->attachment_type == 'legacy')
+		} else if ($this->attachment_type == 'legacy') {
 			return site_url(mbsb_get_option('legacy_upload_folder').$this->data['filename']);
-		elseif ($this->attachment_type == 'library')
+		} else if ($this->attachment_type == 'library') {
 			return $this->data->guid;
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -146,18 +149,20 @@ class mbsb_single_media_attachment {
 	* @return string
 	*/
 	public function get_media_player() {
-		if ($this->attachment_type == 'embed')
+		if ($this->attachment_type == 'embed') {
 			return $this->get_embed_code();
-		else {
+		} else {
 			$mime_type = substr($this->get_mime_type(), 0, 5);
 			if ($mime_type == 'audio' || $mime_type == 'video') {
-				if (($mime_type == 'video' || $mime_type == 'audio') && mbsb_get_option('add_download_links'))
+				if (($mime_type == 'video' || $mime_type == 'audio') && mbsb_get_option('add_download_links')) {
 					$insert = $this->get_name().' (<a href="'.$this->get_url().'" title="'.esc_html(__('Right-click and choose "Save as" to download', MBSB)).'">'.__('download', MBSB).'</a>)'.'</br>';
-				else
+				} else {
 					$insert = '';
+				}
 				return $insert.do_shortcode (str_replace('%URL%', $this->get_url(), mbsb_get_option("{$mime_type}_shortcode")));
-			} else
+			} else {
 				return $this->get_attachment_link().' ('.$this->get_friendly_mime_type().', '.$this->get_friendly_filesize().')';
+			}
 		}
 	}
 
@@ -167,11 +172,11 @@ class mbsb_single_media_attachment {
 	* @return boolean|string - false on failure, the link on success
 	*/
 	public function get_attachment_link() {
-		if ($this->attachment_type == 'embed')
+		if ($this->attachment_type == 'embed') {
 			return false;
-		else
+		} else {
 			return '<a title="'.esc_html(__('Right-click and choose "Save as" to download', MBSB)).'" href="'.$this->get_url().'">'.esc_html($this->get_name()).'</a>';
-
+		}
 	}
 
 	/**
@@ -180,10 +185,11 @@ class mbsb_single_media_attachment {
 	* @return boolean|integer - False on failure, the post_id on success.
 	*/
 	public function get_library_id () {
-		if ($this->attachment_type != 'library')
+		if ($this->attachment_type != 'library') {
 			return false;
-		else
+		} else {
 			return $this->data->ID;
+		}
 	}
 
 	/**
@@ -192,9 +198,9 @@ class mbsb_single_media_attachment {
 	* @return integer
 	*/
 	public function get_filesize() {
-		if ($this->attachment_type != 'library')
+		if ($this->attachment_type != 'library') {
 			return false;
-		else {
+		} else {
 			$filename = get_attached_file ($this->get_id());
 			return filesize($filename);
 		}
@@ -217,13 +223,13 @@ class mbsb_single_media_attachment {
 	* @return string
 	*/
 	public function get_name () {
-		if ($this->attachment_type == 'library')
+		if ($this->attachment_type == 'library') {
 			return $this->data->post_title;
-		elseif ($this->attachment_type == 'url') {
+		} else if ($this->attachment_type == 'url') {
 			$title = rtrim($this->data['url'], '/');
 			$title = substr($title, strrpos($title, '/')+1);
 			return mbsb_shorten_string($title, 30);
-		} elseif ($this->attachment_type == 'embed') {
+		} else if ($this->attachment_type == 'embed') {
 			$parse = new DOMDocument('4.0', 'utf-8');
 			@$parse->loadHTML ($this->get_embed_code());
 			$elements = array('iframe' => 'src', 'embed' => 'src', 'params' => 'value');
@@ -235,23 +241,28 @@ class mbsb_single_media_attachment {
 						break;
 					}
 				}
-				if (isset($url))
+				if (isset($url)) {
 					break;
+				}
 			}
-			if (!isset($url))
+			if (!isset($url)) {
 				return __('Embed code', MBSB);
+			}
 			$url = parse_url($url);
 			$url['host'] = strtolower ($url['host']);
-			if (substr($url['host'], 0, 4) == 'www.')
+			if (substr($url['host'], 0, 4) == 'www.') {
 				$url['host'] = substr ($url['host'], 4);
+			}
 			if (substr($url['host'], -4) == '.com') {
 				$a = substr ($url['host'], 0, -4);
-				if (strpos($a, '.') === false)
+				if (strpos($a, '.') === false) {
 					$url['host'] = $a;
+				}
 			}
 			return __('Embed code', MBSB).' ('.$url['host'].')';
-		} elseif ($this->attachment_type == 'legacy')
+		} else if ($this->attachment_type == 'legacy') {
 			return basename($this->data['filename']);
+		}
 	}
 
 	/**
@@ -274,12 +285,13 @@ class mbsb_single_media_attachment {
 	* @return string
 	*/
 	public function get_mime_type() {
-		if ($this->attachment_type == 'url' || $this->attachment_type == 'legacy')
+		if ($this->attachment_type == 'url' || $this->attachment_type == 'legacy') {
 			return $this->data['mime_type'];
-		elseif ($this->attachment_type == 'library')
+		} else if ($this->attachment_type == 'library') {
 			return $this->data->post_mime_type;
-		elseif ($this->attachment_type == 'embed')
+		} else if ($this->attachment_type == 'embed') {
 			return __('embed', MBSB);
+		}
 	}
 
 	/**
@@ -289,17 +301,19 @@ class mbsb_single_media_attachment {
 	*/
 	public function get_friendly_mime_type() {
 		$mime_type = $this->get_mime_type();
-		if ($mime_type == 'application/pdf')
+		if ($mime_type == 'application/pdf') {
 			return __('PDF', MBSB);
-		elseif ($mime_type == 'text/html')
+		} else if ($mime_type == 'text/html') {
 			return __('link', MBSB);
+		}
 		$sub = substr($mime_type, 0, 6);
-		if ($sub == 'audio/')
+		if ($sub == 'audio/') {
 			return __('audio', MBSB);
-		elseif ($sub == 'image/')
+		} else if ($sub == 'image/') {
 			return __('image', MBSB);
-		else
+		} else {
 			return $mime_type;
+		}
 	}
 
 	/**
@@ -314,8 +328,9 @@ class mbsb_single_media_attachment {
 		$insert = $class ? "  class=\"{$class}\"" : '';
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($attachment->post_title).'</h3>';
-		if ($actions)
+		if ($actions) {
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		}
 		$output .= wp_get_attachment_image ($attachment->ID, array(46,60), true, array ('class' => 'thumbnail'));
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html(basename($attachment->guid)).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes(filesize($filename)).'</td></tr>';
@@ -337,12 +352,14 @@ class mbsb_single_media_attachment {
 		$short_address = $this->get_short_url();
 		$title = $this->get_name();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
-		if ($actions)
+		if ($actions) {
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		}
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($this->get_mime_type()).'">';
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('URL', MBSB).':</th><td><a href="'.esc_html($url_array['url']).'">'.esc_html($short_address).'</a></td></tr>';
-		if ($url_array['size'] && $this->get_mime_type() != 'text/html')
+		if ($url_array['size'] && $this->get_mime_type() != 'text/html') {
 			$output .= '<tr><th scope="row">'.__('File size', MBSB).':</th><td>'.mbsb_format_bytes($url_array['size']).'</td></tr>';
+		}
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $url_array['date_time']).'</td></tr></table>';
 		$output .= '</td></tr>';
 		return $output;
@@ -360,8 +377,9 @@ class mbsb_single_media_attachment {
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
 		$title = $this->get_name();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
-		if ($actions)
+		if ($actions) {
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		}
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ('interactive').'">';
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Code', MBSB).':</th><td>'.esc_html($embed_array['code']).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $embed_array['date_time']).'</td></tr></table>';
@@ -381,8 +399,9 @@ class mbsb_single_media_attachment {
 		$actions = apply_filters ('mbsb_attachment_row_actions', '');
 		$title = $this->get_name();
 		$output  = "<tr><td id=\"row_{$this->meta_id}\"{$insert} style=\"width:100%\"><h3>".esc_html($title).'</h3>';
-		if ($actions)
+		if ($actions) {
 			$output .= "<span class=\"attachment_actions\" id=\"unattach_row_{$this->meta_id}\">{$actions}</span>";
+		}
 		$output .= "<img class=\"attachment-46x60 thumbnail\" width=\"46\" height=\"60\" alt=\"".esc_html($title).'" title="'.esc_html($title).'" src="'.wp_mime_type_icon ($this->get_mime_type()).'">';
 		$output .= '<table class="mbsb_media_detail"><tr><th scope="row">'.__('Filename', MBSB).':</th><td>'.esc_html($legacy_array['filename']).'</td></tr>';
 		$output .= '<tr><th scope="row">'.__('Attachment date', MBSB).':</th><td>'.mysql2date ($this->get_attachment_date_format(), $legacy_array['date_time']).'</td></tr></table>';
@@ -398,8 +417,9 @@ class mbsb_single_media_attachment {
 	private function get_attachment_date_format () {
 		$default_date_format = 'F j, Y';
 		$date_format = get_option('date_format', $default_date_format);
-		if ($date_format == '')
+		if ($date_format == '') {
 			$date_format = $default_date_format;
+		}
 		return $date_format;
 	}
 }

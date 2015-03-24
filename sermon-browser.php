@@ -35,10 +35,11 @@ GNU General Public License for more details: <http://www.gnu.org/licenses/>
 define ('MBSB', 'MBSB');
 
 // Make sure the necessary files are included
-if (is_admin())
+if (is_admin()) {
 	require mbsb_plugin_dir_path ('includes/admin.php');
-else
+} else {
 	require mbsb_plugin_dir_path ('includes/frontend.php');
+}
 
 require mbsb_plugin_dir_path ('includes/common.php');
 require mbsb_plugin_dir_path ('includes/helper_functions.php');
@@ -60,8 +61,9 @@ spl_autoload_register('mbsb_autoload_classes');
 * @param string $class_name
 */
 function mbsb_autoload_classes ($class_name) {
-	if (substr($class_name, 0, 5) == 'mbsb_')
+	if (substr($class_name, 0, 5) == 'mbsb_') {
 		require ('classes/'.substr($class_name, 5).'.php');
+	}
 }
 
 /**
@@ -80,8 +82,9 @@ function mbsb_activate () {
 */
 function mbsb_plugins_loaded() {
 	if (isset ($_GET['mbsb_script'])) {
-		if (mbsb_get_option('use_embedded_bible_'.get_locale()))
+		if (mbsb_get_option('use_embedded_bible_'.get_locale())) {
 			add_action ('mbsb_frontend_jQuery', create_function ('', 'echo "logos.biblia.init();\r\n";'));
+		}
 		require ("js/{$_GET['mbsb_script']}.php");
 		die();
 	}
@@ -95,8 +98,9 @@ function mbsb_plugins_loaded() {
 */
 function mbsb_init () {
 	mbsb_register_custom_post_types();
-	if (delete_transient('mbsb_flush_rules'))
+	if (delete_transient('mbsb_flush_rules')) {
 		flush_rewrite_rules();
+	}
 	mbsb_register_image_sizes();
 	add_action ('save_post', 'mbsb_save_post', 10, 2);
 	add_action ('admin_menu', 'mbsb_add_admin_menu');
@@ -251,8 +255,9 @@ function mbsb_admin_bar_menu() {
 			$wp_admin_bar->add_node(array('parent' => 'mbsb-menu', 'id' => 'mbsb-services', 'title' => __('Services', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_service')));
 		} else {
 			$wp_admin_bar->add_node(array('parent' => 'new-content', 'id' => 'mbsb-add-sermon', 'title' => __('Sermon', MBSB), 'href' => admin_url('post-new.php?post_type=mbsb_sermon')));
-			if (!is_admin())
+			if (!is_admin()) {
 				$wp_admin_bar->add_node(array('parent' => 'site-name', 'id' => 'mbsb-sermons', 'title' => __('Sermons', MBSB), 'href' => admin_url('edit.php?post_type=mbsb_sermon')));
+			}
 		}
 	}
 }

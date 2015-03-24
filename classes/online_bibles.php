@@ -44,8 +44,9 @@ class mbsb_online_bibles {
 						$bibles_xml = $bibles_xml->bibles;
 						foreach ($bibles_xml as $bible) {
 							$bible->title = trim(str_replace ('With Morphology', '', $bible->title));
-							if (strtolower(substr($bible->title, 0, 4)) == 'the ')
+							if (strtolower(substr($bible->title, 0, 4)) == 'the ') {
 								$bible->title = substr($bible->title, 4);
+							}
 							$this->add_bible ((string)$bible->bible, (string)$bible->title, (string)$bible->languages[0], 'biblia');
 						}
 					}
@@ -58,8 +59,9 @@ class mbsb_online_bibles {
 					$bibles_xml = new SimpleXMLElement($bibles_xml['body']);
 					if (isset($bibles_xml->version)) {
 						$bibles_xml = $bibles_xml->version;
-						foreach ($bibles_xml as $bible)
+						foreach ($bibles_xml as $bible) {
 							$this->add_bible ((string)$bible->id, (string)$bible->name, (string)$bible->lang, 'biblesearch');
+						}
 						//Some Bibles are missing from the list, and need to be added manually
 						$this->add_bible ('BCN', 'Beibl Cymraeg Newydd (Argraffiad Diwygiedig)', 'cym', 'biblesearch');
 						$this->add_bible ('BNET', 'Beibl.net', 'cym', 'biblesearch');
@@ -72,8 +74,9 @@ class mbsb_online_bibles {
 			if ($bibles_xml['response']['code'] == 200) {
 				$bibles_xml = new SimpleXMLElement($bibles_xml['body']);
 				if (isset($bibles_xml->version)) {
-					foreach ($bibles_xml->version as $bible)
+					foreach ($bibles_xml->version as $bible) {
 						$this->add_bible ((string)$bible->code, (string)$bible->name, (string)$bible->language, 'preaching_central');
+					}
 				}
 			}
 			uasort ($this->bibles, array($this, 'bible_sort'));
@@ -93,8 +96,9 @@ class mbsb_online_bibles {
 	private function add_bible ($code, $name, $language, $service) {
 		if (strlen($language) == 2) {
 			$language = $this->convert_language_code ($language);
-		} elseif (strlen($language) > 3)
+		} else if (strlen($language) > 3) {
 			$language = substr($language, 0, 3);
+		}
 		$inactive = in_array_ic($code, mbsb_get_option('inactive_bibles')) || in_array_ic ($language, mbsb_get_option ('inactive_bible_languages')) || (mbsb_get_option('hide_other_language_bibles') && $language != $this->convert_language_code(substr(get_locale(), 0, 2)) || array_key_exists_ic ($code, $this->bibles));
 		$this->bibles[$code] = array ('name' => $name, 'language_code' => $language, 'service' => $service, 'active' => !$inactive);
 	}
@@ -152,18 +156,20 @@ class mbsb_online_bibles {
 	*/
 	private function inactivate_equivalent_bibles () {
 		$equivalents = $this->equivalent_bibles();
-		foreach ($equivalents as $bible => $common_name)
+		foreach ($equivalents as $bible => $common_name) {
 			if (!isset($e_index[$common_name])) {
 				$common_versions = array_keys ($equivalents, $common_name);
 				$this_version_active = false;
 				foreach ($common_versions as &$c) {
 					$c = substr($c, 0, strpos($c, '_'));
-					if ($this_version_active && isset($this->bibles[$c]['active']) && $this->bibles[$c]['active'])
+					if ($this_version_active && isset($this->bibles[$c]['active']) && $this->bibles[$c]['active']) {
 						$this->bibles[$c]['active'] = false;
-					elseif (!$this_version_active && isset($this->bibles[$c]['active']) && $this->bibles[$c]['active'])
+					} else if (!$this_version_active && isset($this->bibles[$c]['active']) && $this->bibles[$c]['active']) {
 						$this_version_active = true;
+					}
 				}
 			}
+		}
 	}
 
 	/**
@@ -177,11 +183,11 @@ class mbsb_online_bibles {
 	private function convert_language_code ($language) {
 		$codes = array ('en' => 'eng', 'ar' => 'ara', 'el' => 'grc', 'it' => 'ita', 'eo' => 'epo', 'fr' => 'fra', 'fi' => 'fin', 'ru' => 'rus', 'nl' => 'nld', 'pt' => 'por');
 		$codes = apply_filters ('mbsb_language_code_table', $codes);
-		if (isset($codes[$language]))
+		if (isset($codes[$language])) {
 			return $codes[$language];
-		else
+		} else {
 			return $language;
-
+		}
 	}
 
 	/**
@@ -193,28 +199,34 @@ class mbsb_online_bibles {
 	* @return string
 	*/
 	public function get_bible_list_dropdown($selected_version = '', $id='bible_dropdown', $name='') {
-		if ($name)
+		if ($name) {
 			$name = 'name="'.$name.'"';
-		if ($selected_version == '')
+		}
+		if ($selected_version == '') {
 			$selected_version = mbsb_get_preferred_version();
+		}
 		$local_bibles = array();
 		$other_bibles = array ('<optgroup label="'.__('Other languages', MBSB).'">');
-		foreach ($this->bibles as $code => $bible)
+		foreach ($this->bibles as $code => $bible) {
 			if ($bible['active']) {
-				if ($code == $selected_version)
+				if ($code == $selected_version) {
 					$insert = ' selected="selected"';
-				else
+				} else {
 					$insert = '';
-				if ($this->convert_language_code(substr(get_locale(), 0, 2)) == $bible['language_code'])
+				}
+				if ($this->convert_language_code(substr(get_locale(), 0, 2)) == $bible['language_code']) {
 					$local_bibles[] = "<option{$insert} value=\"{$code}\">{$bible['name']}</option>";
-				else
+				} else {
 					$other_bibles[] = "<option{$insert} value=\"{$code}\">".$this->language_from_code($bible['language_code']).": {$bible['name']}</option>";
+				}
 			}
+		}
 		$other_bibles[] = '</optgroup>';
-		if (mbsb_get_option('hide_other_language_bibles'))
+		if (mbsb_get_option('hide_other_language_bibles')) {
 			$bibles = $local_bibles;
-		else
+		} else {
 			$bibles = array_merge ($local_bibles, $other_bibles);
+		}
 		return  "<select id=\"$id\" $name >".implode('', $bibles).'</select><div id="passages_bible_loader"></div>';
 	}
 
@@ -225,10 +237,11 @@ class mbsb_online_bibles {
 	* @return array
 	*/
 	public function get_bible_details($version) {
-		if (isset($this->bibles[$version]))
+		if (isset($this->bibles[$version])) {
 			return $this->bibles[$version];
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -243,12 +256,13 @@ class mbsb_online_bibles {
 	public function bible_sort ($a, $b) {
 		$a['language_name'] = $this->language_from_code ($a['language_code']);
 		$b['language_name'] = $this->language_from_code ($b['language_code']);
-		if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name']))
+		if (($a['name'] == $b['name']) && ($a['language_name'] == $b['language_name'])) {
 			return 0;
-		elseif ($a['language_name'] == $b['language_name'])
+		} else if ($a['language_name'] == $b['language_name']) {
 			return ($a['name'] > $b['name']) ? 1 : -1;
-		else
+		} else {
 			return ($a['language_name'] > $b['language_name']) ? 1 : -1;
+		}
 	}
 
 	/**
@@ -263,10 +277,11 @@ class mbsb_online_bibles {
 			$languages = apply_filters ('mbsb_language_codes', $languages);
 			wp_cache_set ('mbsb_get_languages', get_locale());
 		}
-		if (isset($languages[$code]))
+		if (isset($languages[$code])) {
 			return $languages[$code];
-		else
+		} else {
 			return $code;
+		}
 	}
 }
 ?>

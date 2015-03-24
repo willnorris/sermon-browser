@@ -21,26 +21,29 @@ function mbsb_return_select_list ($custom_post_type, $selected = '', $additions 
 	$output = "<option value=\"0\">&nbsp;</option>";
 	if (is_array($posts)) {
 		foreach ($posts as $post) {
-			if ($selected != '' && $post->ID == $selected)
+			if ($selected != '' && $post->ID == $selected) {
 				$insert = ' selected="selected"';
-			else
+			} else {
 				$insert = '';
+			}
 			$output .= "<option value=\"{$post->ID}\"{$insert}>".esc_html($post->post_title)."&nbsp;</option>";
 		}
 	}
 	if (!empty($additions) && is_array($additions)) {
 		foreach ($additions as $id => $text) {
-			if ($selected != '' && $id == $selected)
+			if ($selected != '' && $id == $selected) {
 				$insert = ' selected="selected"';
-			else
+			} else {
 				$insert = '';
+			}
 			$output .= "<option value=\"{$id}\"{$insert}>".esc_html($text)."&nbsp;</option>";
 		}
 	}
-	if (!isset($output))
+	if (!isset($output)) {
 		return false;
-	else
+	} else {
 		return $output;
+	}
 }
 
 /**
@@ -52,17 +55,19 @@ function mbsb_return_select_list ($custom_post_type, $selected = '', $additions 
 * @return array - the modified data with the correct date/time
 */
 function mbsb_sermon_insert_post_modify_date_time ($data) {
-	if ($data['post_type'] == 'mbsb_sermon')
+	if ($data['post_type'] == 'mbsb_sermon') {
 		if (isset($_POST['mbsb_date']) && $data['post_status'] != 'auto-draft') {
-			if (isset($_POST['mbsb_override_time']) && $_POST['mbsb_override_time'] == 'on' && isset($_POST['mbsb_time']))
+			if (isset($_POST['mbsb_override_time']) && $_POST['mbsb_override_time'] == 'on' && isset($_POST['mbsb_time'])) {
 				$data['post_date'] = $data ['post_modified'] = "{$_POST['mbsb_date']} {$_POST['mbsb_time']}:00";
-			else {
+			} else {
 				$service = new mbsb_service($_POST['mbsb_service']);
 				$data['post_date'] = $data ['post_modified'] =  "{$_POST['mbsb_date']} ".$service->get_time();
 			}
-			if (isset($_POST['mbsb_date']) && isset($_POST['mbsb_time']))
+			if (isset($_POST['mbsb_date']) && isset($_POST['mbsb_time'])) {
 				$data['post_date_gmt'] = $data['post_modified_gmt'] = date ('Y-m-d H:i:s', mysql2date ('U', $data['post_date'])-(get_option('gmt_offset')*60*60));
+			}
 		}
+	}
 	return $data;
 }
 
@@ -95,8 +100,9 @@ function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
 		if ($post->post_status == 'publish' && substr($post->post_type, 0, 5) == 'mbsb_' && $post->post_type != 'mbsb_sermon') {
 			//Prevent deletion of data used in existing sermons
 			$type = substr($post->post_type, 5);
-			if (query_posts (array ('post_type' => 'mbsb_sermon', 'meta_query' => array (array('key' => $type, 'value' => $args[2])))))
+			if (query_posts (array ('post_type' => 'mbsb_sermon', 'meta_query' => array (array('key' => $type, 'value' => $args[2]))))) {
 				$allcaps[$caps[0]] = false;
+			}
 		}
 	}
 	return $allcaps;
@@ -171,12 +177,13 @@ function mbsb_join_book ($join, $join_type = 'INNER') {
 function mbsb_cached_download ($url, $max_cached_time = 604800, $user_name = '', $password = '') { // 1 week
 	$option_name = 'mbsb_cache_'.md5($url.$user_name.$password);
 	$cached = get_option ($option_name);
-	if ($cached && (($cached['time']+$max_cached_time) > time()))
+	if ($cached && (($cached['time']+$max_cached_time) > time())) {
 		return $cached ['data'];
-	else {
+	} else {
 		$args = array();
-		if ($user_name || $password)
+		if ($user_name || $password) {
 			$args['headers'] = array ('Authorization' => 'Basic '.base64_encode ("{$user_name}:{$password}"));
+		}
 		$download = wp_remote_get ($url, $args);
 		if (is_wp_error ($download) || $download['response']['code'] != 200) {
 			if ($cached) {
@@ -184,8 +191,9 @@ function mbsb_cached_download ($url, $max_cached_time = 604800, $user_name = '',
 				update_option ($option_name, $cached);
 				return $cached ['data'];
 			}
-		} else
+		} else {
 			update_option ($option_name, array ('data' => $download, 'time' => time()));
+		}
 		return $download;
 	}
 }
@@ -196,10 +204,11 @@ function mbsb_cached_download ($url, $max_cached_time = 604800, $user_name = '',
 * @return string
 */
 function mbsb_get_preferred_version() {
-	if (mbsb_get_option ('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale()) && isset($_COOKIE['sermon_browser_bible']))
+	if (mbsb_get_option ('allow_user_to_change_bible') && !mbsb_get_option ('use_embedded_bible_'.get_locale()) && isset($_COOKIE['sermon_browser_bible'])) {
 		return $_COOKIE['sermon_browser_bible'];
-    else
+	} else {
 		return mbsb_get_option ('bible_version_'.get_locale());
+	}
 }
 
 /**
@@ -214,24 +223,27 @@ function mbsb_get_api_key($service) {
 
 function mbsb_get_sermon_count_by ($type, $sermon_ids = '') {
 	global $wpdb;
-	if (is_array($sermon_ids))
+	if (is_array($sermon_ids)) {
 		 $sermon_ids = 'AND sermons.ID IN ('.implode (', ', $sermon_ids).')';
-	if (in_array($type, array('series', 'service', 'preacher')))
+	}
+	if (in_array($type, array('series', 'service', 'preacher'))) {
 		return $wpdb->get_results("SELECT {$type}.ID as id, {$type}.post_title AS name, COUNT(*) AS count FROM {$wpdb->prefix}posts AS sermons INNER JOIN {$wpdb->prefix}postmeta INNER JOIN {$wpdb->prefix}posts AS {$type} WHERE post_id=sermons.ID AND {$type}.post_type='mbsb_{$type}' AND {$wpdb->prefix}postmeta.meta_key='{$type}' AND {$type}.ID={$wpdb->prefix}postmeta.meta_value {$sermon_ids} GROUP BY {$type}.ID ORDER BY name");
-	elseif ($type == 'tag')
+	} else if ($type == 'tag') {
 		return $wpdb->get_results("SELECT tag.term_id as id, tag.name AS name, COUNT(*) AS count FROM {$wpdb->prefix}posts AS sermons INNER JOIN {$wpdb->prefix}term_relationships as term_rel INNER JOIN {$wpdb->prefix}terms AS tag INNER JOIN {$wpdb->prefix}term_taxonomy AS term_tax WHERE term_rel.term_taxonomy_id=term_tax.term_taxonomy_id AND term_rel.object_id=sermons.ID AND term_tax.term_id=tag.term_id {$sermon_ids} GROUP BY tag.term_id ORDER BY name");
-	elseif ($type == 'book')
+	} else if ($type == 'book') {
 		return $wpdb->get_results("SELECT LEFT({$wpdb->prefix}postmeta.meta_value,2) as id, LEFT({$wpdb->prefix}postmeta.meta_value,2) AS name, COUNT(DISTINCT sermons.ID) AS count FROM {$wpdb->prefix}posts AS sermons INNER JOIN {$wpdb->prefix}postmeta WHERE post_id=sermons.ID AND ({$wpdb->prefix}postmeta.meta_key='passage_start' OR {$wpdb->prefix}postmeta.meta_key='passage_end') {$sermon_ids} GROUP BY id");
-	elseif ($type == 'year')
+	} else if ($type == 'year') {
 		return $wpdb->get_results("SELECT ID as id, YEAR(post_date) AS name, COUNT(*) AS count FROM {$wpdb->prefix}posts AS sermons WHERE 1=1 {$sermon_ids} GROUP BY name");
+	}
 }
 
 function mbsb_get_bible_book_name ($book_id) {
 	$books = mbsb_passages::bible_books();
-	if (isset($books['mbsb_index'][$book_id]))
+	if (isset($books['mbsb_index'][$book_id])) {
 		return $books['mbsb_index'][$book_id];
-	else
+	} else {
 		return false;
+	}
 }
 
 /**

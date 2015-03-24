@@ -31,8 +31,9 @@ class Widget_Related_Sermons extends WP_Widget {
 	}
 
 	function widget($args, $instance) {
-		if ( ! isset( $args['widget_id'] ) )
+		if ( ! isset( $args['widget_id'] ) ) {
 			$args['widget_id'] = $this->id;
+		}
 
 		extract($args);
 
@@ -63,10 +64,15 @@ class Widget_Related_Sermons extends WP_Widget {
 
 		$r = new WP_Query( apply_filters( 'widget_posts_args', array( 'posts_per_page' => $number, 'no_found_rows' => true, 'post_status' => 'publish', 'ignore_sticky_posts' => true, 'post_type' => 'mbsb_sermon', 'meta_key' => $meta_key, 'meta_value' => $meta_value, 'orderby' => 'date', 'order' => $order ) ) );
 		if ($r->have_posts()) :
+
+			echo $before_widget;
+			if ( $show_image && has_post_thumbnail($meta_value) ) {
+				echo get_the_post_thumbnail($meta_value, 'medium');
+			}
+			if ( $title ) {
+				echo $before_title . $title . $after_title;
+			}
 ?>
-		<?php echo $before_widget; ?>
-		<?php if ( $show_image && has_post_thumbnail($meta_value) ) echo get_the_post_thumbnail($meta_value, 'medium'); ?>
-		<?php if ( $title ) echo $before_title . $title . $after_title; ?>
 		<ul>
 		<?php while ( $r->have_posts() ) : $r->the_post(); ?>
 			<li>
@@ -150,11 +156,13 @@ class Widget_Recent_Sermons extends WP_Widget {
 	function widget($args, $instance) {
 		$cache = wp_cache_get('widget_recent_sermons', 'widget');
 
-		if ( !is_array($cache) )
+		if ( !is_array($cache) ) {
 			$cache = array();
+		}
 
-		if ( ! isset( $args['widget_id'] ) )
+		if ( ! isset( $args['widget_id'] ) ) {
 			$args['widget_id'] = $this->id;
+		}
 
 		if ( isset( $cache[ $args['widget_id'] ] ) ) {
 			echo $cache[ $args['widget_id'] ];
@@ -167,15 +175,19 @@ class Widget_Recent_Sermons extends WP_Widget {
 		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Recent Sermons', MBSB );
 		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
 		$number = ( ! empty( $instance['number'] ) ) ? absint( $instance['number'] ) : 10;
-		if ( ! $number )
+		if ( ! $number ) {
 			$number = 10;
+		}
 		$show_date = isset( $instance['show_date'] ) ? $instance['show_date'] : false;
 
 		$r = new WP_Query( apply_filters( 'widget_posts_args', array( 'posts_per_page' => $number, 'no_found_rows' => true, 'post_status' => 'publish', 'ignore_sticky_posts' => true, 'post_type' => 'mbsb_sermon' ) ) );
 		if ($r->have_posts()) :
+
+			echo $before_widget;
+			if ( $title ) {
+				echo $before_title . $title . $after_title;
+			}
 ?>
-		<?php echo $before_widget; ?>
-		<?php if ( $title ) echo $before_title . $title . $after_title; ?>
 		<ul>
 		<?php while ( $r->have_posts() ) : $r->the_post(); ?>
 			<li>
@@ -205,8 +217,9 @@ class Widget_Recent_Sermons extends WP_Widget {
 		$this->flush_widget_cache();
 
 		$alloptions = wp_cache_get( 'alloptions', 'options' );
-		if ( isset($alloptions['widget_recent_sermons']) )
+		if ( isset($alloptions['widget_recent_sermons']) ) {
 			delete_option('widget_recent_sermons');
+		}
 
 		return $instance;
 	}

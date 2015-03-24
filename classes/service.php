@@ -34,8 +34,9 @@ class mbsb_service extends mbsb_pss_template {
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
 		$this->populate_initial_properties($post);
-		if ($this->present)
+		if ($this->present) {
 			$this->time = (int)get_post_meta ($post_id, 'mbsb_service_time', true);
+		}
 	}
 
 	/**

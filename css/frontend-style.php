@@ -12,8 +12,9 @@ header ('Cache-Control: max-age=290304000, public');
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+290304000));
 header ('Content-type: text/css');
 $date = @filemtime(__FILE__);
-if ($date)
+if ($date) {
 	header ('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', $date));
+}
 $color_black = 'black';
 $color_white = 'white';
 $font_headings = 'sans-serif';

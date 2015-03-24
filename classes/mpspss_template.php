@@ -37,12 +37,14 @@ abstract class mbsb_mpspss_template {
 	* @return string
 	*/
 	protected function do_div ($content, $div_type, $class='') {
-		if ($class == '')
+		if ($class == '') {
 			$class = "{$this->type}_{$div_type}";
-		if ($this->id)
+		}
+		if ($this->id) {
 			$id = "{$this->id}_";
-		else
+		} else {
 			$id = '';
+		}
 		return "<div id=\"{$this->type}_{$id}{$div_type}\" class=\"{$class}\">{$content}</div>";
 	}
 
@@ -58,10 +60,11 @@ abstract class mbsb_mpspss_template {
 	* @return string
 	*/
 	protected function do_heading ($content, $div_type, $class='') {
-		if ($class == '')
+		if ($class == '') {
 			$class = "sermon_{$div_type} mbsb_collapsible_heading";
-		else
+		} else {
 			$class = "{$class} mbsb_collapsible_heading";
+		}
 		$content = $this->do_div ($content, "{$div_type}_text", 'alignleft').$this->do_div ('<a id="heading_pointer_link_'.$div_type.'" class="heading_pointer" href="#">&#9660;</a>', "{$div_type}_pointer", 'alignright');
 		return $this->do_div ($content, $div_type, $class);
 	}

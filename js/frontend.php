@@ -13,8 +13,9 @@ header ('Cache-Control: max-age=31536000, public');
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+31536000));
 header ('Content-type: text/javascript; charset=utf-8');
 $date = @filemtime(__FILE__);
-if ($date)
+if ($date) {
 	header ('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', $date));
+}
 ?>
 var mbsb_ajaxurl = '<?php echo admin_url( 'admin-ajax.php', 'relative' ); ?>';
 

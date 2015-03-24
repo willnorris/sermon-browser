@@ -84,8 +84,9 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 			$this->present = false;
 		} else {
 			$properties = array ('ID' => 'id', 'post_status' => 'status', 'post_content' => 'description', 'post_name' => 'slug', 'post_title' => 'name', 'post_excerpt' => 'excerpt');
-			foreach ($properties as $k => $v)
+			foreach ($properties as $k => $v) {
 				$this->$v = $post->$k;
+			}
 			$this->type = substr($post->post_type, 5);
 			$this->present = true;
 		}
@@ -98,14 +99,16 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 	* @return string
 	*/
 	public function get_description($raw = false) {
-		if ($raw)
+		if ($raw) {
 			return $this->description;
-		else {
-			if ($content_filter = has_filter('the_content', 'mbsb_provide_content'))
+		} else {
+			if ($content_filter = has_filter('the_content', 'mbsb_provide_content')) {
 				remove_filter ('the_content', 'mbsb_provide_content', $content_filter);
+			}
 			$description = apply_filters ('the_content', $this->description);
-			if ($content_filter)
+			if ($content_filter) {
 				add_filter ('the_content', 'mbsb_provide_content', $content_filter);
+			}
 			return $description;
 		}
 	}
@@ -116,10 +119,11 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 	* @return boolean|integer - false on failure, the id on success
 	*/
 	public function get_id() {
-		if (isset($this->id) && $this->id !== null)
+		if (isset($this->id) && $this->id !== null) {
 			return $this->id;
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -157,11 +161,12 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 	* @param integer $excerpt_length
 	*/
 	protected function get_excerpt($excerpt_length = null) {
-		if ($excerpt_length === null)
+		if ($excerpt_length === null) {
 			$excerpt_length = mbsb_get_option ('excerpt_length');
-		if ($this->excerpt)
+		}
+		if ($this->excerpt) {
 			return $this->excerpt;
-		else {
+		} else {
 			return wp_trim_words($this->get_description(), $excerpt_length, '&hellip; (<a class="read_more" href="'.$this->get_url()."\" id=\"read_more_{$this->type}\">".__('read more', MBSB).')</a>');
 		}
 	}
@@ -173,10 +178,11 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 	*/
 	public function get_previous () {
 		$previous = $this->get_adjacent (true);
-		if ($previous)
+		if ($previous) {
 			return new mbsb_sermon($previous->ID);
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**
@@ -186,10 +192,11 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 	*/
 	public function get_next () {
 		$next = $this->get_adjacent (false);
-		if ($next)
+		if ($next) {
 			return new mbsb_sermon($next->ID);
-		else
+		} else {
 			return false;
+		}
 	}
 
 	/**

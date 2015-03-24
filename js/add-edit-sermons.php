@@ -13,8 +13,9 @@ header ('Cache-Control: max-age=43200, public'); // 12 hours, to make sure that 
 header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+43200));
 header ('Content-type: text/javascript; charset=utf-8');
 $date = @filemtime(__FILE__);
-if ($date)
+if ($date) {
 	header ('Last-Modified: '.gmdate('D, d M Y H:i:s \G\M\T', $date));
+}
 ?>
 var mbsb_orig_time;
 var orig_send_to_editor;
