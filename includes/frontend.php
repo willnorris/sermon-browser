@@ -96,7 +96,7 @@ function mbsb_wp_title_rss_filter($title) {
 	if ( is_feed() and (is_post_type_archive('mbsb_sermon') or is_post_type_archive('mbsb_series') or is_post_type_archive('mbsb_preacher') or is_post_type_archive('mbsb_service')) ) {
 		$podcast_title = mbsb_get_option('podcast_feed_title');
 		if ($podcast_title != '')
-			$title = $podcast_title;
+			$title = '';
 	}
 	return $title;
 }
