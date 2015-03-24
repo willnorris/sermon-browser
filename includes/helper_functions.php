@@ -2,7 +2,7 @@
 /**
 * Include file that contains various helper functions used throughout SermonBrowser
 * that provide fairly generic funtionality, such as getting and setting WordPress options.
-* 
+*
 * @package SermonBrowser
 * @subpackage Common
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -14,9 +14,9 @@ add_filter ('default_option_sermon_browser_2', 'mbsb_default_options');
 
 /**
 * Supplies the default SermonBrowser options
-* 
+*
 * Temporarily filters option_sermon_browser_2 and default_option_sermon_browser_2
-* 
+*
 * @param array $all_options
 * @return array
 */
@@ -74,7 +74,7 @@ function mbsb_default_options($all_options=array() ) {
 	$all_options ['color_bar'] = 'black';
 	$all_options ['append_passage_to_title_in_feed'] = true;
 	return $all_options;
-	
+
 	/*
 	Filters available:
 	=======================
@@ -85,7 +85,7 @@ function mbsb_default_options($all_options=array() ) {
 	mbsb_preaching_central_bibles
 	mbsb_language_code_table
 	mbsb_equivalent_bibles
-	
+
 	Actions available:
 	==================
 	mbsb_add_edit_sermon_javascript
@@ -96,7 +96,7 @@ function mbsb_default_options($all_options=array() ) {
 
 /**
 * Gets a SermonBrowser option
-* 
+*
 * @param string $option - the name of the option
 * @param mixed $default - the default value if the option does not exist
 * @return mixed
@@ -145,7 +145,7 @@ function mbsb_get_default_option ($option) {
 
 /**
 * Updates a SermonBrowser option
-* 
+*
 * @param string $option
 * @param mixed $new_value
 * @return boolean - true on success, false on failure
@@ -158,7 +158,7 @@ function mbsb_update_option ($option, $new_value) {
 
 /**
 * Deletes a SermonBrowser option
-* 
+*
 * @param string $option
 * @return boolean - true on success, false on failure
 */
@@ -172,9 +172,9 @@ function mbsb_delete_option ($option) {
 
 /**
 * Shortens a text string so that it is less than a maximum length
-* 
+*
 * Attempts to shorten by removing whole words, either in the middle, or at the end.
-* 
+*
 * @param string $string
 * @param integer $max_length
 * @return string
@@ -200,7 +200,7 @@ function mbsb_shorten_string ($string, $max_length = 30) {
 
 /**
 * Returns a nicely formatted byte-size string, complete with appropriate units (e.g. 12345678 becomes 12.34MB)
-* 
+*
 * @param integer $bytes
 * @return string
 */
@@ -217,7 +217,7 @@ function mbsb_format_bytes ($bytes) {
 
 /**
 * Case insensitive version of in_array
-* 
+*
 * @param mixed $needle
 * @param array $haystack
 * @return boolean
@@ -228,7 +228,7 @@ function in_array_ic ($needle, $haystack) {
 
 /**
 * Case insensitive version of array_key_exists
-* 
+*
 * @param mixed $key
 * @param array $search
 * @return boolean
@@ -238,7 +238,7 @@ function array_key_exists_ic ($key, $search) {
 }
 
 /**
-* Returns WordPress install path.  
+* Returns WordPress install path.
 * Does the same thing as native WordPress get_home_path(), but that function was not defined early enough to use it.
 *
 * @return string

@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/preacher.php
-* 
+*
 * Contains the mbsb_preacher class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Preacher
@@ -11,7 +11,7 @@
 
 /**
 * Class that stores and processes the preacher custom post type
-* 
+*
 * @package SermonBrowser
 * @subpackage Preacher
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -20,17 +20,17 @@ class mbsb_preacher extends mbsb_pss_template {
 
 	/**
 	* Initiates the object and populates its properties
-	* 
+	*
 	* @param integer $post_id
 	*/
 	public function __construct ($post_id) {
 		$post = get_post ($post_id);
 		$this->populate_initial_properties($post);
 	}
-		
+
 	/**
 	* Outputs the preacher details
-	* 
+	*
 	* @param integer $excerpt_length - the maximum number of words to use in the description (0 = unlimited)
 	* @return string
 	*/

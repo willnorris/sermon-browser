@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/spss_template.php
-* 
+*
 * Contains the mbsb_spss_template class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Templates
@@ -11,7 +11,7 @@
 
 /**
 * Abstract class that provides basic functionality to be extended by the sermon, preacher, series and services classes
-* 
+*
 * @package SermonBrowser
 * @subpackage Templates
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -20,63 +20,63 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 
 	/**
 	* True if the object is populated, false otherwise
-	* 
+	*
 	* @var boolean
 	*/
 	public $present;
-	
+
 	/**
 	* The post_id of this post
-	* 
+	*
 	* @var integer
 	*/
 	protected $id;
-	
+
 	/**
 	* The post_status of the post (e.g. publish, pending, draft, auto-draft, future, private, inherit or trash)
-	* 
+	*
 	* @var string
 	*/
 	protected $status;
-	
+
 	/**
 	* The description of the preacher/series/sermon
-	* 
+	*
 	* @var string
 	*/
 	protected $description;
-	
+
 	/**
 	* The slug of the preacher/series/sermon
-	* 
+	*
 	* @var string
 	*/
 	protected $slug;
-	
+
 	/**
 	* The name of the preacher/series/sermon
-	* 
+	*
 	* @var string
 	*/
 	protected $name;
-	
+
 	/**
 	* The preacher/series/sermon excerpt
-	* 
+	*
 	* @var string
 	*/
 	protected $excerpt;
 
 	/**
 	* The type of object this is (e.g. 'sermon', 'series', etc.)
-	* 
+	*
 	* @var string
 	*/
 	protected $type;
-	
+
 	/**
 	* Populates the initial properties for all objects
-	* 
+	*
 	* @param stdClass $post
 	*/
 	protected function populate_initial_properties($post) {
@@ -93,7 +93,7 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 
 	/**
 	* Returns the post's description
-	* 
+	*
 	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
 	* @return string
 	*/
@@ -109,10 +109,10 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 			return $description;
 		}
 	}
-	
+
 	/**
 	* Returns the post id
-	* 
+	*
 	* @return boolean|integer - false on failure, the id on success
 	*/
 	public function get_id() {
@@ -121,12 +121,12 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 		else
 			return false;
 	}
-	
+
 	/**
 	* Returns the type of object
-	* 
+	*
 	* e.g. sermon, preacher, media_attachment, etc.
-	* 
+	*
 	* @return string
 	*/
 	public function get_type() {
@@ -135,16 +135,16 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 
 	/**
 	* Returns the URL of the current preacher/series/service
-	* 
+	*
 	* @return string
 	*/
 	public function get_url() {
 		return get_permalink ($this->id);
 	}
-	
+
 	/**
 	*  Returns the name of the current preacher/series/service
-	* 
+	*
 	* @return string
 	*/
 	public function get_name() {
@@ -153,7 +153,7 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 
 	/**
 	* Gets the excerpt for the current preacher/series/service (if provided), or computes one to the required length
-	* 
+	*
 	* @param integer $excerpt_length
 	*/
 	protected function get_excerpt($excerpt_length = null) {
@@ -165,10 +165,10 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 			return wp_trim_words($this->get_description(), $excerpt_length, '&hellip; (<a class="read_more" href="'.$this->get_url()."\" id=\"read_more_{$this->type}\">".__('read more', MBSB).')</a>');
 		}
 	}
-	
+
 	/**
 	* Gets the previous sermon
-	* 
+	*
 	* @return stdClass
 	*/
 	public function get_previous () {
@@ -178,10 +178,10 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 		else
 			return false;
 	}
-	
+
 	/**
 	* Gets the next sermon
-	* 
+	*
 	* @return stdClass
 	*/
 	public function get_next () {
@@ -194,7 +194,7 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 
 	/**
 	* Gets the adjacent sermon
-	* 
+	*
 	* @param string $direction
 	*/
 	protected function get_adjacent ($direction) {
@@ -202,6 +202,6 @@ abstract class mbsb_spss_template extends mbsb_mpspss_template {
 		$adjacent = get_adjacent_post(false, '', $direction);
 		return $adjacent;
 	}
-	
+
 }
 ?>

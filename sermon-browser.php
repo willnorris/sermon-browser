@@ -22,7 +22,7 @@ GNU General Public License for more details: <http://www.gnu.org/licenses/>
 
 /**
 * This file sets up SermonBrowser by adding core actions and including the required files.
-* 
+*
 * @package SermonBrowser
 * @subpackage Common
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -56,7 +56,7 @@ spl_autoload_register('mbsb_autoload_classes');
 
 /**
 * Autoloads the classes when required
-* 
+*
 * @param string $class_name
 */
 function mbsb_autoload_classes ($class_name) {
@@ -75,7 +75,7 @@ function mbsb_activate () {
 
 /**
 * Runs on the 'plugins_loaded' action
-* 
+*
 * Contains functions that for performance or other reasons need to be run as soon as possible.
 */
 function mbsb_plugins_loaded() {
@@ -89,9 +89,9 @@ function mbsb_plugins_loaded() {
 
 /**
 * Runs on the init action.
-* 
+*
 * Registers custom post types.
-* Sets up most WordPress hooks and filters. 
+* Sets up most WordPress hooks and filters.
 */
 function mbsb_init () {
 	mbsb_register_custom_post_types();
@@ -124,7 +124,7 @@ function mbsb_register_custom_post_types() {
 					'rewrite' => array('slug' => mbsb_get_option('sermons_slug'), 'with_front' => false),
 				);
 	register_post_type ('mbsb_sermon', $args);
-	//Series post type	
+	//Series post type
 	$args = array (	'label' => __('Series', MBSB),
 					'labels' => mbsb_generate_post_label (_x('Series', 'Plural', MBSB), _x('Series', 'Singular', MBSB)),
 					'description' => __('Stores a description and image for each series', MBSB),
@@ -208,9 +208,9 @@ function mbsb_register_image_sizes() {
 	}
 }
 
-/** 
+/**
 * Returns the path to the plugin, or to a specified file or folder within it
-* 
+*
 * @param string $relative_path - a file or folder within the plugin
 * @return string
 */
@@ -220,7 +220,7 @@ function mbsb_plugin_dir_path ($relative_path = '') {
 
 /**
 * Returns the URL of the plugin, or to a specified path within it
-* 
+*
 * @param string $path
 * @return string
 */

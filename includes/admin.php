@@ -1,7 +1,7 @@
 <?php
 /**
 * Include file called when is_admin() is true
-* 
+*
 * @package SermonBrowser
 * @subpackage Admin
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -115,19 +115,19 @@ function mbsb_slug_is_bad_flat_filter( $is_bad, $slug, $post_type ) {
 
 /**
 * Runs on the admin_print_styles action.
-* 
-* Enqueues the mbsb_admin_style stylesheet 
+*
+* Enqueues the mbsb_admin_style stylesheet
 */
 function mbsb_admin_print_styles () {
 	global $post;
 	if (isset ($post->ID) && isset ($post->post_type) && $post->post_type == 'mbsb_sermon')
 		echo "<script type=\"text/javascript\">var mbsb_sermon_id=".esc_html($post->ID).";</script>\r\n";
-	wp_enqueue_style ('mbsb_admin_style');	
+	wp_enqueue_style ('mbsb_admin_style');
 }
 
 /**
 * Runs on the load-edit.php action (i.e. when the edit posts page is loaded)
-* 
+*
 * Makes sure the necessary filters are added when editing custom post types, to ensure columns are added and can be filtered and sorted.
 */
 function mbsb_onload_edit_page () {
@@ -153,8 +153,8 @@ function mbsb_onload_edit_page () {
 
 /**
 * Runs on the load-post.php action (i.e. when editing or creating a post)
-* 
-* 
+*
+*
 */
 function mbsb_onload_post_page () {
 	$screen = get_current_screen();
@@ -170,7 +170,7 @@ function mbsb_onload_post_page () {
 
 /**
 * Runs on the load-upload.php action (i.e. when the Media Library page is loaded)
-* 
+*
 * Makes sure the necessary filters are added to ensure the Attached To column is correct.
 */
 function mbsb_onload_upload_page () {
@@ -180,9 +180,9 @@ function mbsb_onload_upload_page () {
 
 /**
 * Runs on the manage_posts_custom_column action
-* 
+*
 * Outputs the data for each cell of the custom columns when displaying a list of custom posts in admin
-* 
+*
 * @param string $column - the name of the column
 * @param integer $post_id - the post_id of that cell
 */
@@ -212,9 +212,9 @@ function mbsb_output_custom_columns($column, $post_id) {
 
 /**
 * Runs on the manage_media_column action
-* 
+*
 * Filters the list of columns to be displayed in the Media Library table
-* 
+*
 * @param array $columns - the current columns
 * @param boolean $detached - true if the post type is detached
 * @return array
@@ -237,7 +237,7 @@ function mbsb_manage_media_columns ($columns, $detached) {
 
 /**
 * Outputs the custom attachments column in the Media Library table
-* 
+*
 * @param string $column_name
 * @param integer $post_id
 */
@@ -268,7 +268,7 @@ function mbsb_output_custom_media_columns ($column_name, $post_id) {
 
 /**
 * Adds the necessary javascript and styles to admin pages
-* 
+*
 * Called by the admin_enqueue_scripts action.
 * Currently handles the media uploading on the sermon page.
 */
@@ -282,7 +282,7 @@ function mbsb_add_javascript_and_styles_to_admin_pages() {
 }
 /**
 * Runs on the load-media-upload.php and load-async-upload.php actions
-* 
+*
 * Adds additional filters required by the media uploader.
 */
 function mbsb_media_upload_actions() {
@@ -293,10 +293,10 @@ function mbsb_media_upload_actions() {
 
 /**
 * Ensures the media upload box always includes the 'insert into post' button
-* 
+*
 * Filters 'get_media_item_args'
 * @link http://fullrefresh.com/2012/03/09/wp-custom-post-types-ui-and-insert-into-post/
-* 
+*
 * @param array $args
 * @return array
 */
@@ -308,9 +308,9 @@ function mbsb_force_insert_post_on_media_popup ($args) {
 
 /**
 * Optionally removes all but one tab from the media uploader
-* 
+*
 * Triggered by adding a 'showtab=xxxx' parameter when calling the media uploader
-* 
+*
 * @param array $tabs
 * @return array
 */
@@ -323,9 +323,9 @@ function mbsb_filter_media_upload_tabs ($tabs) {
 
 /**
 * Filters manage_mbsb_sermon_posts_columns (i.e. the names of additional columns when sermons are displayed in admin)
-* 
+*
 * Adds the new columns required.
-* 
+*
 * @param array $columns
 * @return array
 */
@@ -347,9 +347,9 @@ function mbsb_add_sermon_columns($columns) {
 
 /**
 * Filters manage_edit-mbsb_sermon_sortable_columns (i.e. the list of sortable columns when sermons are displayed in admin)
-* 
+*
 * Indicates which columns are sortable.
-* 
+*
 * @param array $columns
 * @return array
 */
@@ -365,9 +365,9 @@ function mbsb_make_sermon_columns_sortable ($columns) {
 
 /**
 * Filters manage_mbsb_series_posts_columns (i.e. the names of additional columns when series are displayed in admin)
-* 
+*
 * Adds the new columns required.
-* 
+*
 * @param array $columns
 * @return array
 */
@@ -383,9 +383,9 @@ function mbsb_add_series_columns($columns) {
 
 /**
 * Filters manage_mbsb_preacher_posts_columns (i.e. the names of additional columns when preachers are displayed in admin)
-* 
+*
 * Adds the new columns required.
-* 
+*
 * @param array $columns
 * @return array
 */
@@ -401,9 +401,9 @@ function mbsb_add_preacher_columns($columns) {
 
 /**
 * Filters manage_mbsb_service_posts_columns (i.e. the names of additional columns when services are displayed in admin)
-* 
+*
 * Adds the new columns required.
-* 
+*
 * @param array $columns
 * @return array
 */
@@ -419,9 +419,9 @@ function mbsb_add_service_columns($columns) {
 
 /**
 * Filters posts_join_paged when custom post types are displayed in admin and a sort order is specified.
-* 
+*
 * Adds SQL to WP_Query to ensure the correct metadata is added to the query.
-* 
+*
 * @param string $join
 * @return string
 */
@@ -442,9 +442,9 @@ function mbsb_edit_posts_join ($join) {
 
 /**
 * Filters posts_orderby when custom post types are displayed in admin and a sort order is specified.
-* 
+*
 * Adds SQL to WP_Query to ensure the correct 'ORDER BY' data is added to the query.
-* 
+*
 * @param string $orderby
 * @return string
 */
@@ -467,9 +467,9 @@ function mbsb_edit_posts_sort($orderby) {
 
 /**
 * Filters posts_fields when custom post types are displayed in admin and a sort order is specified.
-* 
+*
 * Adds SQL to WP_Query to ensure that all fields needed for sorting are available.
-* 
+*
 * @param string $select
 * @return string
 */
@@ -484,9 +484,9 @@ function mbsb_edit_posts_fields ($select) {
 
 /**
 * Filters posts_where_paged when custom post types are displayed in admin and a filter is specified.
-* 
+*
 * Adds SQL to WP_Query to ensure the correct 'WHERE' data is added to the query.
-* 
+*
 * @param string $where
 * @return string
 */
@@ -507,9 +507,9 @@ function mbsb_edit_posts_where($where) {
 
 /**
 * Filters posts_groupby when custom post types are displayed in admin and certain filters are specified.
-* 
+*
 * Adds SQL to WP_Query to ensure the correct 'GROUP BY' data is added to the query.
-* 
+*
 * @param string $groupby
 * @return string
 */
@@ -524,10 +524,10 @@ function mbsb_edit_posts_groupby($groupby) {
 
 /**
 * Filters post_search (the search criteria) to add additional fields for searching custom post types in admin.
-* 
+*
 * It's a bit of a hack. A patch has been submitted to make this more reliable.
 * @link http://core.trac.wordpress.org/ticket/21803
-* 
+*
 * @param string $search
 * @return string
 */
@@ -570,9 +570,9 @@ function mbsb_ajax_attachment_insert() {
 
 /**
 * Provides the SQL code required to find library attachment from the URL
-* 
+*
 * Designed to be used by the posts_where_paged filter
-* 
+*
 * @param string $where
 * @return string
 */
@@ -654,7 +654,7 @@ function mbsb_ajax_jqueryFileTree() {
 					echo "<li class=\"file ext_$ext\"><a href=\"#\" rel=\"" . htmlentities($_POST['dir'] . $file) . "\">" . htmlentities($file) . "</a></li>";
 				}
 			}
-			echo "</ul>";	
+			echo "</ul>";
 		}
 	}
 	die();
@@ -676,7 +676,7 @@ function mbsb_ajax_mbsb_remove_attachment() {
 
 /**
 * Adds the metaboxes needed when editing/creating a sermon.
-* 
+*
 * Also removes unwanted metaboxes and adds required styles and javascripts.
 */
 function mbsb_sermon_meta_boxes () {
@@ -744,7 +744,7 @@ function mbsb_sermon_media_meta_box() {
 
 /**
 * Specifies the settings for the editor (description) box when creating/editing sermons
-* 
+*
 * @param mixed $post
 */
 function mbsb_sermon_editor_box ($post) {
@@ -789,9 +789,9 @@ function mbsb_add_admin_menu() {
 
 /**
 * Saves metadata when a custom post type is saved.
-* 
+*
 * Called by the save_post action.
-* 
+*
 * @param integer $post_id
 * @param object $post
 */
@@ -811,7 +811,7 @@ function mbsb_save_post ($post_id, $post) {
 
 /**
 * Returns a row for the attached media table, containing a message rather than a successful result
-* 
+*
 * @param string $message
 * @return string
 */
@@ -821,7 +821,7 @@ function mbsb_do_media_row_message ($message) {
 
 /**
 * Returns an array of sermon objects that have a particular media item attached
-* 
+*
 * @param integer $post_id - the post id of the media item
 * @return boolean|array - False on failure, an array of sermon objects on success.
 */
@@ -839,7 +839,7 @@ function mbsb_get_sermons_from_media_id ($post_id) {
 
 /**
 * Returns an array of sermon objects that have a particular media item attached
-* 
+*
 * @param integer $media_post_id - the post id of the media item
 * @return boolean|array - False on failure, an array of sermon objects on success.
 */
@@ -853,7 +853,7 @@ function mbsb_unattach_media_item_from_all_sermons ($media_post_id) {
 
 /**
 * Runs on the delete_post action and removes deleted media items from their sermons.
-* 
+*
 * @param integer $post_id
 */
 function mbsb_handle_media_deletion ($post_id) {
@@ -865,7 +865,7 @@ function mbsb_handle_media_deletion ($post_id) {
 
 /**
 * Filters admin_body_class so that we can apply CSS styling to particular post_types
-* 
+*
 * @param string $class
 * @return string
 */
@@ -876,9 +876,9 @@ function mbsb_admin_body_class ($class) {
 
 /**
 * Provides a way of changing arbitary text without buffering.
-* 
+*
 * Called by the gettext filter.
-* 
+*
 * @param string $translated_text
 * @param string $text
 * @param string $domain
@@ -899,9 +899,9 @@ function mbsb_do_custom_translations ($translated_text, $text, $domain) {
 
 /**
 * Sets the default sort order for metaboxes
-* 
+*
 * Used as a filter for get_user_option_meta-box-order_*
-* 
+*
 * @param array $result - the existing sort order
 * @param string $option - the option being requested
 * @param WP_User $user - the current user
@@ -922,9 +922,9 @@ function mbsb_set_default_metabox_sort_order ($result, $option, $user) {
 
 /**
 * Adds CSS to the <head> section to remove unwanted information
-* 
+*
 * Is called only when adding preachers/series/services in thickbox popups
-* 
+*
 */
 function mbsb_tb_iframe_admin_head() {
 	global $post;
@@ -939,9 +939,9 @@ function mbsb_tb_iframe_admin_head() {
 
 /**
 * Filters mbsb_attachment_row_actions
-* 
+*
 * Returns the HTML of the attachment link in the media library table on the edit sermons page.
-* 
+*
 * @param string $existing_actions
 * @return string
 */
@@ -996,9 +996,9 @@ function mbsb_ajax_mbsb_get_service_details() {
 
 /**
 * Supplies updated messages when a custom post type is saved
-* 
+*
 * Filters post_updated_messages
-* 
+*
 * @param array - the existing messages
 * @return string
 */
@@ -1076,12 +1076,12 @@ function mbsb_import_admin_page() {
 		<div id="icon-sermon-browser" class="icon32 icon32-mbsb-import"><br /></div>
 		<h2><?php _e('Sermon Browser Import', MBSB); ?></h2>
 		<p>
-		<?php _e('Sermon Browser 2 can import sermons, series, preachers, and services from Sermon Browser 1.  
-		When you import data from SB1, your SB1 data will remain untouched in the database, in case you would like to run SB1 in the future.  
+		<?php _e('Sermon Browser 2 can import sermons, series, preachers, and services from Sermon Browser 1.
+		When you import data from SB1, your SB1 data will remain untouched in the database, in case you would like to run SB1 in the future.
 		To remove SB1 data after you import, activate SB1 and choose Uninstall from the SB1 menu.', MBSB); ?>
 		</p>
 		<p>
-		<?php _e('There is no undo for this import function.  However, you can Uninstall SB2, which will remove all SB2 data from the database.  
+		<?php _e('There is no undo for this import function.  However, you can Uninstall SB2, which will remove all SB2 data from the database.
 		Uninstalling will remove imported data as well as any data that you have manually entered into SB2.', MBSB); ?>
 		</p>
 		<p>
@@ -1436,23 +1436,23 @@ function mbsb_uninstall_admin_page() {
 	<div class="wrap">
 		<div id="icon-sermon-browser" class="icon32 icon32-mbsb-uninstall"><br /></div>
 		<h2><?php _e('Sermon Browser Uninstall', MBSB); ?></h2>
-		
+
 		<form method="post">
 		<p>
-		<?php printf(__('Clicking the Uninstall button below will remove ALL Sermon Browser 2 data (sermons, preachers, series, etc.) 
-		from the database and will deactivate the Sermon Browser 2 plugin.  You will NOT be able to undo this action.  
-		If you only want to temporarily disable Sermon Browser, just deactivate it from the %sPlugins page%s.', MBSB), 
+		<?php printf(__('Clicking the Uninstall button below will remove ALL Sermon Browser 2 data (sermons, preachers, series, etc.)
+		from the database and will deactivate the Sermon Browser 2 plugin.  You will NOT be able to undo this action.
+		If you only want to temporarily disable Sermon Browser, just deactivate it from the %sPlugins page%s.', MBSB),
 		'<a href="'.get_admin_url(null, 'plugins.php').'">', '</a>'); ?>
 		</p>
 		<p>
-		<?php _e('Note: As this is a development release of Sermon Browser 2, we strongly recommend that you backup your WordPress 
+		<?php _e('Note: As this is a development release of Sermon Browser 2, we strongly recommend that you backup your WordPress
 		database before clicking the Uninstall button, just in case something weird happens.', MBSB); ?>
 		</p>
 		<p>
 		<?php _e('Note: This Uninstall button only affects Sermon Browser 2.  Sermon Browser 1 data, if present, will remain.', MBSB); ?>
 		</p>
 		<p>
-		<?php _e('Note: The Uninstall button does not remove any files.  Your media files will remain on the server and 
+		<?php _e('Note: The Uninstall button does not remove any files.  Your media files will remain on the server and
 		will remain in the WordPress media library.', MBSB); ?>
 		</p>
 		<p>
@@ -1516,13 +1516,13 @@ function mbsb_options_admin_page() {
 		<div id="icon-sermon-browser" class="icon32 icon32-mbsb-options"><br /></div>
 		<h2><?php _e('Sermon Browser Options', MBSB); ?></h2>
 		<?php settings_errors(); ?>
-		
+
 		<form action="options.php" method="post">
 		<?php settings_fields('sermon_browser_2'); ?>
 		<?php do_settings_sections('sermon-browser/options'); ?>
 		<p class="submit">
 			<input name="sermon_browser_2[submit]" type="submit" class="button-primary" value="<?php esc_attr_e('Save Changes', MBSB); ?>" />
-			<input name="sermon_browser_2[reset]" type="submit" class="button-secondary" value="<?php esc_attr_e('Reset to Defaults', MBSB); ?>" 
+			<input name="sermon_browser_2[reset]" type="submit" class="button-secondary" value="<?php esc_attr_e('Reset to Defaults', MBSB); ?>"
 			onclick="if(!confirm('<?php esc_attr_e('Are you sure you want to reset all Sermon Browser options to defaults?', MBSB); ?>')){return false;}" />
 		</p>
 		</form>

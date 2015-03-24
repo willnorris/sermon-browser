@@ -1,7 +1,7 @@
 <?php
 /**
 * Include file, called when is_admin() is false
-* 
+*
 * @package SermonBrowser
 * @subpackage Frontend
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -12,9 +12,9 @@ require (apply_filters ('mbsb_theme', mbsb_plugin_dir_path('includes/default_the
 
 /**
 * Runs on the init action
-* 
+*
 * Sets up most of the required features.
-* 
+*
 */
 function mbsb_frontend_init() {
 	add_action ('wp_head', 'mbsb_enqueue_frontend_scripts_and_styles');
@@ -167,7 +167,7 @@ function mbsb_podcast_head() {
 	</itunes:owner>
 <?php
 		$image = mbsb_get_option('podcast_feed_image');
-		if ($image) 
+		if ($image)
 			echo '	<itunes:image href="', esc_url($image), '" />';
 		$category = explode( '/', mbsb_get_option('podcast_feed_category') );
 		if ($category) {
@@ -198,7 +198,7 @@ function mbsb_podcast_item() {
 
 /**
 * Filters the_content for sermon browser custom post types, and provides all output
-* 
+*
 * @param mixed $content
 */
 function mbsb_provide_content($content) {
@@ -213,7 +213,7 @@ function mbsb_provide_content($content) {
 
 /**
 * Filters the_title for SermonBrowser custom post types
-* 
+*
 * @param string $title
 * @param integer $id
 * @return string
@@ -230,7 +230,7 @@ function mbsb_filter_titles ($title, $id) {
 
 /**
 * Filters the_author for SermonBrowser custom post types
-* 
+*
 * @param string $author
 * @return string
 */
@@ -242,12 +242,12 @@ function mbsb_filter_author ($author) {
 			return $sermon->preacher->get_name();
 	}
 	return $author;
-	
+
 }
 
 /**
 * Filters the author link to make sure that sermon authors point to the preacher URL
-* 
+*
 * @param string $link
 * @param integer $author_id
 * @param string $author_nicename
@@ -284,28 +284,28 @@ function mbsb_enqueue_frontend_scripts_and_styles() {
 * Display the list of sermons. Can be added to a theme, or called using the [sermons] shortcode
 */
 function mbsb_display_sermons ($atts, $content) {
-	return apply_filters ('mbsb_display_sermons', $content);	
+	return apply_filters ('mbsb_display_sermons', $content);
 }
 
 /**
 * Display the list of series. Can be added to a theme, or called using the [sermon-series] shortcode
 */
 function mbsb_display_series($atts, $content) {
-	return apply_filters ('mbsb_display_series', $content);	
+	return apply_filters ('mbsb_display_series', $content);
 }
 
 /**
 * Display the list of services. Can be added to a theme, or called using the [services] shortcode
 */
 function mbsb_display_services($atts, $content) {
-	return apply_filters ('mbsb_display_services', $content);	
+	return apply_filters ('mbsb_display_services', $content);
 }
 
 /**
 * Display the list of preachers. Can be added to a theme, or called using the [preachers] shortcode
 */
 function mbsb_display_preachers($atts, $content) {
-	return apply_filters ('mbsb_display_preachers', $content);	
+	return apply_filters ('mbsb_display_preachers', $content);
 }
 
 function mbsb_setup_frontend_queries() {
@@ -380,9 +380,9 @@ function mbsb_do_filter_dropdown ($field_name, $values, $class='', $selected = n
 
 /**
 * Filters posts_join_paged when the sermons page is displayed in the frontend
-* 
+*
 * Adds SQL to WP_Query to ensure the correct metadata is added to the query.
-* 
+*
 * @param string $join
 * @return string
 */
@@ -400,9 +400,9 @@ function mbsb_frontend_sermons_standard_join ($join) {
 
 /**
 * Filters posts_where_paged when the sermons page is displayed in the frontend
-* 
+*
 * Adds SQL to WP_Query to ensure the correct 'WHERE' data is added to the query.
-* 
+*
 * @param string $where
 * @return string
 */

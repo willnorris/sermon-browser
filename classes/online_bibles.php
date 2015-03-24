@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/online_bibles.php
-* 
+*
 * Contains the mbsb_online_bibles class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage OnlineBibles
@@ -11,7 +11,7 @@
 
 /**
 * Class that provides all interaction with the list of online Bibles
-* 
+*
 * @package SermonBrowser
 * @subpackage OnlineBibles
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -20,7 +20,7 @@ class mbsb_online_bibles {
 
 	/**
 	* An array of the online Bibles currently available
-	* 
+	*
 	* @var array
 	*/
 	private $bibles;
@@ -81,10 +81,10 @@ class mbsb_online_bibles {
 			set_transient ('mbsb_bible_list_'.get_locale(), $this->bibles, 604800);
 		}
 	}
-	
+
 	/**
 	* Adds a Bible to the object, if it (or an equivalent) has not already been added
-	* 
+	*
 	* @param string $code
 	* @param string $name
 	* @param string $language
@@ -98,12 +98,12 @@ class mbsb_online_bibles {
 		$inactive = in_array_ic($code, mbsb_get_option('inactive_bibles')) || in_array_ic ($language, mbsb_get_option ('inactive_bible_languages')) || (mbsb_get_option('hide_other_language_bibles') && $language != $this->convert_language_code(substr(get_locale(), 0, 2)) || array_key_exists_ic ($code, $this->bibles));
 		$this->bibles[$code] = array ('name' => $name, 'language_code' => $language, 'service' => $service, 'active' => !$inactive);
 	}
-	
+
 	/**
 	* Filterable function that marks certain Bibles as equivalent to one another, despite having different IDs
-	* 
+	*
 	* Avoids unnecessary duplication in the list of Bibles. It is already assumed that versions with the same id are already equivalent
-	* 
+	*
 	* @return array
 	*/
 	private function equivalent_bibles() {
@@ -146,7 +146,7 @@ class mbsb_online_bibles {
 		$equiv ['statenvertaling_preaching_central'] = 'statenvertaling';
 		return apply_filters ('mbsb_equivalent_bibles', $equiv);
 	}
-	
+
 	/**
 	* Inactivates Bibles that have an equivalent, to remove duplicates
 	*/
@@ -165,12 +165,12 @@ class mbsb_online_bibles {
 				}
 			}
 	}
-	
+
 	/**
 	* Converts an ISO639-1 language code into an ISO639-2 language code
-	* 
+	*
 	* Can be filtered with mbsb_language_code_table
-	* 
+	*
 	* @param string $language
 	* @return string
 	*/
@@ -186,7 +186,7 @@ class mbsb_online_bibles {
 
 	/**
 	* Returns the HTML for the Bible dropdown list
-	* 
+	*
 	* @param string $selected_version - the Bible version currently selected
 	* @param string $id - the HTML "id" used for the select box.  The default ('bible_dropdown') should be used for use in the frontend
 	* @param string $name - the HTML "name" used for the select box.  The default ('') will omit the name parameter
@@ -220,7 +220,7 @@ class mbsb_online_bibles {
 
 	/**
 	* Returns the details of a Bible version
-	* 
+	*
 	* @param string $version
 	* @return array
 	*/
@@ -233,9 +233,9 @@ class mbsb_online_bibles {
 
 	/**
 	* Sorts a Bible list
-	* 
+	*
 	* Designed for use with the uasort function
-	* 
+	*
 	* @param array $a
 	* @param array $b
 	* @return integer
@@ -250,10 +250,10 @@ class mbsb_online_bibles {
 		else
 			return ($a['language_name'] > $b['language_name']) ? 1 : -1;
 	}
-		
+
 	/**
 	* Returns a language given a language code
-	* 
+	*
 	* @param string $code
 	* @return string
 	*/

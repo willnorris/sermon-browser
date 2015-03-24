@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/single_passage.php
-* 
+*
 * Contains the mbsb_single_passage class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Passages
@@ -12,17 +12,17 @@
 /**
 * Class that stores and handles a single passage
 * It should only be called by the mbsb_passages class
-* 
+*
 * @package SermonBrowser
 * @subpackage Passages
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 
 class mbsb_single_passage {
-	
+
 	/**
 	* Initiates the object and populates its properties
-	* 
+	*
 	* @param array $start - an associative array (with the keys 'book', 'chapter' and 'verse'
 	* @param array $end - as above
 	*/
@@ -34,7 +34,7 @@ class mbsb_single_passage {
 
 	/**
 	* Returns a formatted Bible reference (e.g. John 3:1-16, not John 3:1-John 3:16)
-	* 
+	*
 	* @param boolean $ignore_first_book = true if the first book name should not be outputted
 	* @param boolean $ignore_first_chapter = true if the first chapter should not be outputted
 	* @return string - the formatted reference
@@ -67,10 +67,10 @@ class mbsb_single_passage {
 		}
 		return trim($reference);
 	}
-	
+
 	/**
 	* Returns the Bible text for this passage
-	* 
+	*
 	* @param string $preferred_version
 	* @return boolean|string - false on failure, the text on success
 	*/
@@ -138,10 +138,10 @@ class mbsb_single_passage {
 			}
 		}
 	}
-	
+
 	/**
 	* Converts the XML returned by a Bible API service into HTML
-	* 
+	*
 	* @param string $xml
 	* @param string $service
 	* @return string

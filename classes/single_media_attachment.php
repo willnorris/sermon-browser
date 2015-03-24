@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/single_media_attachment.php
-* 
+*
 * Contains the mbsb_single_media_attachment class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage MediaAttachments
@@ -11,37 +11,37 @@
 
 /**
 * Class that handles media attachments
-* 
+*
 * @package SermonBrowser
 * @subpackage MediaAttachments
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_single_media_attachment {
-	
+
 	/**
 	* The type of attachment this is, i.e. 'library', 'url', 'embed', or 'legacy'
-	* 
+	*
 	* @var string
 	*/
 	private $attachment_type;
-	
+
 	/**
 	* The metadata id of this attachment
-	* 
+	*
 	* @var integer
 	*/
 	private $meta_id;
-	
+
 	/**
 	* The data returned by the get_metadata() function
-	* 
+	*
 	* @var object stdClass
 	*/
 	private $data;
-	
+
 	/**
 	* Initiates the object and populates its properties
-	* 
+	*
 	* @param integer - the meta_id
 	* @return mbsb_single_media_attachment
 	*/
@@ -66,28 +66,28 @@ class mbsb_single_media_attachment {
 			}
 		}
 	}
-	
+
 	/**
 	* Returns the type of attachment ('library', 'url', 'embed', or 'legacy')
-	* 
+	*
 	* @return string
 	*/
 	public function get_type() {
 		return $this->attachment_type;
 	}
-	
+
 	/**
 	* Returns the id of the attachment
-	* 
+	*
 	* @return string
 	*/
 	public function get_id() {
 		return $this->meta_id;
 	}
-	
+
 	/**
 	* Returns JSON encoded data, ready for javascript to insert into the media table when editing a sermon
-	* 
+	*
 	* @param boolean $success - true if this is a success message, false if it is a failure message
 	* @param string $message - the message
 	* @return string - the JSON encoded result
@@ -98,10 +98,10 @@ class mbsb_single_media_attachment {
 		else
 			return json_encode(array('result' => 'failure', 'code' => mbsb_do_media_row_message ($message), 'row_id' => 'error_'.time()));
 	}
-	
+
 	/**
 	* Returns a row, ready to be inserted in a table displaying a list of media items
-	* 
+	*
 	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
@@ -109,10 +109,10 @@ class mbsb_single_media_attachment {
 		$function_name = "add_admin_{$this->attachment_type}_attachment_row";
 		return $this->{$function_name} ($class);
 	}
-	
+
 	/**
 	* Returns the embed code
-	* 
+	*
 	* @return boolean|string - False on failure, the embed code on success.
 	*/
 	public function get_embed_code () {
@@ -121,10 +121,10 @@ class mbsb_single_media_attachment {
 		else
 			return $this->data['code'];
 	}
-	
+
 	/**
 	* Returns the URL of the attachment file
-	* 
+	*
 	* @return boolean|string - False on failure, the URL on success
 	*/
 	public function get_url() {
@@ -137,12 +137,12 @@ class mbsb_single_media_attachment {
 		else
 			return false;
 	}
-	
+
 	/**
 	* Returns a media player for the current attachment
-	* 
+	*
 	* If not media player is configured for this type of attachment, returns a HTML link to the attached file.
-	* 
+	*
 	* @return string
 	*/
 	public function get_media_player() {
@@ -160,10 +160,10 @@ class mbsb_single_media_attachment {
 				return $this->get_attachment_link().' ('.$this->get_friendly_mime_type().', '.$this->get_friendly_filesize().')';
 		}
 	}
-	
+
 	/**
 	* Returns a HTML link to this attachment
-	* 
+	*
 	* @return boolean|string - false on failure, the link on success
 	*/
 	public function get_attachment_link() {
@@ -171,12 +171,12 @@ class mbsb_single_media_attachment {
 			return false;
 		else
 			return '<a title="'.esc_html(__('Right-click and choose "Save as" to download', MBSB)).'" href="'.$this->get_url().'">'.esc_html($this->get_name()).'</a>';
-			
+
 	}
-	
+
 	/**
 	* Returns the id of the library attachment
-	* 
+	*
 	* @return boolean|integer - False on failure, the post_id on success.
 	*/
 	public function get_library_id () {
@@ -185,10 +185,10 @@ class mbsb_single_media_attachment {
 		else
 			return $this->data->ID;
 	}
-	
+
 	/**
 	* Returns the filesize of the attachment
-	* 
+	*
 	* @return integer
 	*/
 	public function get_filesize() {
@@ -199,21 +199,21 @@ class mbsb_single_media_attachment {
 			return filesize($filename);
 		}
 	}
-	
+
 	/**
 	* Returns the filesize of the attachment as a human friendly string (e.g. 12345678 becomes 12.34MB)
-	* 
+	*
 	* @return string
 	*/
 	public function get_friendly_filesize() {
 		return mbsb_format_bytes($this->get_filesize());
 	}
-	
+
 	/**
 	* Returns an appropriate name for the attachment
-	* 
+	*
 	* Returns the attachment's post_title for library items, or uses the URL or embed code to calculate an appropriate title.
-	* 
+	*
 	* @return string
 	*/
 	public function get_name () {
@@ -253,10 +253,10 @@ class mbsb_single_media_attachment {
 		} elseif ($this->attachment_type == 'legacy')
 			return basename($this->data['filename']);
 	}
-	
+
 	/**
 	* Returns a shortened form of the URL attachment for use when space is tight
-	* 
+	*
 	* @return string
 	*/
 	public function get_short_url () {
@@ -267,10 +267,10 @@ class mbsb_single_media_attachment {
 		} else
 			return false;
 	}
-	
+
 	/**
 	* Returns the mime type of the attachment
-	* 
+	*
 	* @return string
 	*/
 	public function get_mime_type() {
@@ -281,10 +281,10 @@ class mbsb_single_media_attachment {
 		elseif ($this->attachment_type == 'embed')
 			return __('embed', MBSB);
 	}
-	
+
 	/**
 	* Returns a friendly name for the mime type of the attachment
-	* 
+	*
 	* @return string
 	*/
 	public function get_friendly_mime_type() {
@@ -304,7 +304,7 @@ class mbsb_single_media_attachment {
 
 	/**
 	* Returns a library attachment row, ready to be inserted in a table displaying a list of media items
-	* 
+	*
 	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
@@ -326,7 +326,7 @@ class mbsb_single_media_attachment {
 
 	/**
 	* Returns a URL attachment row, ready to be inserted in a table displaying a list of media items
-	* 
+	*
 	* @param string $class - CSS class(es) to be added to the row
 	* @return string
 	*/
@@ -350,7 +350,7 @@ class mbsb_single_media_attachment {
 
 	/**
 	* Returns an embed attachment row, ready to be inserted in a table displaying a list of media items
-	* 
+	*
 	* @param string $class - a CSS class to be added to the row
 	* @return string
 	*/
@@ -368,7 +368,7 @@ class mbsb_single_media_attachment {
 		$output .= '</td></tr>';
 		return $output;
 	}
-	
+
 	/**
 	* Returns a legacy attachment row, ready to be inserted in a table displaying a list of media items
 	*
@@ -389,7 +389,7 @@ class mbsb_single_media_attachment {
 		$output .= '</td></tr>';
 		return $output;
 	}
-	
+
 	/**
 	* Returns the date format to be used in the admin attachment rows on the edit sermon page
 	*

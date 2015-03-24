@@ -1,16 +1,16 @@
 <?php
 /**
 * Include file called when requested on the plugins_loaded action
-* 
+*
 * Outputs javascript for the add/edit sermons page, then dies.
 * It's a PHP file so that we can internationalise it and add nonces
-* 
+*
 * @package SermonBrowser
 * @subpackage Javascript
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 header ('Cache-Control: max-age=43200, public'); // 12 hours, to make sure that nonces remain current
-header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+43200)); 
+header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+43200));
 header ('Content-type: text/javascript; charset=utf-8');
 $date = @filemtime(__FILE__);
 if ($date)
@@ -69,7 +69,7 @@ function mbsb_handle_upload_insert_click() {
 		};
 		jQuery.post(ajaxurl, data, function(response) {
 			response = JSON.parse (response);
-			row_id = response.row_id; 
+			row_id = response.row_id;
 			jQuery('#mbsb_attached_files').prepend(response.code);
 			jQuery('#row_'+row_id).show(1200);
 		});
@@ -94,7 +94,7 @@ function mbsb_handle_url_embed (type) {
 			jQuery('#mbsb_attach_url_button').removeAttr('disabled');
 		};
 		response = JSON.parse (response);
-		row_id = response.row_id; 
+		row_id = response.row_id;
 		jQuery('#mbsb_attached_files').prepend(response.code);
 		jQuery('#row_'+row_id).show(1200);
 	});
@@ -111,7 +111,7 @@ function mbsb_handle_legacy (file) {
 	};
 	jQuery.post(ajaxurl, data, function(response) {
 		response = JSON.parse (response);
-		row_id = response.row_id; 
+		row_id = response.row_id;
 		jQuery('#mbsb_attached_files').prepend(response.code);
 		jQuery('#row_'+row_id).show(1200);
 	});
@@ -162,7 +162,7 @@ jQuery(document).ready(function($) {
 	$('#mbsb_attach_legacy_button').click(function() {
 		tb_show('<?php _e('Choose a file from the legacy upload folder for this sermon', MBSB);?>', '#TB_inline?inlineId=legacy_file_tree', false);
 		return false;
-	});	
+	});
 	//Watch for the unattach button being clicked
 	$('table#mbsb_attached_files').on('click', 'a.unattach', function (e) {
 		var data = {
@@ -174,7 +174,7 @@ jQuery(document).ready(function($) {
 		$.post(ajaxurl, data, function(response) {
 			response = JSON.parse (response);
 			if (response.result == 'success') {
-				row_id = response.row_id; 
+				row_id = response.row_id;
 				$('#row_'+row_id).hide(600);
 			} else {
 				$(this).after('response.message');
@@ -197,7 +197,7 @@ jQuery(document).ready(function($) {
 		dateFormat : 'yy-mm-dd'
 	});
 	//Add the File Tree
-	$('#legacy_file_tree').fileTree({ 
+	$('#legacy_file_tree').fileTree({
 			root: '',
 			script: ajaxurl,
 			_wpnonce: '<?php echo wp_create_nonce('mbsb_jqueryFileTree') ?>',

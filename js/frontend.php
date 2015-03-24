@@ -1,16 +1,16 @@
 <?php
 /**
 * Include file called when requested on the plugins_loaded action
-* 
+*
 * Outputs javascript for the frontend, then dies.
 * It's a PHP file so that we can internationalise it, etc.
-* 
+*
 * @package SermonBrowser
 * @subpackage Javascript
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 header ('Cache-Control: max-age=31536000, public');
-header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+31536000)); 
+header ('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time()+31536000));
 header ('Content-type: text/javascript; charset=utf-8');
 $date = @filemtime(__FILE__);
 if ($date)
@@ -109,6 +109,6 @@ jQuery(document).ready(function($) {
 		$('select.mbsb_hide').hide();
 		$('#filter_'+filter+'_dropdown').show();
 	});
-	
+
 	<?php do_action ('mbsb_frontend_jQuery'); ?>
 });

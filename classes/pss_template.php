@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/pss_template.php
-* 
+*
 * Contains the mbsb_pss_template class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Templates
@@ -11,7 +11,7 @@
 
 /**
 * Abstract class that provides basic functionality to be extended by the preacher, series and services classes
-* 
+*
 * @package SermonBrowser
 * @subpackage Templates
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -20,7 +20,7 @@ abstract class mbsb_pss_template extends mbsb_spss_template {
 
 	/**
 	* Returns the number of sermons preached by the current preacher/in the current series/at the current service
-	* 
+	*
 	* @uses WP_Query
 	* @return integer
 	*/
@@ -31,7 +31,7 @@ abstract class mbsb_pss_template extends mbsb_spss_template {
 
 	/**
 	* Returns the number of series the current preacher/service has contributed to/includes
-	* 
+	*
 	* @uses WP_Query
 	* @return integer
 	*/
@@ -43,10 +43,10 @@ abstract class mbsb_pss_template extends mbsb_spss_template {
 		remove_filter ('posts_groupby', array ($this, 'query_groupby_series'));
 		return $posts;
 	}
-	
+
 	/**
 	* Returns the HTML of the name of the current series/service/preacher, linked to their frontend page
-	* 
+	*
 	* @return string
 	*/
 	public function get_linked_name() {
@@ -55,21 +55,21 @@ abstract class mbsb_pss_template extends mbsb_spss_template {
 
     /**
     * Returns the SQL for the GROUP BY when querying on series
-    * 
+    *
     * Filters posts_groupby
-    * 
+    *
     * @param string $groupby
     * @return string
     */
     public function query_groupby_series ($groupby) {
 		return "series_postmeta.meta_value";
     }
-    
+
 	/**
 	* Returns the SQL for the JOIN when querying on a series
-	* 
+	*
 	* Filters get_previous_post_join and get_next_post_join
-	* 
+	*
 	* @param string $join
 	* @return string
 	*/
@@ -77,10 +77,10 @@ abstract class mbsb_pss_template extends mbsb_spss_template {
 		global $wpdb;
 		return $join." INNER JOIN {$wpdb->prefix}postmeta AS series_postmeta ON (p.ID = series_postmeta.post_id) INNER JOIN {$wpdb->prefix}posts AS series ON (series.ID = series_postmeta.meta_value AND series.post_type = 'mbsb_series')";
 	}
-	
+
 	/**
 	* Gets the adjacent post for the current series/preacher/service
-	* 
+	*
 	* @param string $direction = 'previous' or 'next
 	* return stdClass - the post object
 	*/

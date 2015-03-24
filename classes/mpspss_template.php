@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/mpspss_templates.php
-* 
+*
 * Contains the mbsb_mpspss_template class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Templates
@@ -11,7 +11,7 @@
 
 /**
 * Abstract class that provides basic functionality to be extended by the media, passage, sermon, preacher, series and services classes
-* 
+*
 * @package SermonBrowser
 * @subpackage Templates
 */
@@ -19,7 +19,7 @@ abstract class mbsb_mpspss_template {
 
 	/**
 	* True if the object contains items, false otherwise
-	* 
+	*
 	* @var boolean
 	*/
 	public $present;
@@ -27,10 +27,10 @@ abstract class mbsb_mpspss_template {
 
 	/**
 	* Helper function, that wraps text in a div
-	* 
+	*
 	* Used when creating the major sections of the frontend
 	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
+	*
 	* @param string $content - the HTML to be wrapped in the div
 	* @param string $div_type - a descriptor that is used in the id (and optionally the class)
 	* @param string $class - the class of this div
@@ -48,10 +48,10 @@ abstract class mbsb_mpspss_template {
 
 	/**
 	* Helper function, that wraps text in a heading div, adding a triangle on the right
-	* 
+	*
 	* Used when creating the major sections of the frontend
 	* A class is added, and the class name appended with the sermon id is used to provide a unique id
-	* 
+	*
 	* @param string $content - the HTML to be wrapped in the div
 	* @param string $div_type - a descriptor that is used in the class and id
 	* @param string $class - the class of this div

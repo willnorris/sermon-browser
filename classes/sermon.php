@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/sermon.php
-* 
+*
 * Contains the mbsb_sermon class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Sermon
@@ -11,30 +11,30 @@
 
 /**
 * Class that stores and processes the sermon custom post type
-* 
+*
 * @package SermonBrowser
 * @subpackage Sermon
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_sermon extends mbsb_spss_template {
-	
+
 	/**
 	* True if the object contains a sermon, false otherwise
-	* 
+	*
 	* @var boolean
 	*/
 	public $present;
 
 	/**
 	* Media attachments
-	* 
+	*
 	* @var mbsb_media_attachments
 	*/
 	public $attachments;
-	
+
 	/**
 	* Initiates the object and populates its properties
-	* 
+	*
 	* @param integer $post_id
 	* @return mbsb_sermon
 	*/
@@ -55,13 +55,13 @@ class mbsb_sermon extends mbsb_spss_template {
 			$this->attachments = new mbsb_media_attachments($this->id);
 		}
 	}
-	
+
 	/**
 	* Returns a formatted string of the passages used for this sermon, ready for HTML output
-	* 
+	*
 	* Various HTML additions can specified via the $link_type paramenter. Accepted values of link_type are:
 	* 	'admin_link'
-	* 
+	*
 	* @param $link_type
 	* @return string
 	*/
@@ -75,10 +75,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		else
 			return '';
 	}
-	
+
 	/**
 	* Returns the sermon's description
-	* 
+	*
 	* @param boolean $raw - if true returns the description as stored, if false filters it through the_content
 	*/
 	public function get_description($raw = false) {
@@ -93,10 +93,10 @@ class mbsb_sermon extends mbsb_spss_template {
 			return $description;
 		}
 	}
-	
+
 	/**
 	* Returns the entire frontend output for the sermon
-	* 
+	*
 	* @return string
 	*/
 	public function get_frontend_output() {
@@ -106,10 +106,10 @@ class mbsb_sermon extends mbsb_spss_template {
 			$output .= $this->get_frontend_section ($section);
 		return $this->do_div($output, 'sermon');
 	}
-	
+
 	/**
 	* Returns a single frontend section
-	* 
+	*
 	* @param string $section - the section type (i.e. 'media', 'preacher', 'series', 'passages')
 	*/
 	private function get_frontend_section ($section) {
@@ -132,10 +132,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		}
 		return $output;
 	}
-	
+
 	/**
 	* Returns the HTML of the name of the current sermon, linked to its frontend page
-	* 
+	*
 	* @return string
 	*/
 	public function get_linked_name() {
@@ -149,17 +149,17 @@ class mbsb_sermon extends mbsb_spss_template {
 
 	/**
 	* Updates the time override metadata for this sermon
-	* 
+	*
 	* @param boolean $override
 	* @return mixed - meta_id on success, false on failure
 	*/
 	public function update_override_time ($override) {
 		return $this->update_misc_meta ('override_time', $override);
 	}
-	
+
 	/**
 	* Updates the preacher for this sermon
-	* 
+	*
 	* @param integer $preacher_id
 	* @return mixed - meta_id on success, false on failure
 	*/
@@ -171,10 +171,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		}
 		return $result;
 	}
-	
+
 	/**
 	* Updates the series for this sermon
-	* 
+	*
 	* @param integer $series_id
 	* @return mixed - meta_id on success, false on failure
 	*/
@@ -186,10 +186,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		}
 		return $result;
 	}
-	
+
 	/**
 	* Updates the service for this sermon
-	* 
+	*
 	* @param integer $service_id
 	* @return mixed - meta_id on success, false on failure
 	*/
@@ -199,10 +199,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		}
 		return $result;
 	}
-	
+
 	/**
 	* Updates the Bible passages for this sermon
-	* 
+	*
 	* @param string - an unparsed string of the Bible passages
 	* @return mixed - true on success, WP_Error on failure
 	*/
@@ -218,10 +218,10 @@ class mbsb_sermon extends mbsb_spss_template {
 					add_post_meta ($this->id, "passage_{$t}", $this->passage_array_to_metadata_string($p->$t, $index));
 		}
 	}
-	
+
 	/**
 	* Outputs a single cell on the custom posts edit page
-	* 
+	*
 	* @param string $post_type
 	* @param string $column
 	* @return string
@@ -240,10 +240,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		elseif ($column == 'media')
 			return $this->attachments->get_admin_cell();
 	}
-	
+
 	/**
 	* Converts a passage array into a string suitable for storing as metadata
-	* 
+	*
 	* @param array $passage - an associative array with the keys 'book', 'chapter' and 'verse'
 	* @param integer $index - the index of this passage (when a sermon as multiple passages, each must have a unique index)
 	* @return string
@@ -256,10 +256,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		$return .= '.'.str_pad ($index, 4, '0', STR_PAD_LEFT);
 		return $return;
 	}
-		
-	/** 
+
+	/**
 	* Converts a metadata passage string into a passage array
-	* 
+	*
 	* @param string $raw_passage - the string stored in the metadata
 	* @return array - an associative array with the keys 'passage' (itself an associative array) and 'index'
 	*/
@@ -273,10 +273,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		}
 		return array ('passage' => $return, 'index' => (int)($raw_passage - $passage)*10000);
 	}
-	
+
 	/**
 	* Returns the structure and field length of the passage array
-	* 
+	*
 	* @return array
 	*/
 	private function passage_metadata_structure () {
@@ -285,9 +285,9 @@ class mbsb_sermon extends mbsb_spss_template {
 
 	/**
 	* Updates the 'misc' metadata values
-	* 
+	*
 	* To reduce the number of rows required in the wp_postmeta table, all data which will not need to be queried is stored in the 'misc' key
-	* 
+	*
 	* @param string $meta_key - the 'meta key' name
 	* @param mixed $value
 	* @return mixed - meta_id on success, false on failure
@@ -300,9 +300,9 @@ class mbsb_sermon extends mbsb_spss_template {
 
 	/**
 	* Returns the 'misc' metadata values
-	* 
+	*
 	* To reduce the number of rows required in the wp_postmeta table, all data which will not need to be queried is stored in the 'misc' key
-	* 
+	*
 	* @param string $meta_key - the 'meta key' name
 	* @return mixed - the requested data on success, null on failure
 	*/
@@ -313,10 +313,10 @@ class mbsb_sermon extends mbsb_spss_template {
 		else
 			return null;
 	}
-	
+
 	/**
 	* Returns the output of the 'main' section of the frontend
-	* 
+	*
 	* @return string
 	*/
 	private function get_main_output() {
@@ -326,24 +326,24 @@ class mbsb_sermon extends mbsb_spss_template {
 		$output .= $this->do_div ($this->get_description(), 'description');
 		return $this->do_div ($output, 'main');
 	}
-	
+
 	/**
 	* Returns true if a post thumbnail can be derived for this sermons
-	* 
+	*
 	* Attempts to use the featured image of the sermon, series, preacher and service, in that order.
-	* 
+	*
 	* @return boolean
 	* @todo Look for image attachments
 	*/
 	private function has_thumbnail() {
 		return (has_post_thumbnail() || ($this->series->present && has_post_thumbnail($this->series->id)) || ($this->preacher->present && has_post_thumbnail($this->preacher->id)) || ($this->service->present && has_post_thumbnail($this->service->id)));
 	}
-	
+
 	/**
 	* Returns the HTML code for the image appropriate to this sermon
-	* 
+	*
 	* Attempts to use the featured image of the sermon, series, preacher and service, in that order.
-	* 
+	*
 	* @uses get_the_post_thumbnail()
 	* @param string|array $attr Optional. Query string or array of attributes.
  	*/

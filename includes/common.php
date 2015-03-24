@@ -2,7 +2,7 @@
 /**
 * Include file that contains various filters and functions used throughout SermonBrowser
 * that provide functionality specific to SermonBrowser.
-* 
+*
 * @package SermonBrowser
 * @subpackage Common
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -10,7 +10,7 @@
 
 /**
 * Returns the HTML for a dropdown list of titles of a specified custom post type
-* 
+*
 * @param string $custom_post_type - the custom post type required
 * @param string $selected - the post_id of the custom post that should be pre-selected
 * @param array $additions - an array of additional items to be added to the list, with the key as the id, and the value as the text
@@ -45,9 +45,9 @@ function mbsb_return_select_list ($custom_post_type, $selected = '', $additions 
 
 /**
 * Ensures the correct date/time is applied when sermons are saved.
-* 
+*
 * Filters wp_insert_post_data
-* 
+*
 * @param array $data - the data about to be saved
 * @return array - the modified data with the correct date/time
 */
@@ -68,7 +68,7 @@ function mbsb_sermon_insert_post_modify_date_time ($data) {
 
 /**
 * Returns an array of meta_ids that match a particular value
-* 
+*
 * @param string $value
 * @return array
 */
@@ -79,10 +79,10 @@ function mbsb_get_meta_ids_by_value ($value) {
 
 /**
 * Prevents sermon/series/preacher/services being deleted incorrectly
-* 
+*
 * Does not allow series/preacher/services to be deleted if they are in use
 * Filters user_has_cap
-* 
+*
 * @param array $allcaps
 * @param array $caps
 * @param array $args
@@ -104,9 +104,9 @@ function mbsb_prevent_cpt_deletions ($allcaps, $caps, $args) {
 
 /**
 * Returns a the SQL to JOIN preachers metadata to a sermons query
-* 
+*
 * Designed to filter posts_join_paged
-* 
+*
 * @param string $join
 * @param string $join_type
 * @return string
@@ -118,9 +118,9 @@ function mbsb_join_preacher ($join, $join_type = 'INNER') {
 
 /**
 * Returns a the SQL to JOIN service metadata to a sermons query
-* 
+*
 * Designed to filter posts_join_paged
-* 
+*
 * @param string $join
 * @param string $join_type
 * @return string
@@ -132,9 +132,9 @@ function mbsb_join_service ($join, $join_type = 'INNER') {
 
 /**
 * Returns a the SQL to JOIN series metadata to a sermons query
-* 
+*
 * Designed to filter posts_join_paged
-* 
+*
 * @param string $join
 * @param string $join_type
 * @return string
@@ -146,9 +146,9 @@ function mbsb_join_series ($join, $join_type = 'INNER') {
 
 /**
 * Returns a the SQL to JOIN book metadata to a sermons query
-* 
+*
 * Designed to filter posts_join_paged
-* 
+*
 * @param string $join
 * @param string $join_type
 * @return string
@@ -160,9 +160,9 @@ function mbsb_join_book ($join, $join_type = 'INNER') {
 
 /**
 * Downloads a file after first checking the cache.
-* 
+*
 * It does not use transient caching, as we will still use an out of date cache if the page is unreachable.
-* 
+*
 * @param string $url
 * @param integer $max_cached_time
 * @param string $user_name
@@ -188,11 +188,11 @@ function mbsb_cached_download ($url, $max_cached_time = 604800, $user_name = '',
 			update_option ($option_name, array ('data' => $download, 'time' => time()));
 		return $download;
 	}
-} 
+}
 
 /**
 * Returns the preferred Bible version
-* 
+*
 * @return string
 */
 function mbsb_get_preferred_version() {
@@ -204,7 +204,7 @@ function mbsb_get_preferred_version() {
 
 /**
 * Gets an Bible API key
-* 
+*
 * @param string $service
 * @return string
 */

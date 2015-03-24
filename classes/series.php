@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/series.php
-* 
+*
 * Contains the mbsb_series class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Series
@@ -11,7 +11,7 @@
 
 /**
 * Class that stores and processes the series custom post type
-* 
+*
 * @package SermonBrowser
 * @subpackage Series
 * @author Mark Barnes <mark@sermonbrowser.com>
@@ -20,7 +20,7 @@ class mbsb_series extends mbsb_pss_template {
 
 	/**
 	* Initiates the object and populates its properties
-	* 
+	*
 	* @param integer $post_id
 	* @return mbsb_series
 	*/
@@ -31,7 +31,7 @@ class mbsb_series extends mbsb_pss_template {
 
 	/**
 	* Outputs the series details
-	* 
+	*
 	* @param integer $excerpt_length - the maximum number of words to use in the description (0 = unlimited)
 	* @return string
 	*/

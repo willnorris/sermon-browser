@@ -1,9 +1,9 @@
 <?php
 /**
 * classes/passages.php
-* 
+*
 * Contains the mbsb_passages class
-* 
+*
 * @author Mark Barnes <mark@sermonbrowser.com>
 * @package SermonBrowser
 * @subpackage Passages
@@ -11,37 +11,37 @@
 
 /**
 * Stores and parses Bible passages
-* 
+*
 * Provides methods to access and update all passages (as a block), and an array of mbsb_single_passage objects so individual items can be accessed individually.
-* 
+*
 * @package SermonBrowser
 * @subpackage Passages
 * @author Mark Barnes <mark@sermonbrowser.com>
 */
 class mbsb_passages extends mbsb_mpspss_template {
-	
+
 	/**
 	* The passages in a human-friendly format
-	* 
+	*
 	* (e.g. "Matthew 5:1-12, Genes 3:16, 25")
 	* @var string
 	*/
 	private $formatted;
-	
+
 	/**
 	* An array of the individual passage objects that make up this group of passages
-	* 
+	*
 	* @var array
 	*/
 	private $passages;
 
 	/**
 	* Constructs the object
-	* 
+	*
 	* There are two ways of constructing an object:
 	* 	(1) Pass a single string, which contains a human-friendly reference to be parsed and then stored
 	* 	(2) Pass two strings, which are in machine-readable format, which are simple stored
-	* 
+	*
 	* @param string $start
 	* @param mixed $end
 	*/
@@ -73,12 +73,12 @@ class mbsb_passages extends mbsb_mpspss_template {
 		$this->type = 'passages';
 		$this->id = '';
 	}
-	
+
 	/**
 	* Converts the raw passage data into an associative array
-	* 
+	*
 	* The array has two keys, 'index' (its order), and 'result'. 'result' is an array with the keys 'book', 'chapter', and 'verse'
-	* 
+	*
 	* @param string $s
 	* @return boolean|array - false on failure, the array on success
 	*/
@@ -88,10 +88,10 @@ class mbsb_passages extends mbsb_mpspss_template {
 		else
 			return false;
 	}
-	
+
 	/**
 	* Returns the parsed passages formatted for easy reading
-	* 
+	*
 	* @return string
 	*/
 	public function get_formatted() {
@@ -112,28 +112,28 @@ class mbsb_passages extends mbsb_mpspss_template {
 			return $output;
 		}
 	}
-	
+
 	/**
 	* Returns a HTML formatted list of passages, with the booknames wrapped in links that filter the sermons on the admin sermons page
-	* 
+	*
 	* @return string
 	*/
 	public function get_admin_link() {
 		return '<a href="'.admin_url('edit.php?post_type=mbsb_sermon&book=').'">'.esc_html($this->get_formatted()).'</a>';
 	}
-	
+
 	/**
 	* Returns an array of mbsb_single_passage objects
-	* 
+	*
 	* return array
 	*/
 	public function get_passage_objects() {
 		return $this->passages;
 	}
-	
+
 	/**
 	* Parses a string that could contain one or more Bible References
-	* 
+	*
 	* @param string $raw_passages - the passages in their raw form (e.g. 'Rom 5:16, 1 Jn 3:6')
 	* @return array - A indexed array of references. Each reference is an associative array (keys are 'raw', 'start' and 'end'). 'raw' is the raw input for one reference. 'start' and 'end' are associative arrays with the keys 'book', 'chapter' and 'verse'
 	*/
@@ -203,10 +203,10 @@ class mbsb_passages extends mbsb_mpspss_template {
 		else
 	    	return new WP_Error(4, 'No Bible references could be parsed in '.$raw_passages);
 	}
-	
+
 	/**
 	* Parses a single Bible reference
-	* 
+	*
 	* @param string $passage
 	* @param mixed $previous - set to FALSE if we're parsing the first part of a range, or to an associative array (keys are 'chapter' and 'verse') if we're pasing the second part of a range
 	* @return array - associative array (keys are 'book', 'chapter' and 'verse') of integers (although 'chapter' can also be set to 'wholebook')
@@ -231,15 +231,15 @@ class mbsb_passages extends mbsb_mpspss_template {
 		}
 		$passage = trim(ltrim($passage, '.'));
 		$chapterverse = $this->parse_chapter_verse ($passage, $previous);
-		if ($previous === FALSE) 
+		if ($previous === FALSE)
 			return array('book' => '', 'chapter' => $chapterverse['chapter'], 'verse' => $chapterverse['verse']); // Assume bookname implied by previous reference (e.g. Ex. 13:12, 19)
 		else
 			return array('book' => $previous['book'], 'chapter' => $chapterverse['chapter'], 'verse' => $chapterverse['verse']); // Assume bookname implied by first part of current reference (e.g. Ex. 13:12-19)
 	}
-	
+
 	/**
 	* Parses the numerical part of a Bible reference
-	* 
+	*
 	* @param string $passage
 	* @param mixed $previous - set to FALSE if we're parsing the first part of a range, or to an associative array (keys are 'chapter' and 'verse') if we're pasing the second part of a range
 	* @return array - associative array (keys are 'chapter' and 'verse') of integers
@@ -266,12 +266,12 @@ class mbsb_passages extends mbsb_mpspss_template {
 				return (array('chapter' => (int)$chapter, 'verse' => (int)$verse)); // Two numbers found, return chapter and verse (e.g. Ex. 13:12)
 		}
 	}
-	
+
 	/**
 	* Returns an array of valid Bible book names with alternative abbreviated forms and an index
-	* 
+	*
 	* Can be persistently cached by caching plugins.
-	* 
+	*
 	* @return array
 	*/
 	public static function bible_books() {
@@ -292,7 +292,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 
 	/**
 	* Returns a multi-dimensional array containing the number of verses in each chapter of the Bible.
-	* 
+	*
 	* @return array
 	*/
 	private function verses_per_chapter () {
@@ -371,7 +371,7 @@ class mbsb_passages extends mbsb_mpspss_template {
 
 	/**
 	* Returns the frontend output for all the passages
-	* 
+	*
 	* @return string
 	*/
 	public function get_output () {
@@ -386,10 +386,10 @@ class mbsb_passages extends mbsb_mpspss_template {
 			return $this->do_div ($output, 'wrap');
 		}
 	}
-	
+
 	/**
 	* Returns the Bible text output for all the passages
-	* 
+	*
 	* @param string $version - the Bible version to use (optional, defaults to the version specified in options)
 	* @return string
 	*/
@@ -408,9 +408,9 @@ class mbsb_passages extends mbsb_mpspss_template {
 		if (mbsb_get_option ('use_embedded_bible_'.get_locale())) {
 			$text = esc_html(sprintf(__('Powered by %s', MBSB), 'SermonBrowser'));
 			$output .= $this->do_div('<a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.$text.'" title="'.$text.'"/>', 'powered_by', 'powered_by sermonbrowser');
-		} elseif ($bible['service'] == 'biblia') 
+		} elseif ($bible['service'] == 'biblia')
 			$output .= $this->do_div('<a href="http://biblia.com/"><img src="http://api.biblia.com/docs/media/PoweredByBiblia.png" alt="'.sprintf(__('Powered by %s', MBSB), 'Biblia.com').'"/><a href="http://www.sermonbrowser.com/"><img src="'.mbsb_plugins_url('images/powered-by.png').'" alt="'.sprintf(__('Powered by %s', MBSB), 'SermonBrowser').'"/>', 'powered_by', 'powered_by sermonbrowser');
-		elseif ($bible['service'] == 'biblesearch') 
+		elseif ($bible['service'] == 'biblesearch')
 			$output .= $this->do_div(sprintf(__('Powered by %s and %s.', MBSB), '<a href="http://bibles.org/">BibleSearch</a>', '<a href="http://www.sermonbrowser.com">SermonBrowser</a>'), 'powered_by', 'powered_by '.$bible['service']);
 		elseif ($bible ['service'] == 'esv')
 			$output .= $this->do_div (sprintf(__('Powered by %s and the %s API.', MBSB), '<a href="http://www.sermonbrowser.com">SermonBrowser</a>', '<a href="http://www.esv.org/">ESV</a>'), 'powered_by', 'powered_by esv');

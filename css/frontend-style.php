@@ -1,9 +1,9 @@
 <?php
 /**
 * Include file called on the plugins_loaded action
-* 
+*
 * Dynamically creates an appropriate CSS file for frontend styling.
-* 
+*
 * @package SermonBrowser
 * @subpackage Frontend
 * @author Mark Barnes <mark@sermonbrowser.com>
